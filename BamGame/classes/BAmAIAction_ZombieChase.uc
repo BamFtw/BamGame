@@ -16,7 +16,7 @@ function OnBegin()
 		return;
 	}
 
-	Manager.Controller.Subscribe(BSE_FinalDestinationReachd, FinalDestinationReached);
+	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 }
 
 function Tick(float DeltaTime)
@@ -27,23 +27,23 @@ function Tick(float DeltaTime)
 		return;
 	}
 
-	Manager.Controller.SetFinalDestination(Target.Location, Manager.Controller.Pawn.GetCollisionRadius() * 1.25);
+	Manager.Controller.SetFinalDestination(Target.Location, Manager.Controller.Pawn.GetCollisionRadius() * 2.0);
 	Manager.Controller.Begin_Moving();
 }
 
 function OnEnd()
 {
-	Manager.Controller.Unubscribe(BSE_FinalDestinationReachd, FinalDestinationReached);
+	Manager.Controller.Unsubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 }
 
 function OnBlocked()
 {
-	Manager.Controller.Unubscribe(BSE_FinalDestinationReachd, FinalDestinationReached);
+	Manager.Controller.Unsubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 }
 
 function OnUnblocked()
 {
-	Manager.Controller.Subscribe(BSE_FinalDestinationReachd, FinalDestinationReached);
+	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 }
 
 function FinalDestinationReached(BamSubscriberParameters params)

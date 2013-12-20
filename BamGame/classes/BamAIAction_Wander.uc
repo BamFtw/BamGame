@@ -1,4 +1,4 @@
-class BamAIAction_Wander extends BamAIAction;
+Śclass BamAIAction_Wander extends BamAIAction;
 	//implements(BamInterface_FinalDestinationReached);
 
 /** If set POIClass is ignored, list of the only actors that will be considered for wander location */

@@ -146,6 +146,11 @@ function SetBlocking(optional bool newBlocking = bIsBlocking, optional bool bloc
 	bBlockAllLanes = blockAll;
 }
 
+function Finish()
+{
+	bIsFinished = true;
+}
+
 DefaultProperties
 {
 	bIsBlocked=false

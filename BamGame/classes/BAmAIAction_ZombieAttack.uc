@@ -8,7 +8,7 @@ function Tick(float DeltaTime)
 {
 	local Rotator rot;
 
-	rot = Rotator(Target - Manager.Controller.Pawn.Location);
+	rot = Rotator(Target.Location - Manager.Controller.Pawn.Location);
 	rot.Roll = 0;
 	rot.Pitch = 0;
 
@@ -32,6 +32,7 @@ function OnBegin()
 
 function OnEnd()
 {
+	Manager.Controller.Pawn.LockDesiredRotation(false);
 	Manager.UnblockActionClass(class'BamAIAction');
 	Manager.Controller.BPawn.CharacterFullBodySlot.StopCustomAnim(0.1);
 }
@@ -53,6 +54,6 @@ DefaultProperties
 {
 	bIsBlocking=true
 	bBlockAllLanes=true
-	
+
 	AnimationName=zombie_melee_attack
 }

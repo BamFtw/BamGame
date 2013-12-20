@@ -40,6 +40,11 @@ function OnEnd()
 	}
 }
 
+function OnBlocked()
+{
+	bIsFinished = true;
+}
+
 event Tick(float DeltaTime)
 {
 	if( !Manager.Controller.IsInCombat() )
