@@ -52,14 +52,14 @@ function GetDefaultTeams()
 	{
 		if( !bPlayerTeamFound && tm.bIsPlayerTeam && NeutralTeam != tm )
 		{
-			`trace("Found player team" @ tm @ tm.TeamName, `cyan);
+			`trace("Found player team" @ tm @ tm.TeamName, `green);
 			PlayerTeam = tm;
 			bPlayerTeamFound = true;
 		}
 
 		if( !bNeutralTeamFound && tm.bIsNeutralTeam && PlayerTeam != tm )
 		{
-			`trace("Found neutral team" @ tm @ tm.TeamName, `cyan);
+			`trace("Found neutral team" @ tm @ tm.TeamName, `green);
 			NeutralTeam = tm;
 			bPlayerTeamFound = true;
 		}
@@ -68,14 +68,14 @@ function GetDefaultTeams()
 	// if player team was not found create it
 	if( PlayerTeam == none )
 	{
-		`trace("Player team not found. Creating it.", `YELLOW);
+		`trace("Player team not found. Creating it.", `yellow);
 		PlayerTeam = CreateTeam("PlayerTeam");
 	}
 
 	// if neutral team was not found create it
 	if( NeutralTeam == none )
 	{
-		`trace("Neutral team not found. Creating it.", `YELLOW);
+		`trace("Neutral team not found. Creating it.", `yellow);
 		NeutralTeam = CreateTeam("NeutralTeam");
 	}
 }

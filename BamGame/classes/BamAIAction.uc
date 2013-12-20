@@ -148,7 +148,7 @@ function SetBlocking(optional bool newBlocking = bIsBlocking, optional bool bloc
 
 function Finish()
 {
-	Finish();
+	bIsFinished = true;
 }
 
 DefaultProperties

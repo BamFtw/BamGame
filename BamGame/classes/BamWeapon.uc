@@ -1,4 +1,5 @@
-class BamWeapon extends UDKWeapon;
+class BamWeapon extends UDKWeapon
+	dependson(BamPawn);
 
 /** Skeletal mesh component that should be attached to first person arms */
 var UDKSkeletalMeshComponent FirstPersonMesh;
@@ -80,6 +81,10 @@ simulated function DetachWeapon()
 	BOwner.CharacterMesh.DetachComponent(ThirdPersonMesh);
 	BOwner.ArmsMesh.DetachComponent(FirstPersonMesh);
 }
+
+
+function ModifyMeleeParameters(out BamMeleeAttackProperties properities);
+
 
 simulated state WeaponEquipping
 {

@@ -129,6 +129,14 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 	}
 }
 
+
+
+function bool IsPawnHostile(Pawn pwn)
+{
+	return BController.IsPawnHostile(pwn);
+}
+
+
 State Dying
 {
 	ignores TakeDamage;
@@ -143,6 +151,8 @@ State Dying
 		super.BeginState(PreviousStateName);
 	}
 }
+
+
 
 defaultproperties
 {

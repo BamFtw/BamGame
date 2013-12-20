@@ -2,6 +2,20 @@ class BamPawn extends GamePawn
 	placeable
 	abstract;
 
+struct BamMeleeAttackProperties
+{
+	/** Damage dealt by this attack */
+	var int Damage;
+	/** Range of the attack */
+	var float Range;
+	/**  */
+	var float MinDot;
+	/** How many enemies can be hit with this attack */
+	var int MaxNumOfHits;
+
+	var bool bAllowFriendlyFire;
+};
+
 /** Reference to GameInfo object */
 var BamGameInfo Game;
 
@@ -42,6 +56,8 @@ var name TPWeaponSocketName;
 var bool bUseDesiredLocation;
 /** Location to which pawn should be moved to with its GroundSpeed without using Velocity */
 var Vector DesiredLocation;
+
+var() BamMeleeAttackProperties MeleeProperties;
 
 var array<class<Inventory> > DefaultInventory;
 
@@ -226,7 +242,85 @@ simulated event bool Died(Controller Killer,  class<DamageType> DamageType,  vec
 
 simulated function DealMeleeDamage()
 {
-	`trace(self @ "Deal Damage ---------------------------------", `green);
+	local int q, w, hitCount;
+	local BamMeleeAttackProperties properties;
+	local Vector Dir;
+	local float RangeSq, DistanceSq;
+	local array<Pawn> PotentialTargets;
+	local array<float> Distances;
+	local Pawn pwn;
+
+	properties = MeleeProperties;
+
+	// add weapon modifiers
+	if( BamWeapon(Weapon) != none )
+	{
+		BamWeapon(Weapon).ModifyMeleeParameters(properties);
+	}
+
+
+	Dir = Vector(Rotation);
+	RangeSq = properties.Range * properties.Range;
+
+	foreach WorldInfo.AllPawns(class'Pawn', pwn)
+	{
+		// skip if Pawn is friendly and friendly fire is off
+		if( !properties.bAllowFriendlyFire && !IsPawnHostile(pwn) )
+		{
+			continue;
+		}
+
+		DistanceSq = VSizeSq(pwn.Location - Location);
+		// check if pawn is within range and in front of the pawn
+		if( pwn != self && (DistanceSq <= RangeSq) && (Dir dot (pwn.Location - Location) >= properties.MinDot) )
+		{
+			// if array is empty or distance is greater than the greatest in the arry push back
+			if( Distances.Length == 0 || DistanceSq > Distances[Distances.Length - 1]  )
+			{
+				PotentialTargets.AddItem(pwn);
+				Distances.AddItem(DistanceSq);
+			}
+			// if distance is less than the smallest push front
+			else if( DistanceSq < Distances[0] )
+			{
+				PotentialTargets.InsertItem(0, pwn);
+				Distances.InsertItem(0, DistanceSq);
+			}
+			// else insert in appropriate position
+			else
+			{
+				for(w = 1; w < Distances.Length; ++w)
+				{
+					if( DistanceSq > Distances[w - 1] && DistanceSq < Distances[w] )
+					{
+						PotentialTargets.InsertItem(w, pwn);
+						Distances.InsertItem(w, DistanceSq);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// choose number of units hit
+	hitCount = properties.MaxNumOfHits <= 0 ? PotentialTargets.Length : properties.MaxNumOfHits;
+
+	// deal damage
+	for(q = 0; q < hitCount; ++q)
+	{
+		PotentialTargets[q].TakeDamage(properties.Damage, Controller, PotentialTargets[q].Location, vect(0,0,0), class'damageType');
+	}
+
+}
+
+function bool IsPawnFriendly(Pawn pwn)
+{
+	return !IsPawnHostile(pwn);
+}
+
+function bool IsPawnHostile(Pawn pwn)
+{
+	return true;
 }
 
 /** */
@@ -432,4 +526,6 @@ defaultproperties
 	TPWeaponSocketName=WeaponPoint
 
 	TickGroup=TG_PreAsyncWork
+
+	MeleeProperties=(Damage=30,Range=100,bAllowFriendlyFire=false,MinDot=0.5,MaxNumOfHits=1)
 }

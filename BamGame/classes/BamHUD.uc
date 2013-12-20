@@ -16,22 +16,31 @@ event PostRender()
 	{
 		debugLine = 10;
 
-		DebugRect(Canvas.Project(PawnToDebug.Location), 80, 255, 0, 0, 127);
-		DebugRect(Canvas.Project(PawnToDebug.BController.FinalDestination), 30, 0, 0, 255, 127);
+		if( Vector(GetALocalPlayerController().Rotation) dot (PawnToDebug.Location - GetALocalPlayerController().Pawn.Location) > 0 )
+		{
+			DebugRect(Canvas.Project(PawnToDebug.Location), 80, 255, 0, 0, 127);
+			DebugRect(Canvas.Project(PawnToDebug.BController.FinalDestination), 30, 0, 0, 255, 127);
+		}
 
-		DebugStr("Debuging:" @ PawnToDebug.Name, debugLine);
+		DebugStr("Pawn:" @ PawnToDebug.Name, debugLine);
+		DebugStr("Health:" @ PawnToDebug.Health @ "/" @ PawnToDebug.HealthMax, debugLine);
 		DebugStr("State: pwn (" $ PawnToDebug.GetStateName() $ "), ctrl (" $ PawnToDebug.BController.GetStateName() $ ")", debugLine);
+		DebugStr("", debugLine);
+
+		DebugStr("Team:" @ PawnToDebug.BController.Team.TeamName, debugLine);	
+		DebugStr("", debugLine);
 
 		DebugStr("GroundSpeed:" @ PawnToDebug.GroundSpeed, debugLine);
 		DebugStr("Awareness:" @ PawnToDebug.Awareness, debugLine);
 		DebugStr("WeaponSpread:" @ PawnToDebug.WeaponSpread, debugLine);
 		DebugStr("DTM:" @ PawnToDebug.DamageTakenMultiplier, debugLine);
+		DebugStr("", debugLine);
 
 
 		DebugStr("Location:" @ PawnToDebug.Location, debugLine);
 		DebugStr("Final destination:" @ PawnToDebug.BController.FinalDestination, debugLine);
 		DebugStr("Dist to final dest:" @ VSize2D(PawnToDebug.Location - PawnToDebug.BController.FinalDestination), debugLine);
-		
+		DebugStr("", debugLine);
 
 
 		DebugStr("Needs:", debugLine);
