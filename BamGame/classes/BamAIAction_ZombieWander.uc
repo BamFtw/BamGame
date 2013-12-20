@@ -41,7 +41,7 @@ function bool FindWanderLocation()
 	if( GoodPositions.Length == 0 )
 	{
 		`trace("No good positions for zombie wander", `red);
-		bIsFinished = true;
+		Finish();
 		return false;
 	}
 

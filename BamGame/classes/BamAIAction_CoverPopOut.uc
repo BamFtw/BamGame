@@ -9,7 +9,7 @@ function OnBegin()
 	if( CoverData.Cover == none  )
 	{
 		`trace("Cover is none", `red);
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -110,7 +110,7 @@ function bool FindGoodSpot()
 	{
 		`trace("Failed to find pop out location", `yellow);
 		CoverData.FailedPopOut();
-		bIsFinished = true;
+		Finish();
 		return false;
 	}
 	
@@ -126,7 +126,7 @@ function bool FindGoodSpot()
 	{
 		`trace("All found pop out locations were bad", `yellow);
 		CoverData.FailedPopOut();
-		bIsFinished = true;
+		Finish();
 		return false;
 	}
 

@@ -9,7 +9,7 @@ function OnBegin()
 
 	if( CoverData.Cover == none )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -36,7 +36,7 @@ function OnBlocked()
 {
 	Manager.Controller.Pawn.LockDesiredRotation(false);
 	Manager.Controller.BPawn.CharacterCoverState.SetState(0);
-	bIsFinished = true;
+	Finish();
 }
 
 

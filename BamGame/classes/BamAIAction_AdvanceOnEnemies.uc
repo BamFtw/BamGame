@@ -30,7 +30,7 @@ function OnBegin()
 	if( !Manager.Controller.IsInCombat() )
 	{
 		`trace("Controller is not in combat", `yellow);
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -39,7 +39,7 @@ function OnBegin()
 	if( EnemyLocations.Length == 0 )
 	{
 		`trace("Controller has no enemies", `yellow);
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -53,7 +53,7 @@ function OnBegin()
 
 function OnBlocked()
 {
-	bIsFinished = true;
+	Finish();
 	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 }
 

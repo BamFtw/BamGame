@@ -20,13 +20,13 @@ function Tick(float DeltaTime)
 
 	if( (Target == none || !Target.IsAliveAndWell()) && !FindGoodTarget() )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
 	if( !Manager.Controller.GetEnemyData(Target, data) || !data.Pawn.IsAliveAndWell() )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -50,12 +50,12 @@ function Tick(float DeltaTime)
 
 function OnBlocked()
 {
-	bIsFinished = true;
+	Finish();
 }
 
 function OnEnd()
 {
-	bIsFinished = true;
+	Finish();
 	
 	if( Manager.Controller != none && Manager.Controller.Pawn != none && !IsBlocked() )
 	{

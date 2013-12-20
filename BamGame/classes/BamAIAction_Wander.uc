@@ -18,7 +18,7 @@ function OnBegin()
 	if( POIClass == none && SpecificPointsOfInterest.Length == 0 )
 	{
 		`trace("POIClass is not set and SpecificPointsOfInterest is empty", `red);
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -60,7 +60,7 @@ function HandlePOISelection()
 	if( !SelectNextPOI() )
 	{
 		`trace("Could not find POI for" @ Manager.Controller, `yellow);
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 

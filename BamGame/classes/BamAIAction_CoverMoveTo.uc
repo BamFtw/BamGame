@@ -7,7 +7,7 @@ function OnBegin()
 	
 	if( CoverData.Cover == none )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -39,7 +39,7 @@ function FinalDestinationReached(BamSubscriberParameters params)
 		return;
 
 	Manager.PushFront(class'BamAIAction_CoverIdle'.static.Create(CoverData));
-	bIsFinished = true;
+	Finish();
 }
 
 

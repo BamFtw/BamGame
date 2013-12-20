@@ -82,7 +82,7 @@ final function MasterTick(float DeltaTime)
 	if( Manager == none || Manager.Controller == none || Manager.Controller.Pawn == none )
 	{
 		`trace(self @ "Manager, Controller or Pawn is none", `red);
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -90,7 +90,7 @@ final function MasterTick(float DeltaTime)
 
 	if( Duration > 0 && TimeElapsed >= Duration )
 	{
-		bIsFinished = true;
+		Finish();
 	}
 
 	Tick(DeltaTime);
@@ -148,7 +148,7 @@ function SetBlocking(optional bool newBlocking = bIsBlocking, optional bool bloc
 
 function Finish()
 {
-	bIsFinished = true;
+	Finish();
 }
 
 DefaultProperties

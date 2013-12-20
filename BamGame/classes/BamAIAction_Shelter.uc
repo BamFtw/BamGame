@@ -8,7 +8,7 @@ function OnBegin()
 {
 	if( !Manager.Controller.IsInCombat() )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -42,14 +42,14 @@ function OnEnd()
 
 function OnBlocked()
 {
-	bIsFinished = true;
+	Finish();
 }
 
 event Tick(float DeltaTime)
 {
 	if( !Manager.Controller.IsInCombat() )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 

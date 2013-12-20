@@ -36,7 +36,7 @@ function OnBegin()
 	if( Route.Length == 0 )
 	{
 		`trace("Route is empty", `red);
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -102,7 +102,7 @@ function SetNextIndex()
 	case BPT_ReachEndAndStop:
 		if( CurrentIndex == Route.Length - 1 )
 		{
-			bIsFinished = true;
+			Finish();
 		}
 		CurrentIndex++;
 	    break;

@@ -22,7 +22,7 @@ function OnBegin()
 	
 	if( AnimDuration <= 0 )
 	{
-		bIsFinished = true;
+		Finish();
 	}
 
 	Manager.Controller.Begin_Idle();
@@ -39,7 +39,7 @@ function OnEnd()
 
 function OnBlocked()
 {
-	bIsFinished = true;
+	Finish();
 }
 
 static function BAmAIAction_ZombieAttack Create(Pawn inTarget)

@@ -6,13 +6,13 @@ function OnBegin()
 {
 	if( !Manager.Controller.IsInCombat() )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
 	if( !FindGoodTarget() )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -23,7 +23,7 @@ function Tick(float DeltaTime)
 {
 	if( !Manager.Controller.IsInCombat() || (Target == none && !FindGoodTarget()) )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 

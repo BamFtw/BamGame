@@ -23,7 +23,7 @@ function OnBegin()
 
 	if( PlayerPawn == none || !PlayerPawn.IsAliveAndWell() )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 }
@@ -42,14 +42,14 @@ function Tick(float DeltaTime)
 
 	if( PlayerPawn == none || !PlayerPawn.IsAliveAndWell() )
 	{
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
 	if( VSize(PlayerPawn.Location - Manager.Controller.Pawn.Location) < DesiredDistanceToPlayer )
 	{
 		if( bFinishActionOnPlayerReached )
-			bIsFinished = true;
+			Finish();
 
 		bDelayOnMoveOut = true;
 		Manager.Controller.Begin_Idle();

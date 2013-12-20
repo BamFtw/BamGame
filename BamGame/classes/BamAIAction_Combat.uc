@@ -18,7 +18,7 @@ function Tick(float DeltaTime)
 	if( !Manager.Controller.HasEnemies() )
 	{
 		`trace("Should end", `purple);
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 

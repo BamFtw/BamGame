@@ -38,7 +38,7 @@ function OnBegin()
 			`trace("FailedPopOutReplacementAction is not set", `yellow);
 		}
 
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 
@@ -59,14 +59,14 @@ function OnBegin()
 			Manager.PushFront(new CoverData.FailedCoverSearchReplacementAction.class);
 		}
 
-		bIsFinished = true;
+		Finish();
 		return;
 	}
 	
 	Manager.Controller.ClaimCover(CoverData.Cover);
 
 	Manager.PushFront(class'BamAIAction_CoverMoveTo'.static.Create(CoverData));
-	bIsFinished = true;
+	Finish();
 }
 
 
