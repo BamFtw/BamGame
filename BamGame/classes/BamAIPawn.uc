@@ -1,5 +1,6 @@
 class BamAIPawn extends BamPawn;
 
+/** Stats that can be modified via UpdateStat and UpdateStats functions */
 enum BamPawnStat
 {
 	BPS_GroundSpeed<DisplayName=Ground Speed>,
@@ -9,24 +10,25 @@ enum BamPawnStat
 	BPS_MAX
 };
 
-/** Reference to AIController */
+/** Reference to BamAIController */
 var BamAIController BController;
 
 /** Amount of spread that will be added to weapon */
-var() float WeaponSpread;
-/** Affects reaction time and such */
-var() float Awareness;
+var(Stats) float WeaponSpread;
+/** Affects reaction time, peripheral vision and such */
+var(Stats) float Awareness;
 /** Multiplier of damage taken by pawn */
-var() float DamageTakenMultiplier;
+var(Stats) float DamageTakenMultiplier;
 
 
-
+/**  */
 event Tick(float DeltaTime)
 {
 	super.Tick(DeltaTime);
 	AdjustPeripheralVision();
 }
 
+/** Sets PeripheralVision depending on Awareness */
 function AdjustPeripheralVision()
 {
 	local float originalPeripheralVision;
@@ -34,6 +36,10 @@ function AdjustPeripheralVision()
 	PeripheralVision = FClamp(1 - ((1 - originalPeripheralVision) * Awareness), 0, 1);	
 }
 
+/**
+ * Returns default value of stat, 0 if index is incorrect
+ * @param stat stat index (BamPawnStat enum)
+ */
 function float GetDefaultStatValue(BamPawnStat stat)
 {
 	local BamAIPawn arch;
@@ -59,7 +65,11 @@ function float GetDefaultStatValue(BamPawnStat stat)
 	}
 }
 
-
+/**
+ * Updates stat
+ * @param stat stat index (BamPawnStat enum)
+ * @param value value that will be added to default stat value
+ */
 function UpdateStat(BamPawnStat stat, float value)
 {
 	switch(stat)
@@ -81,6 +91,10 @@ function UpdateStat(BamPawnStat stat, float value)
 	}
 }
 
+/**
+ * Updates stats of this pawn
+ * @param values indexes of this array should corespond to BamPawnStat enum
+ */
 function UpdateStats(array<float> values)
 {
 	local int q;
@@ -97,13 +111,14 @@ function UpdateStats(array<float> values)
 
 
 
-
+/** Sets reference to BamAIController */
 function PossessedBy(Controller C, bool bVehicleTransition)
 {
 	super.PossessedBy(C, bVehicleTransition);
 	BController = BamAIController(C);
 }
 
+/** Spawns default controller */
 event PostBeginPlay()
 {
 	super.PostBeginPlay();
@@ -114,7 +129,7 @@ event PostBeginPlay()
 	}
 }
 
-
+/** Changes damage depending on DamageTakenMultiplier, informs controller about taken damage */
 event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
 {
 	local int newDamage;
@@ -130,7 +145,7 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 }
 
 
-
+/** Returns whether pawn given as parameter is hostile */
 function bool IsPawnHostile(Pawn pwn)
 {
 	return BController.IsPawnHostile(pwn);

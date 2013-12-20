@@ -1,21 +1,47 @@
 class BamHUD extends HUD;
 
+/** Crosshair texture */
 var Texture2D Crosshair;
 
+/** Pawn that should be debugged */
 var BamAIPawn PawnToDebug;
+
+
 
 event PostRender()
 {
-	local int q, debugLine;
-
 	super.PostRender();
+	DrawCrosshair();
+
+`if(`notdefined(FINAL_RELEASE))
+	DrawPawnDebug();
+`endif
+}
+
+
+
+
+/** Draws CrosshairTexture at the center of the screen */
+function DrawCrosshair()
+{
+	Canvas.SetDrawColor(255, 255, 255, 255);
 	Canvas.SetPos(int(Canvas.SizeX * 0.5 - Crosshair.SizeX * 0.5), int(Canvas.SizeY * 0.5 - Crosshair.SizeY * 0.5), 0);
 	Canvas.DrawTexture(Crosshair, 1.0);
+}
+
+
+`if(`notdefined(FINAL_RELEASE))
+
+/** Draws information about PawnToDebug on the screen */
+function DrawPawnDebug()
+{
+	local int q, debugLine;
 
 	if( PawnToDebug != none && PawnToDebug.IsAliveAndWell() )
 	{
 		debugLine = 10;
 
+		// draw rectangles at the pawns location and its final destination
 		if( Vector(GetALocalPlayerController().Rotation) dot (PawnToDebug.Location - GetALocalPlayerController().Pawn.Location) > 0 )
 		{
 			DebugRect(Canvas.Project(PawnToDebug.Location), 80, 255, 0, 0, 127);
@@ -50,10 +76,14 @@ event PostRender()
 		DebugStr("Action stack:", debugLine);
 		for(q = 0; q < PawnToDebug.BController.ActionManager.Actions.Length; ++q)
 			DebugStr((q + 1) $ "." @ PawnToDebug.BController.ActionManager.Actions[q], debugLine, 20);
-
 	}
 }
 
+/**
+ * Draws rectangle centered at pos parameter
+ * @param pos Screen position at which rect will be centered
+ * @param size half of the width/height of the rectangle
+ */
 function DebugRect(Vector pos, int size, byte R, byte G, byte B, byte A)
 {
 	Canvas.SetDrawColor(R, G, B, A);
@@ -61,7 +91,14 @@ function DebugRect(Vector pos, int size, byte R, byte G, byte B, byte A)
 	Canvas.DrawRect(size, size);
 }
 
-function DebugStr(string str, out int lineY, optional int lineXOffset)
+/**
+ * [DebugStr description]
+ * @param str string to print out
+ * @param lineY horizontal offset from the top edge of the screen that will be incremented by lineIncrementationValue after string is drawn
+ * @param lineXOffset vertical offset from the left edge of the screen
+ * @param lineIncrementationValue (optional, 15 by default) value by which lineY will be incremented
+ */
+function DebugStr(string str, out int lineY, optional int lineXOffset, optioanl int lineIncrementationValue = 15)
 {
 	Canvas.Font = class'Engine'.static.GetSmallFont();
 
@@ -73,16 +110,17 @@ function DebugStr(string str, out int lineY, optional int lineXOffset)
 	Canvas.SetPos(10 + lineXOffset, lineY, 0);
 	Canvas.DrawText(str);
 
-	lineY += 15;
+	lineY += lineIncrementationValue;
 }
 
+/** Selects next Pawn to debug */
 function DebugNextPawn()
 {
 	local array<BamAIPawn> allPawns;
 	local BamAIPawn pwn;
 	local int idx;
 
-
+	// get all alive pawns into allPawn array
 	foreach WorldInfo.DynamicActors(class'BamAIPawn', pwn)
 	{
 		if( pwn != none && pwn.IsAliveAndWell() )
@@ -96,19 +134,24 @@ function DebugNextPawn()
 		return;
 	}
 
+	// get index of currently debugged Pawn
 	idx = allPawns.Find(PawnToDebug);
 
+	// select next pawn
 	if( PawnToDebug == none || idx == INDEX_NONE || idx == allPawns.length - 1 )
 	{
 		PawnToDebug = allPawns[0];
 		return;
 	}
+	// first if current pawn is last in the array
 	else
 	{
 		PawnToDebug = allPawns[idx + 1];
 		return;
 	}
 }
+
+`endif
 
 defaultproperties
 {

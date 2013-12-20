@@ -6,13 +6,18 @@ var UDKSkeletalMeshComponent FirstPersonMesh;
 /** Skeletal mesh component that should be attached to third person character mesh */
 var UDKSkeletalMeshComponent ThirdPersonMesh;
 
+/** Name of the socket that is used as projectile start location, and effects spawn point */
 var name MuzzleFlashSocket;
 
+/** First person muzzle particle effect */
 var ParticleSystemComponent FPMuzzleFlashPS;
+/** Third person muzzle particle effect */
 var ParticleSystemComponent TPMuzzleFlashPS;
 
+/** Sound played on FireAmmunition */
 var SoundCue FireSound;
 
+/** Attaches particle systems to correct sockets */
 simulated function PostBeginPlay()
 {
 	super.PostBeginPlay();
@@ -21,15 +26,20 @@ simulated function PostBeginPlay()
 	ThirdPersonMesh.AttachComponentToSocket(TPMuzzleFlashPS, MuzzleFlashSocket);
 }
 
+/** Activates Muzzle particles and plays fire sound */
 function ActivateMuzzleFlashEffects()
 {
-	FPMuzzleFlashPS.ActivateSystem(true);
-	TPMuzzleFlashPS.ActivateSystem(true);
+	if( FPMuzzleFlashPS != none )
+		FPMuzzleFlashPS.ActivateSystem(true);
+
+	if( TPMuzzleFlashPS != none )
+		TPMuzzleFlashPS.ActivateSystem(true);
 
 	if( Owner != none && FireSound != none )
 		Owner.PlaySound(FireSound);
 }
 
+/** Returns location of the third person meshes MuzzleFlashSocket */
 simulated event vector GetPhysicalFireStartLoc(optional vector AimDir)
 {
 	local Vector Loc;
@@ -44,13 +54,14 @@ simulated event vector GetPhysicalFireStartLoc(optional vector AimDir)
 	return super.GetPhysicalFireStartLoc(AimDir);
 }
 
+/** Fires weapon and activates muzzle effects */
 simulated function FireAmmunition()
 {
 	super.FireAmmunition();
 	ActivateMuzzleFlashEffects();
 }
 
-/** Attaches weapon meshes to Owner meshes */
+/** Attaches weapon meshes to Owners first and third person meshes */
 function AttachToOwner()
 {
 	local BamPawn BOwner;
@@ -59,14 +70,20 @@ function AttachToOwner()
 	if( BOwner == none )
 		return;
 
-	BOwner.CharacterMesh.AttachComponentToSocket(ThirdPersonMesh, BOwner.TPWeaponSocketName);
-	ThirdPersonMesh.SetShadowParent(BOwner.CharacterMesh);
-	ThirdPersonMesh.SetLightEnvironment(BOwner.CharacterMesh.LightEnvironment);
+	// third person
+	if( BOwner.CharacterMesh != none )
+	{
+		BOwner.CharacterMesh.AttachComponentToSocket(ThirdPersonMesh, BOwner.TPWeaponSocketName);
+		ThirdPersonMesh.SetShadowParent(BOwner.CharacterMesh);
+		ThirdPersonMesh.SetLightEnvironment(BOwner.CharacterMesh.LightEnvironment);
+	}
 
-	BOwner.ArmsMesh.AttachComponentToSocket(FirstPersonMesh, BOwner.FPWeaponSocketName);
-	FirstPersonMesh.SetFOV(BOwner.ArmsMesh.FOV);
-
-
+	// first person
+	if( BOwner.ArmsMesh != none )
+	{
+		BOwner.ArmsMesh.AttachComponentToSocket(FirstPersonMesh, BOwner.FPWeaponSocketName);
+		FirstPersonMesh.SetFOV(BOwner.ArmsMesh.FOV);
+	}
 }
 
 /** Detaches weapon meshes from owners meshes */
@@ -76,28 +93,23 @@ simulated function DetachWeapon()
 	BOwner = BamPawn(Owner);
 
 	if( BOwner == none )
-		return;
-
-	BOwner.CharacterMesh.DetachComponent(ThirdPersonMesh);
-	BOwner.ArmsMesh.DetachComponent(FirstPersonMesh);
-}
-
-
-function ModifyMeleeParameters(out BamMeleeAttackProperties properities);
-
-
-simulated state WeaponEquipping
-{
-	simulated event BeginState(Name PreviousStateName)
 	{
-		super.BeginState(PreviousStateName);
-		AttachToOwner();
+		return;
+	}
+
+	// third person
+	if( BOwner.CharacterMesh != none )
+	{
+		BOwner.CharacterMesh.DetachComponent(ThirdPersonMesh);
+	}
+
+	// first person
+	if( BOwner.ArmsMesh != none )
+	{
+		BOwner.ArmsMesh.DetachComponent(FirstPersonMesh);
 	}
 }
 
-simulated state WeaponPuttingDown
-{
-}
 
 /**
  * Adds any fire spread offset to the passed in rotator
@@ -131,6 +143,31 @@ simulated function rotator AddSpread(rotator BaseAim)
 	}
 }
 
+/** Modifies parameters of the melee attack */
+function ModifyMeleeParameters(out BamMeleeAttackProperties properities);
+
+
+simulated state WeaponEquipping
+{
+	simulated event BeginState(Name PreviousStateName)
+	{
+		super.BeginState(PreviousStateName);
+		AttachToOwner();
+	}
+}
+
+
+
+simulated state WeaponPuttingDown
+{
+	simulated event EndState(Name NextStateName)
+	{
+		super.EndState(NextStateName);
+		DetachWeapon();
+	}
+}
+
+
 DefaultProperties
 {
 	Begin Object Class=UDKSkeletalMeshComponent Name=FPMesh
@@ -144,13 +181,13 @@ DefaultProperties
 	Begin Object Class=UDKSkeletalMeshComponent Name=TPMesh
 		bOnlyOwnerSee=false
 		bOwnerNoSee=true
-		SkeletalMesh=SkeletalMesh'bam_wp_rifle.SkeletalMeshes.rifle'
+		SkeletalMesh=none
 	End Object
 	Components.Add(TPMesh);
 	ThirdPersonMesh=TPMesh
 
 	Begin Object class=ParticleSystemComponent name=FPMuzzleFlash
-		Template=ParticleSystem'bam_p_wp_muzzleFlash_rifle.ps.RifleMuzzleFlash'
+		Template=none
 		bAutoActivate=false
 		bIsActive=false
 		bOwnerNoSee=false
@@ -160,7 +197,7 @@ DefaultProperties
 	FPMuzzleFlashPS=FPMuzzleFlash
 
 	Begin Object class=ParticleSystemComponent name=TPMuzzleFlash
-		Template=ParticleSystem'bam_p_wp_muzzleFlash_rifle.ps.RifleMuzzleFlash'
+		Template=none
 		bAutoActivate=false
 		bIsActive=false
 		bOwnerNoSee=true
@@ -171,7 +208,7 @@ DefaultProperties
 
 	MuzzleFlashSocket=MuzzleFlashSocket
 
-	FireSound=SoundCue'bam_snd_wp_rifle.Cue.rifleFireSound'
+	FireSound=none
 
 	FiringStatesArray(0)=WeaponFiring
 	WeaponFireTypes(0)=EWFT_Projectile

@@ -64,12 +64,7 @@ var array<class<Inventory> > DefaultInventory;
 
 
 
-replication
-{
-	if( bNetDirty )
-		CharacterAimOffsetPitch;
-}
-
+/** Caches reference to BamGameInfo */
 simulated event PreBeginPlay()
 {
 	super.PreBeginPlay();
@@ -77,17 +72,23 @@ simulated event PreBeginPlay()
 	Game = BamGameInfo(class'WorldInfo'.static.GetWorldInfo().Game);
 }
 
+/** Initialization of hat and inventory */
 event PostBeginPlay()
 {
 	super.PostBeginPlay();
 
-	HatMesh.SetSkeletalMesh(HatSkelMesh);
-	CharacterMesh.AttachComponentToSocket(HatMesh, 'HatSocket');
-
+	AttachHat();
 	SpawnDefaultInventory();
-	
 }
 
+/** Sets correct mesh for hts Mesh comp and attaches it to character mesh */
+function AttachHat()
+{
+	HatMesh.SetSkeletalMesh(HatSkelMesh);
+	CharacterMesh.AttachComponentToSocket(HatMesh, 'HatSocket');
+}
+
+/** Spawns default inventory from DefaultInventory list */
 function SpawnDefaultInventory()
 {
 	local int q;
@@ -150,12 +151,13 @@ event Tick(float DeltaTime)
 				CharacterAimOffset.Aim.Y = CharacterAimOffsetPitch;
 		}
 	}
-
-
 }
 
 
-
+/**
+ * Moves Pawn to specified location without using velocity
+ * @param inLocation location to which Pawn should be moved
+ */
 function SetDesiredLocation(Vector inLocation)
 {
 	local float distance, duration;
@@ -165,6 +167,7 @@ function SetDesiredLocation(Vector inLocation)
 	if( distance == 0 )
 		return;
 
+	// failsafe duration
 	duration = distance / GroundSpeed;
 
 	SetTimer(duration * 1.1, false, NameOf(DesiredLocationFailsafe));
@@ -173,11 +176,16 @@ function SetDesiredLocation(Vector inLocation)
 	DesiredLocation = inLocation;
 }
 
+/** Cancels use of DesiredLocation */
 function CancelDesiredLocation()
 {
 	DesiredLocationReached();
 }
 
+/**
+ * Moves Pawn toward DesiredLocation with right speed
+ * @param DeltaTime 
+ */
 function HandleDesiredLocation(float DeltaTime)
 {
 	local float distance, stepSize;
@@ -200,11 +208,13 @@ function HandleDesiredLocation(float DeltaTime)
 	}
 }
 
+/** Called by timer if Pawn gets stucked */
 function DesiredLocationFailsafe()
 {
 	DesiredLocationReached();
 }
 
+/** Stops use of DesiredLocation */
 function DesiredLocationReached()
 {
 	ClearTimer(NameOf(DesiredLocationFailsafe));
@@ -214,18 +224,6 @@ function DesiredLocationReached()
 
 
 
-
-simulated event ReplicatedEvent(name VarName)
-{
-	super.ReplicatedEvent(VarName);
-
-	// update aim offset node
-	if( VarName == NameOf(CharacterAimOffsetPitch) )
-	{
-		if( CharacterAimOffset != none )
-			CharacterAimOffset.Aim.Y = CharacterAimOffsetPitch;
-	}
-}
 
 /** Kills pawn */
 simulated event TornOff()
@@ -240,6 +238,10 @@ simulated event bool Died(Controller Killer,  class<DamageType> DamageType,  vec
 	return super.Died(Killer, DamageType, HitLocation);
 }
 
+/**
+ * Called by BamAnimNotify_MeleeAttack when the damage should be dealt
+ * Finds pawns in melee range that are within melee cone of this pawn
+ */
 simulated function DealMeleeDamage()
 {
 	local int q, w, hitCount;
@@ -323,7 +325,7 @@ function bool IsPawnHostile(Pawn pwn)
 	return true;
 }
 
-/** */
+/** Turns ragdoll on */
 simulated event PlayDying(class<DamageType> DamageType,  vector HitLoc)
 {
 	super.PlayDying(DamageType, HitLoc);
@@ -353,6 +355,7 @@ simulated event PlayDying(class<DamageType> DamageType,  vector HitLoc)
 		Mesh.SetAnimTreeTemplate(none);
 	}
 }
+
 
 simulated function SetPawnRBChannels(SkeletalMeshComponent meshComp, bool bRagdollMode)
 {
@@ -449,7 +452,6 @@ defaultproperties
 		AbsoluteScale=true
 		bSyncActorLocationToRootRigidBody=false
 		CastShadow=false
-		//TickGroup=TG_DuringASyncWork
 		TickGroup=TG_PreAsyncWork
 		LightEnvironment=MyLightEnvironment
 		HiddenEditor=true

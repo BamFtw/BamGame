@@ -1,13 +1,16 @@
 class BamGameInfo extends SimpleGame;
 
-
+/** Reference to players team */
 var BamActor_TeamManager PlayerTeam;
 
+/** Reference to neutral team */
 var BamActor_TeamManager NeutralTeam;
 
+
+/** Copy of default function with one extra check */
 function Killed(Controller Killer, Controller KilledPlayer, Pawn KilledPawn, class<DamageType> damageType)
 {
-	if( KilledPlayer != None && KilledPlayer.bIsPlayer && KilledPlayer.PlayerReplicationInfo != none )
+	if( KilledPlayer != None && KilledPlayer.bIsPlayer && KilledPlayer.PlayerReplicationInfo != none /* added check */ )
 	{
 		KilledPlayer.PlayerReplicationInfo.IncrementDeaths();
 		KilledPlayer.PlayerReplicationInfo.SetNetUpdateTime(FMin(KilledPlayer.PlayerReplicationInfo.NetUpdateTime, WorldInfo.TimeSeconds + 0.3 * FRand()));
@@ -23,17 +26,19 @@ function Killed(Controller Killer, Controller KilledPlayer, Pawn KilledPawn, cla
 	NotifyKilled(Killer, KilledPlayer, KilledPawn, damageType);
 }
 
+
+/** */
 event PreBeginPlay()
 {
 	super.PreBeginPlay();
-
 	GetDefaultTeams();
 }
 
+
+/** */
 event Tick(float DeltaTime)
 {
 	super.Tick(DeltaTime);
-	// FlushPersistentDebugLines();
 }
 
 /**
@@ -80,6 +85,12 @@ function GetDefaultTeams()
 	}
 }
 
+/**
+ * Spawns team manager
+ * @param teamName name of the team used for easy identification
+ * @param teamClass class of team manager
+ * @param teamMembers controllers that belong to this team
+ */
 function BamActor_TeamManager CreateTeam(string teamName, optional class<BamActor_TeamManager> teamClass = class'BamActor_TeamManager', optional array<BamAIController> teamMembers)
 {
 	local BamActor_TeamManager team;
@@ -98,15 +109,16 @@ function BamActor_TeamManager CreateTeam(string teamName, optional class<BamActo
 	return team;
 }
 
+/** Kills Pawns by dealing damage to them */
 exec function BamKillPawns()
 {
 	local BamPawn pwn;
 
 	foreach WorldInfo.AllPawns(class'BamPawn', pwn)
 	{
-		if( !pwn.IsPlayerOwned() )
+		if( GetALocalPlayerController().Pawn != pwn )
 		{
-			pwn.TakeDamage(999999, GetALocalPlayerController(), vect(0,0,0), vect(0,0,0), class'DamageType');
+			pwn.TakeDamage(9999999, GetALocalPlayerController(), vect(0,0,0), vect(0,0,0), class'DamageType');
 		}
 	}
 }
