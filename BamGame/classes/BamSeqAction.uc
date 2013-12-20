@@ -1,0 +1,1 @@
+class BamSeqAction extends SequenceAction;

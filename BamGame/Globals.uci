@@ -1,0 +1,51 @@
+`define CLASS       "`{ClassName}"
+`define THIS        self
+`define INSTANCE    name
+`define STATE       GetStateName()
+`define FUNC        GetFuncName()
+
+
+`define BLACK           "0000"
+`define GREY            "1110"
+`define WHITE           "1111"
+
+`define DARK_RED        "1000"
+`define DARK_GREEN      "0100"
+`define DARK_BLUE       "0010"
+`define DARK_YELLOW     "1100"
+`define DARK_CYAN       "0110"
+`define DARK_PURPLE     "1010"
+`define DARK_MAGENTA    "1010"
+
+`define RED             "1001"
+`define GREEN           "0101"
+`define BLUE            "0011"
+`define YELLOW          "1101"
+`define CYAN            "0111"
+`define PURPLE          "1011"
+`define MAGENTA         "1011"
+
+
+`define PROJECT            'BamGame'
+`define PROJECT_OUTPUT    `GREY
+`define PROJECT_MARKER    `GREY
+
+
+
+
+`define TRACE(msg,colour)\
+    `if(`notdefined(FINAL_RELEASE))\
+        `log(`if(`colour) `colour `else `if(`msg) `PROJECT_OUTPUT `else `PROJECT_MARKER `endif `endif,,'color');\
+        `log(/**`CLASS*/`THIS $ "." $ (((`STATE == 'None') || IsA(`STATE))? "" : "(" $ `STATE $ ").") $ `FUNC $ `if(`msg) ": " $ `msg `else "" `endif, , `PROJECT);\
+        `log("",,'color');\
+    `endif
+
+
+
+
+`define TRACESTATIC(msg,colour)\
+    `if(`notdefined(FINAL_RELEASE))\
+        `log(`if(`colour) `colour `else `if(`msg) `PROJECT_OUTPUT `else `PROJECT_MARKER `endif `endif,,'color');\
+        `log(`CLASS $ "." $ `FUNC $ `if(`msg) ": " $ `msg `else "" `endif, , `PROJECT);\
+        `log("",,'color');\
+    `endif
