@@ -2,7 +2,7 @@ class BAmAIAction_ZombieAttack extends BamAIAction;
 
 var() Pawn Target;
 
-var() name AnimationName;
+var() array<name> AnimationNames;
 
 function Tick(float DeltaTime)
 {
@@ -12,16 +12,24 @@ function Tick(float DeltaTime)
 	rot.Roll = 0;
 	rot.Pitch = 0;
 
-	Manager.Controller.Pawn.SetDesiredRotation(rot, true);
+	Manager.Controller.Pawn.SetDesiredRotation(rot);
 }
 
 function OnBegin()
 {
 	local float AnimDuration;
-	AnimDuration = Manager.Controller.BPawn.CharacterFullBodySlot.PlayCustomAnim(AnimationName, 1.0, 0.1, 0.1, false, true);
+
+	if( AnimationNames.Length == 0 )
+	{
+		`trace("AnimationNames array is empty", `red);
+		return;
+	}
+
+	AnimDuration = Manager.Controller.BPawn.CharacterFullBodySlot.PlayCustomAnim(AnimationNames[Rand(AnimationNames.Length)], 1.0, 0.1, 0.1, false, true);
 	
 	if( AnimDuration <= 0 )
 	{
+		`trace("Animation duration is 0", `red);
 		Finish();
 	}
 
@@ -55,5 +63,5 @@ DefaultProperties
 	bIsBlocking=true
 	bBlockAllLanes=true
 
-	AnimationName=zombie_melee_attack
+	AnimationNames=(zombie_melee_attack)
 }
