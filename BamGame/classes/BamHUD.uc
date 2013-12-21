@@ -98,7 +98,7 @@ function DebugRect(Vector pos, int size, byte R, byte G, byte B, byte A)
  * @param lineXOffset vertical offset from the left edge of the screen
  * @param lineIncrementationValue (optional, 15 by default) value by which lineY will be incremented
  */
-function DebugStr(string str, out int lineY, optional int lineXOffset, optioanl int lineIncrementationValue = 15)
+function DebugStr(string str, out int lineY, optional int lineXOffset, optional int lineIncrementationValue = 15)
 {
 	Canvas.Font = class'Engine'.static.GetSmallFont();
 

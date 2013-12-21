@@ -60,7 +60,9 @@ function OnBlocked()
 function OnEnd()
 {
 	if( !IsBlocked() )
+	{
 		Manager.Controller.Begin_Idle();
+	}
 }
 
 
@@ -97,5 +99,4 @@ DefaultProperties
 	MaxFireInterval=2.0
 	MinFireDuration=0.6
 	MaxFireDuration=1.0
-
 }

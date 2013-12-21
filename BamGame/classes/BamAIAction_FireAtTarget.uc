@@ -1,4 +1,4 @@
-class BamAIAction_FireAtTarget extends BamAIAction
+class BamAIAction_FireAtTarget extends BamAIAction_Fire
 	noteditinlinenew
 	dependson(BamAIController);
 
