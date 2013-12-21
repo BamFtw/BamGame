@@ -140,5 +140,7 @@ static function BamAIAction_FireAtTarget Create(optional Actor inTarget, optiona
 
 DefaultProperties
 {
+	bIsBlocking=true
+	Lanes=(Lane_Firing)
 	MinDotToTarget=0.9
 }
