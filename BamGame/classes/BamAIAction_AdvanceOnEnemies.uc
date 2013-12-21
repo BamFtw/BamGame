@@ -1,27 +1,14 @@
 class BamAIAction_AdvanceOnEnemies extends BamAIAction
 	editinlinenew;
 
-var float FireTimer;
+var BamAIAction_FireAtTarget FiringAction;
+
 var() bool bRun;
 
-var(Firing) bool bFireDuringWalk;
-var(Firing) float MinFireInterval;
-var(Firing) float MaxFireInterval;
-var(Firing) float MinFireDuration;
-var(Firing) float MaxFireDuration;
+var() bool bFireDuringWalk;
 
-event Tick(float DeltaTime)
-{
-	super.Tick(DeltaTime);
-
-	FireTimer -= DeltaTime;
-
-	if( bFireDuringWalk && !bRun && FireTimer <= 0 )
-	{
-		ResetFireTimer();
-		Manager.InsertBefore(class'BamAIAction_FireAtTarget'.static.Create(, RandRange(MinFireDuration, MaxFireDuration)), self);
-	}
-}
+var() float MinDuration;
+var() float MaxDuration;
 
 function OnBegin()
 {
@@ -43,12 +30,22 @@ function OnBegin()
 		return;
 	}
 
-	Manager.Controller.SetFinalDestination(EnemyLocations[Rand(EnemyLocations.Length)], Manager.Controller.Pawn.GetCollisionRadius() * 5.0);
+	if( !bRun && bFireDuringWalk )
+	{
+		FiringAction = class'BamAIAction_FireAtTarget'.static.Create();
+
+		if( FiringAction != none )
+		{
+			Manager.InsertBefore(FiringAction, self);
+		}
+	}
+
+	SetDuration(RandRange(MinDuration, MaxDuration));
+
+	Manager.Controller.SetFinalDestination(EnemyLocations[Rand(EnemyLocations.Length)], Manager.Controller.Pawn.GetCollisionRadius() * 4.0);
 	Manager.Controller.Pawn.SetWalking(bRun);
 	Manager.Controller.Begin_Moving();
 	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
-
-	ResetFireTimer();
 }
 
 function OnBlocked()
@@ -59,6 +56,11 @@ function OnBlocked()
 
 function OnEnd()
 {
+	if( FiringAction != none )
+	{
+		FiringAction.Finish();
+	}
+
 	if( !IsBlocked() )
 	{
 		Manager.Controller.Begin_Idle();
@@ -68,35 +70,26 @@ function OnEnd()
 
 
 
-function ResetFireTimer()
-{
-	FireTimer = RandRange(MinFireInterval, MaxFireInterval);
-}
-
-
 function FinalDestinationReached(BamSubscriberParameters params)
 {
 	if( bIsBlocked )
 		return;
 
 	Manager.Controller.Begin_Idle();
-	bIsFinished=true;
+	SetDuration(RandRange(1.0, 2.0));
 }
 
 
 DefaultProperties
 {
 	bIsBlocking=true
-	bBlockAllLanes=false
 	Lanes=(Lane_Moving)
 
 	Duration=4.0
 
 	bRun=false
-
 	bFireDuringWalk=true
-	MinFireInterval=0.8
-	MaxFireInterval=2.0
-	MinFireDuration=0.6
-	MaxFireDuration=1.0
+
+	MinDuration=4.0
+	MaxDuration=6.0
 }

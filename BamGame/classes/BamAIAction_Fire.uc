@@ -1,5 +1,4 @@
-class BamAIAction_Fire extends BamAIAction
-	noteditinlinenew;
+class BamAIAction_Fire extends BamAIAction;
 
 var float FiringBreakTimeLeft;
 var float FiringTimeLeft;
@@ -13,22 +12,24 @@ var(Firing) float MaxFireBreak;
 var(Firing) float MinFireDuration;
 var(Firing) float MaxFireDuration;
 
+// displayall BamAIAction_Fire FiringBreakTimeLeft
+// displayall BamAIAction_Fire FiringTimeLeft
+
 function OnBegin()
 {
-	StartFiring();
-	FiringTimeLeft = RandRange(MinFireDuration, MaxFireDuration);
+	StopFiring(false);
 }
 
 function OnBlocked()
 {
-	StopFiring();
+	StopFiring(false);
 }
 
 function OnEnd()
 {
 	if( !IsBlocked() )
 	{
-		StopFiring();
+		StopFiring(false);
 	}
 }
 
@@ -39,8 +40,7 @@ function Tick(float DeltaTime)
 		FiringTimeLeft -= DeltaTime;
 		if( FiringTimeLeft <= 0 )
 		{
-			StopFiring();
-			FiringBreakTimeLeft = RandRange(MinFireBreak, MaxFireBreak);
+			StopFiring(true);
 		}
 	}
 	else
@@ -48,29 +48,54 @@ function Tick(float DeltaTime)
 		FiringBreakTimeLeft -= DeltaTime;
 		if( FiringBreakTimeLeft <= 0 )
 		{
-			StartFiring();
-			FiringTimeLeft = RandRange(MinFireDuration, MaxFireDuration);
+			StartFiring(true);
 		}
 	}
 }
 
-function StopFiring()
+function bool StartFiring(optional bool bSetTimer = false)
+{
+	if( !CanStartFiring() )
+	{
+		return false;
+	}
+
+	Manager.Controller.Pawn.StartFire(WeaponFireMode);
+	bIsFiring = true;
+
+	if( bSetTimer )
+	{
+		FiringTimeLeft = RandRange(MinFireDuration, MaxFireDuration);
+	}
+
+	return true;
+}
+
+function bool StopFiring(optional bool bSetTimer = false)
 {
 	Manager.Controller.Pawn.StopFire(WeaponFireMode);
 	bIsFiring = false;
+
+	if( bSetTimer )
+	{
+		FiringBreakTimeLeft = RandRange(MinFireBreak, MaxFireBreak);
+	}
+
+	return true;
 }
 
-function StartFiring()
+function bool CanStartFiring()
 {
-	Manager.Controller.Pawn.StartFire(WeaponFireMode);
-	bIsFiring = false;
+	return true;
 }
-
 
 DefaultProperties
 {
 	bIsBlocking=true
-	Lanes=(Lane_Firing,Lane_Moving)
+	Lanes=(Lane_Firing)
+
+	FiringBreakTimeLeft=0
+	FiringTimeLeft=0
 
 	WeaponFireMode=0
 

@@ -1,6 +1,7 @@
 class BamAIAction_CoverPopOut extends BamAIAction_Cover
 	noteditinlinenew;
 
+var BamAIAction_FireAtTarget FiringAction;
 
 function OnBegin()
 {
@@ -26,6 +27,17 @@ function OnBegin()
 	{
 		CoverData.FailedPopOut();
 	}
+
+	FiringAction = class'BamAIAction_FireAtTarget'.static.Create(, TimeLeft());
+	if( FiringAction != none )
+	{
+		FiringAction.FiringBreakTimeLeft = 0.5;
+		Manager.PushFront(FiringAction);
+	}
+	else
+	{
+		`trace("Failed to create fire action", `red);
+	}
 }
 
 function OnEnd()
@@ -34,7 +46,14 @@ function OnEnd()
 	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 
 	if( !bIsBlocked )
+	{
 		Manager.PushFront(class'BamAIAction_CoverInit'.static.Create(CoverData));
+	}
+
+	if( FiringAction != none )
+	{
+		FiringAction.Finish();
+	}
 }
 
 function OnUnBlocked()
@@ -196,8 +215,6 @@ function FinalDestinationReached(BamSubscriberParameters params)
 
 	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 	Manager.Controller.Begin_Idle();
-
-	Manager.PushFront(class'BamAIAction_FireAtTarget'.static.Create(, TimeLeft()));
 }
 
 

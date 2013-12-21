@@ -2,70 +2,71 @@ class BamAIAction_FireAtTarget extends BamAIAction_Fire
 	noteditinlinenew
 	dependson(BamAIController);
 
-var() Pawn Target;
 
-var bool bFiring;
+var(Firing) Actor Target;
 
-var() bool bBurstFire;
+var(Firing) float MinDotToTarget;
 
-var float BurstTimeLeft;
-
-var() float MinBurstDuration;
-var() float MaxBurstDuration;
+var bool bCanFire;
 
 function Tick(float DeltaTime)
 {
 	local BamHostilePawnData data;
 	local Vector toTargetDir;
+	local Pawn TargetPawn;
 
-	if( (Target == none || !Target.IsAliveAndWell()) && !FindGoodTarget() )
+	if( Target == none )
 	{
-		Finish();
-		return;
+		if( !FindGoodTarget() )
+		{
+			`trace("Target is none, couldn't find new one", `red);
+			StopFiring();
+			Finish();
+			return;
+		}
 	}
 
-	if( !Manager.Controller.GetEnemyData(Target, data) || !data.Pawn.IsAliveAndWell() )
+	TargetPawn = Pawn(Target);
+
+	// if target is a pawn check if it is alive
+	if( TargetPawn != none )
 	{
-		Finish();
-		return;
+		if( !TargetPawn.IsAliveAndWell() && !FindGoodTarget() )
+		{
+			`trace("Target Pawn is bad, couldn't find new one", `red);
+			StopFiring();
+			Finish();
+			return;
+		}
+
+		if( !Manager.Controller.GetEnemyData(TargetPawn, data) )
+		{
+			`trace("Could not get enemy (" $ TargetPawn $ ") data", `yellow);
+			data.Pawn = TargetPawn;
+			data.LastSeenLocation = TargetPawn.Location;
+		}
+	}
+	else
+	{
+		data.LastSeenLocation = Target.Location;
 	}
 
 	toTargetDir = data.LastSeenLocation - Manager.Controller.Pawn.Location;
 	toTargetDir.Z = 0;
-	toTargetDir = Normal(toTargetDir);
 
-	Manager.Controller.Pawn.SetDesiredRotation(Rotator(toTargetDir));
+	// turn pawn toward target
+	Manager.Controller.Pawn.SetDesiredRotation(Rotator(Normal(toTargetDir)));
 
-	if( !bFiring && Vector(Manager.Controller.Pawn.Rotation) dot toTargetDir > 0.9 )
-	{
-		bFiring = true;
-		Manager.Controller.Pawn.StartFire(0);
-	}
-	else if( bFiring )
-	{
-		bFiring = false;
-		Manager.Controller.Pawn.StopFire(0);
-	}
+	// check dot between pawns rotation and targets location
+	bCanFire = (Vector(Manager.Controller.Pawn.Rotation) dot toTargetDir) >= MinDotToTarget;
+
+	super.Tick(DeltaTime);
 }
 
-function OnBlocked()
+function bool CanStartFiring()
 {
-	Finish();
+	return bCanFire;
 }
-
-function OnEnd()
-{
-	Finish();
-	
-	if( Manager.Controller != none && Manager.Controller.Pawn != none && !IsBlocked() )
-	{
-		bFiring = false;
-		Manager.Controller.Pawn.StopFire(0);
-	}
-}
-
-
-
 
 function bool FindGoodTarget()
 {
@@ -124,7 +125,7 @@ function bool FindGoodTarget()
 
 
 
-static function BamAIAction_FireAtTarget Create(optional Pawn inTarget, optional float inDuration = -1)
+static function BamAIAction_FireAtTarget Create(optional Actor inTarget, optional float inDuration = -1)
 {
 	local BamAIAction_FireAtTarget action;
 
@@ -139,6 +140,5 @@ static function BamAIAction_FireAtTarget Create(optional Pawn inTarget, optional
 
 DefaultProperties
 {
-	bFiring=false
-	Duration=1.5
+	MinDotToTarget=0.9
 }
