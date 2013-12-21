@@ -2,17 +2,18 @@ class BamPawn extends GamePawn
 	placeable
 	abstract;
 
+
 struct BamMeleeAttackProperties
 {
 	/** Damage dealt by this attack */
 	var int Damage;
 	/** Range of the attack */
 	var float Range;
-	/**  */
+	/** Minimum dot product between Pawns direction and Vector between Pawn and target for target to be valid */
 	var float MinDot;
 	/** How many enemies can be hit with this attack */
 	var int MaxNumOfHits;
-
+	/** Whether damage can be dealt to friendly pawns */
 	var bool bAllowFriendlyFire;
 };
 
@@ -21,12 +22,17 @@ var BamGameInfo Game;
 
 /** AnimNode used for adjusting animation depending on direction the pawn is looking at */
 var AnimNodeAimOffset CharacterAimOffset;
+
 /** AnimNode used for playing custom animations on character mesh*/
 var AnimNodeSlot CharacterFullBodySlot;
+/** AnimNode used for playing custom animations on the top half of character mesh*/
 var AnimNodeSlot CharacterTopBodySlot;
+/** AnimNode used for playing custom animations on the bottom half of character mesh*/
 var AnimNodeSlot CharacterBottomBodySlot;
+
 /** AnimNode used for playing custom animations on arms mesh */
 var AnimNodeSlot ArmsFullBodySlot;
+
 /** AnimNode responsible for setting right cover animations */
 var BamAnimNode_Covering CharacterCoverState;
 
@@ -57,8 +63,13 @@ var bool bUseDesiredLocation;
 /** Location to which pawn should be moved to with its GroundSpeed without using Velocity */
 var Vector DesiredLocation;
 
+/** 
+ * Properties of pawns melee attack that can be adjusted or overriden
+ * by its weapon when dealing damage via DealMeleeDamage function 
+ */
 var() BamMeleeAttackProperties MeleeProperties;
 
+/** List of Inventory clases that should be added to pawns inventory after its spawned */
 var array<class<Inventory> > DefaultInventory;
 
 
@@ -98,7 +109,9 @@ function SpawnDefaultInventory()
 	{
 		inv = Spawn(class'BamWeapon_Rifle');
 		if( inv != none )
+		{
 			InvManager.AddInventory(inv, false);
+		}
 	}
 }
 
