@@ -42,7 +42,6 @@ function OnBegin()
 
 function OnEnd()
 {
-	//Manager.PushFront(new class'BamAIAction_CoverInit');
 	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 
 	if( !bIsBlocked )

@@ -1,3 +1,6 @@
+/**
+ * Object used for comunication between actions responsible for covering
+ */
 class BamCoverActionData extends Object
 	editinlinenew
 	hidecategories(Object);
@@ -6,13 +9,12 @@ class BamCoverActionData extends Object
 var BamActor_Cover Cover;
 
 
-
-/** List of covers previously ocupied */
+/** List of covers previously ocupied, used for lowering desirability of most recently occupied ones */
 var array<BamActor_Cover> PrevCovers;
 /** How many covers can be stored in PrevCovers */
 var int MaxPrevCoversCount;
 /** Desirability mod applied to last taken cover and all other covers in PrevCovers list with decreasing effect */
-var() float MostRecentCoverDesirabilityMod;
+var(Desirability) float MostRecentCoverDesirabilityMod;
 
 
 /** Min time Pawn can stay in cover */
@@ -62,7 +64,7 @@ function ClaimedCover(BamActor_Cover cov)
 	FailedPopOutCount = 0;
 }
 
-
+/** Adds current cover to PrevCovers list */
 function UnclaimedCover()
 {
 	if( Cover == none )
@@ -105,11 +107,13 @@ function SucceededPopOut()
 	FailedPopOutCount = 0;
 }
 
+/** Returns for how long Pawn should stay in cover */
 function float GetCoverIdleDuration()
 {
 	return RandRange(MinCoverIdleTime, MaxCoverIdleTime);
 }
 
+/** Returns duration of next pop out */
 function float GetCoverPopOutDuration()
 {
 	return RandRange(MinPopOutDuration, MaxPopOutDuration);

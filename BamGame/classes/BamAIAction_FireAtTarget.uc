@@ -1,12 +1,13 @@
 class BamAIAction_FireAtTarget extends BamAIAction_Fire
-	noteditinlinenew
 	dependson(BamAIController);
 
-
+/** Actor to shoot at */
 var(Firing) Actor Target;
 
+/** Minimum dot product (between Pawns direction and vector between Target and Pawn) that allows for shooting */
 var(Firing) float MinDotToTarget;
 
+/** Flag that tells whether Pawn is facing enemy and can fire */
 var bool bCanFire;
 
 function Tick(float DeltaTime)
@@ -15,6 +16,7 @@ function Tick(float DeltaTime)
 	local Vector toTargetDir;
 	local Pawn TargetPawn;
 
+	// make sure target is correct
 	if( Target == none )
 	{
 		if( !FindGoodTarget() )
@@ -39,18 +41,20 @@ function Tick(float DeltaTime)
 			return;
 		}
 
+		// if target is not in the TeamManagers enemies list set its location in data struct
 		if( !Manager.Controller.GetEnemyData(TargetPawn, data) )
 		{
 			`trace("Could not get enemy (" $ TargetPawn $ ") data", `yellow);
-			data.Pawn = TargetPawn;
 			data.LastSeenLocation = TargetPawn.Location;
 		}
 	}
 	else
 	{
+		// if target is not a Pawn set its location in data struct
 		data.LastSeenLocation = Target.Location;
 	}
 
+	// calculate vector from Pawn to target
 	toTargetDir = data.LastSeenLocation - Manager.Controller.Pawn.Location;
 	toTargetDir.Z = 0;
 
@@ -63,11 +67,13 @@ function Tick(float DeltaTime)
 	super.Tick(DeltaTime);
 }
 
+
 function bool CanStartFiring()
 {
 	return bCanFire;
 }
 
+/** Finds Pawn from enemies list of the TeamManager and sets it as Target to shoot at */
 function bool FindGoodTarget()
 {
 	local int q;
@@ -94,7 +100,7 @@ function bool FindGoodTarget()
 			lastSeenPwn = pwnData[q].Pawn;
 		}
 
-		// check if Pawn has clear line of sight to the target
+		// check if Pawn has clear line of sight to the target if not remove it from the list
 		if( !Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation) )
 		{
 			pwnData.Remove(q--, 1);
@@ -121,10 +127,6 @@ function bool FindGoodTarget()
 }
 
 
-
-
-
-
 static function BamAIAction_FireAtTarget Create(optional Actor inTarget, optional float inDuration = -1)
 {
 	local BamAIAction_FireAtTarget action;
@@ -142,5 +144,6 @@ DefaultProperties
 {
 	bIsBlocking=true
 	Lanes=(Lane_Firing)
+
 	MinDotToTarget=0.9
 }
