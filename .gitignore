@@ -1,6 +1,8 @@
 *.obj
 *.sublime-project
 *.sublime-workspace
+
+
 Core
 Engine
 GameFramework
@@ -19,3 +21,13 @@ UTEditor
 UTGame
 UTGameContent
 WinDrv
+
+
+Config/Mac
+Config/UnrealFrontend.DefaultProfiles
+Config/Mobile
+Config/IPhone
+Config/_old
+Config/UDK*.ini
+Config/*.txt
+Config/*.xml
