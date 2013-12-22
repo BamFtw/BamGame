@@ -510,10 +510,29 @@ function bool Is_Moving()
 	return IsInState('Moving');
 }
 
+/**
+ * Initializes move parameters and begins movment
+ * @param newFinalDest - location to which pawn should travel
+ * @param MaxDistanceOffset - (optional, 0 by default) distance from the FinalDestination that will allow reaching it
+ * @param bRun - (optional, false by default) whether Pawn should run or walk
+ * @param FDRSub - (optional) delegate (BamSubscriber) that will be called when FinalDestination will be reached
+ */
+function InitializeMove(Vector newFinalDest, optional float MaxDistanceOffset = 0.0, optional bool bRun = false, optional delegate<BamSubscriber> FDRSub = none)
+{
+	if( FDRSub != none )
+	{
+		Subscribe(BSE_FinalDestinationReached, FDRSub);
+	}
+
+	BPawn.SetWalking(bRun);
+	SetFinalDestination(newFinalDest, MaxDistanceOffset);
+	Begin_Moving();
+}
 
 /**
  * Sets the location of the FinalDestination
  * @param destination - point that Pawn should try reach
+ * @param MaxDistanceOffset - distance from the FinalDestination that will allow reaching it
  */
 function SetFinalDestination(Vector destination, optional float MaxDistanceOffset = 0.0)
 {
