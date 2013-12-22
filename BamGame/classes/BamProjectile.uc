@@ -91,14 +91,16 @@ DefaultProperties
 	Components.Add(ProjectileMeshComp)
 
 	Begin Object class=ParticleSystemComponent name=TrailComp
-		Template=ParticleSystem'bam_p_prijectileTrail.PS.ProjectileTrail'
+		//Template=ParticleSystem'bam_p_prijectileTrail.PS.ProjectileTrail'
+		Template=ParticleSystem'VH_Manta.Effects.PS_Manta_Projectile'
+		Scale3D=(X=0.35,Y=0.35,Z=0.35)
 	End Object
 	Components.Add(TrailComp)
 
 	DamageRadius=0.0
 	Damage=10
-	Speed=2000.0
-	MaxSpeed=2000.0
+	Speed=3000.0
+	MaxSpeed=3000.0
 
 	BulletDropRate=24.0
 
