@@ -150,10 +150,7 @@ function bool FindGoodSpot()
 
 	SelectedLocation = Results[Rand(Results.Length)];
 
-	Manager.Controller.SetFinalDestination(SelectedLocation);
-	Manager.Controller.Begin_Moving();
-	Manager.Controller.Pawn.SetWalking(false);
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.InitializeMove(SelectedLocation, 0, false, FinalDestinationReached);
 
 	return true;
 }

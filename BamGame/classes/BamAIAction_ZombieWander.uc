@@ -64,10 +64,7 @@ function bool FindWanderLocation()
 	if( GoodPositions.Length == 0 )
 		return false;
 
-	Manager.Controller.SetFinalDestination(WanderLocation);
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
-	Manager.Controller.Pawn.SetWalking(false);
-	Manager.Controller.Begin_Moving();
+	Manager.Controller.InitializeMove(WanderLocation, 0, false, FinalDestinationReached);
 
 	return true;
 }

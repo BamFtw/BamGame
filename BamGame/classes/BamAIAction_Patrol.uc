@@ -44,7 +44,6 @@ function OnBegin()
 	FixCurrentIndex();
 
 	StartPatrol();
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 }
 
 function OnEnd()
@@ -81,7 +80,6 @@ function FinalDestinationReached(BamSubscriberParameters params)
 	StartPatrol();
 
 	Manager.PushFront(class'BamAIAction_Idle'.static.Create(waitTime, GetOccupiedLanes(), true, true));
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 }
 
 
@@ -128,9 +126,7 @@ function SetNextIndex()
 
 function StartPatrol()
 {
-	Manager.Controller.Pawn.SetWalking(bRunWhilePatrolling);
-	Manager.Controller.SetFinalDestination(Route[CurrentIndex].Location, Manager.Controller.Pawn.GetCollisionRadius() * 2.0);
-	Manager.Controller.Begin_Moving();
+	Manager.Controller.InitializeMove(Route[CurrentIndex].Location, Manager.Controller.Pawn.GetCollisionRadius() * 2.0, bRunWhilePatrolling, FinalDestinationReached);
 }
 
 function FixCurrentIndex()

@@ -50,12 +50,9 @@ function OnBegin()
 	}
 
 	SetDuration(RandRange(MinDuration, MaxDuration));
-
+	 
 	// move to randomly selected enemy
-	Manager.Controller.SetFinalDestination(EnemyLocations[Rand(EnemyLocations.Length)], Manager.Controller.Pawn.GetCollisionRadius() * 4.0);
-	Manager.Controller.Pawn.SetWalking(bRun);
-	Manager.Controller.Begin_Moving();
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.InitializeMove(EnemyLocations[Rand(EnemyLocations.Length)], Manager.Controller.Pawn.GetCollisionRadius() * 4.0, bRun, FinalDestinationReached);
 }
 
 function OnBlocked()

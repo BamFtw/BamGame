@@ -68,7 +68,6 @@ function OnBlocked()
 /** When POI is reached slects next one and waits at the current location for a while */
 function FinalDestinationReached(BamSubscriberParameters params)
 {
-	`trace("Final dest reached", `purple);
 	HandlePOISelection();
 	Manager.InsertBefore(class'BamAIAction_Delay'.static.Create(RandRange(CurrentPOI.MinWaitTime, CurrentPOI.MaxWaitTime), GetOccupiedLanes()), self);
 }
