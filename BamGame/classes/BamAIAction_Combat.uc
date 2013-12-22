@@ -30,15 +30,6 @@ function Tick(float DeltaTime)
 			Manager.PushFront(class'BamAIAction_CoverInit'.static.Create());
 		}
 	}
-
-	/**if( Manager.Front() == self )
-	{
-		if( (class'WorldInfo'.static.GetWorldInfo().TimeSeconds - LastFollowPlayerTime) >= 5.0 )
-		{
-			LastFollowPlayerTime = class'WorldInfo'.static.GetWorldInfo().TimeSeconds;
-			Manager.PushFront(class'BamAIAction_FollowPlayer'.static.Create());
-		}
-	}*/
 }
 
 function OnBegin()
