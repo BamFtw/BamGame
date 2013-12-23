@@ -22,12 +22,11 @@ function float GetMembershipLevel(int value)
 		return 1;
 	}
 
-	if( value < B )
+	if( value <= B )
 	{
 		return (value - A) / (B - A);
 	}
-
-	if( value > C )
+	else
 	{
 		return (D - value) / (D - C);
 	}

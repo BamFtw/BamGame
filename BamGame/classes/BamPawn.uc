@@ -107,7 +107,7 @@ function SpawnDefaultInventory()
 
 	for(q = 0; q < DefaultInventory.Length; ++q)
 	{
-		inv = Spawn(class'BamWeapon_Rifle');
+		inv = Spawn(DefaultInventory[q]);
 		if( inv != none )
 		{
 			InvManager.AddInventory(inv, false);
@@ -328,11 +328,13 @@ simulated function DealMeleeDamage()
 
 }
 
+/** Returns whether pawn given as parameter is friendly */
 function bool IsPawnFriendly(Pawn pwn)
 {
 	return !IsPawnHostile(pwn);
 }
 
+/** Returns whether pawn given as parameter is hostile */
 function bool IsPawnHostile(Pawn pwn)
 {
 	return true;

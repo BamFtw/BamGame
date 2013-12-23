@@ -20,8 +20,7 @@ function float GetMembershipLevel(int value)
 	{
 		return (value - A) / (B - A);
 	}
-
-	if( value > B )
+	else
 	{
 		return (C - value) / (C - B);
 	}

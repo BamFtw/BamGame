@@ -85,13 +85,19 @@ var(StatMods) editfixedsize array<BamNeedPawnStatModContainer> StatMods;
 final function MasterInitialize()
 {
 	if( bRandomLimit )
+	{
 		MaxValue = RandRange(MinLimit, MaxLimit);
+	}
 	
 	if( bRandomStartValue )
+	{
 		CurrentValue = Min(RandRange(MinStartValue, MaxStartValue), MaxValue);
+	}
 
 	if( bRandomDecayRate )
+	{
 		DecayRate = RandRange(MinDecayRate, MaxDecayRate);
+	}
 
 	Initialize();
 }
@@ -116,10 +122,14 @@ function GetStatMods(out array<float> Values)
 	local int w, currentLevel;
 
 	while( Values.Length < BPS_MAX )
+	{
 		Values.AddItem(0);
+	}
 
 	if( bRequiresUpdate )
+	{
 		GetFuzzyLevel();
+	}
 
 	currentLevel = CachedLevel;
 
@@ -149,7 +159,9 @@ function BamFuzzyLevels GetFuzzyLevel()
 	local array<float> MembershipLevels;
 
 	if( !bRequiresUpdate )
+	{
 		return CachedLevel;
+	}
 
 	for(q = 0; q < MembershipFunctions.Length; ++q)
 	{
@@ -184,7 +196,9 @@ function int SelectFuzzyLevelIndex(array<float> MembershipLevels)
 	local int q, idx;
 
 	if( MembershipLevels.Length == 0 )
+	{
 		return INDEX_NONE;
+	}
 
 	idx = INDEX_NONE;
 	highest = 0;

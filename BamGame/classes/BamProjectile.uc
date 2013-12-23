@@ -1,11 +1,15 @@
 class BamProjectile extends UDKProjectile;
 
+/** Rate at which Z axis of velocity will be adjusted */
 var() float BulletDropRate;
 
+/** Sound played when projectile hits world geometry */
 var SoundCue GroundImpactSound;
 
+/** Sound played when projectile hits Pawn */
 var SoundCue CharacterImpactSound;
 
+/**  */
 event Tick(float DeltaTime)
 {
 	super.Tick(DeltaTime);
@@ -36,12 +40,16 @@ simulated function ProcessTouch(Actor Other, Vector HitLocation, Vector HitNorma
 			if( Pawn(Other) != none )
 			{
 				if( CharacterImpactSound != none )
+				{
 					PlaySound(CharacterImpactSound, , , , HitLocation);
+				}
 			}
 			else
 			{
 				if( GroundImpactSound != none )
+				{
 					PlaySound(GroundImpactSound, , , , HitLocation);
+				}
 			}
 
 			Other.TakeDamage(Damage, InstigatorController, Location, MomentumTransfer * Normal(Velocity), MyDamageType,, self);
@@ -58,10 +66,12 @@ simulated event HitWall(vector HitNormal, actor Wall, PrimitiveComponent WallCom
 	DrawDebugBox(Location, vect(2,2,2), 0, 0, 255, true);
 
 	if( GroundImpactSound != none )
+	{
 		PlaySound(GroundImpactSound);
+	}
 }
 
-
+/** Spawns sound and particle effect at hit location */
 function SpawnHitEffect(Vector Normal)
 {
 	local Vector HitLocation, HitNormal;
@@ -76,7 +86,9 @@ function SpawnHitEffect(Vector Normal)
 		PS = (Pawn(HitActor) != none ? ParticleSystem'bam_p_hitImpact_blood.PS.Blood' : ParticleSystem'bam_p_hitImpact_dirt.PS.Dirt');
 		
 		if( PS != none )
+		{
 			Class'WorldInfo'.static.GetWorldInfo().MyEmitterPool.SpawnEmitter(PS, HitLocation, Rotator(HitNormal));
+		}
 	}
 }
 
@@ -91,7 +103,6 @@ DefaultProperties
 	Components.Add(ProjectileMeshComp)
 
 	Begin Object class=ParticleSystemComponent name=TrailComp
-		//Template=ParticleSystem'bam_p_prijectileTrail.PS.ProjectileTrail'
 		Template=ParticleSystem'VH_Manta.Effects.PS_Manta_Projectile'
 		Scale3D=(X=0.35,Y=0.35,Z=0.35)
 	End Object

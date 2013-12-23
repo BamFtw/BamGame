@@ -17,7 +17,6 @@ function Tick(float DeltaTime)
 
 	if( !Manager.Controller.HasEnemies() )
 	{
-		`trace("Should end", `purple);
 		Finish();
 		return;
 	}
@@ -40,19 +39,8 @@ function OnBegin()
 
 function OnEnd()
 {
-	local int q;
-	`trace("Running on END FOR COMBAT ------------!!!!!!!!!!!!!!!!", `purple);
-	
-	for(q= 0; q< Manager.Actions.Length; ++q)
-	{
-		`log("   -" @ q @ Manager.Actions[q]);
-	}
-
-	`log("\n\n");
-
 	while( Manager.Front() != self )
 	{
-		`log("Removing action" @ Manager.Front());
 		Manager.Remove(Manager.Front());
 	}
 

@@ -112,6 +112,7 @@ var name currentState;
 /** Delegate used for subscribing to certain events specified in BamSubscribableEvents enum */
 delegate BamSubscriber(BamSubscriberParameters params);
 
+/** Cleanup */
 event Destroyed()
 {
 	`trace("Controller Destroyed", `green);
@@ -133,11 +134,9 @@ event Destroyed()
 
 event PreBeginPlay()
 {
-	local BamSubscribersList EmptySubList;
 	super.PreBeginPlay();
 
-	while( SubscribersLists.Length < BSE_MAX )
-		SubscribersLists.AddItem(EmptySubList);
+	SubscribersLists.Length = BSE_MAX;
 
 	MoveFocusActor = Spawn(class'BamActor_MoveFocus', self, , , , , true);
 }
@@ -212,16 +211,13 @@ function bool SpawnActionManager()
 function BamAIAction SpawnDefaultAIAction()
 {
 	if( DefaultAction.Archetype != none )
+	{
 		return new DefaultAction.Archetype.Class(DefaultAction.Archetype);
-
-	if( DefaultAction.Class != none )
+	}
+	else if( DefaultAction.Class != none )
+	{
 		return new DefaultAction.Class;
-
-	// if( DefaultActionArchetype != none )
-	// 	return new DefaultActionArchetype.Class(DefaultActionArchetype);
-
-	// if( DefaultActionClass != none )
-	// 	return new DefaultActionClass;
+	}
 
 	return none;
 }
@@ -298,7 +294,9 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 function bool IsPawnHostile(Pawn pwn)
 {
 	if( pwn == none || Team == none )
+	{
 		return false;
+	}
 
 	return (Team.RelationToPawn(pwn) < 0);
 }
@@ -341,6 +339,7 @@ function Vector FindNavMeshPath(Vector goal)
 		return vect(0,0,0);
 	}
 
+	// default nav mesh pathfinding
 	if( !NavigationHandle.PointReachable(goal) )
 	{
 		NavigationHandle.PathConstraintList = none;
@@ -363,7 +362,9 @@ function Vector FindNavMeshPath(Vector goal)
 	// check if there is anything in front of the pawn
 	TestMoveDistance = Pawn.GetCollisionRadius() * PathfindingFrontCollisionRadiusMultiplier;
 	if( TestMoveDistance > VSize2D(Pawn.Location - moveLoc) )
+	{
 		TestMoveDistance = VSize2D(Pawn.Location - moveLoc);
+	}
 
 	TraceEnd = moveLoc - Pawn.Location;
 	TraceEnd.Z = Pawn.Location.Z;
@@ -452,7 +453,9 @@ function bool GetEnemyData(Pawn enemyPwn, out BamHostilePawnData data)
 function ClaimCover(BamActor_Cover cov)
 {
 	if( cov == none )
+	{
 		return;
+	}
 
 	UnClaimCover();
 
@@ -466,7 +469,9 @@ function ClaimCover(BamActor_Cover cov)
 function UnClaimCover()
 {
 	if( Cover == none )
+	{
 		return;
+	}
 	
 	Cover.UnClaim();
 	Cover = none;
@@ -481,7 +486,9 @@ function UnClaimCover()
 function name ChangeStateRequest(name stateName)
 {
 	if( GetStateName() != stateName )
+	{
 		GotoState(stateName);
+	}
 
 	return stateName;
 }
@@ -550,8 +557,11 @@ function FinalDestinationReached()
 function StopMovement()
 {
 	StopLatentExecution();
+	
 	if( Pawn != none )
+	{
 		Pawn.ZeroMovementVariables();
+	}
 }
 
 
@@ -648,7 +658,9 @@ state Moving
 		global.Tick(DeltaTime);
 
 		if( Pawn == none )
+		{
 			return;
+		}
 
 		distToFD = VSize2D(FinalDestination - Pawn.Location);
 		FDRange = (Pawn.GetCollisionRadius() * FinalDestCollisionRadiusMod) + FinalDestinationDistanceOffset;
@@ -668,7 +680,9 @@ begin:
 		MoveLocation = FindNavMeshPath(FinalDestination);
 		
 		if( MoveLocation != vect(0, 0, 0) )
+		{
 			MoveTo(MoveLocation, bUseMoveFocusActor ? MoveFocusActor : none);
+		}
 	}
 
 	Sleep(0.01);
@@ -678,21 +692,19 @@ begin:
 
 defaultproperties
 {
+	bIsPlayer=true
+
+	bIsInCombat=false
+
 	PathfindingInterval=0.5
 	PathfindingFrontCollisionExtentMod=0.75
 	PathfindingFrontCollisionRadiusMultiplier=2.5
 
 	NeedManagerClass=class'BamNeedManager_Example'
-	
 	ActionManagerClass=class'BamAIActionManager'
-	// DefaultActionClass=class'BamAIAction_Idle'
-
-	bIsInCombat=false
 
 	DefaultAction=(class=class'BamAIAction_Idle',Archetype=none)
-	CombatAction=(class=class'BamAIAction_Shelter',Archetype=none)
-	// CombatAction=(class=class'BamAIAction_Combat',Archetype=none)
+	CombatAction=(class=class'BamAIAction_Idle',Archetype=none)
 
 	FinalDestCollisionRadiusMod=1.0
-	bIsPlayer=true
 }

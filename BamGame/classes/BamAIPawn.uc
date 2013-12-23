@@ -15,8 +15,10 @@ var BamAIController BController;
 
 /** Amount of spread that will be added to weapon */
 var(Stats) float WeaponSpread;
+
 /** Affects reaction time, peripheral vision and such */
 var(Stats) float Awareness;
+
 /** Multiplier of damage taken by pawn */
 var(Stats) float DamageTakenMultiplier;
 
@@ -129,7 +131,7 @@ event PostBeginPlay()
 	}
 }
 
-/** Changes damage depending on DamageTakenMultiplier, informs controller about taken damage */
+/** Changes taken damage depending on DamageTakenMultiplier, informs controller about taken damage */
 event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
 {
 	local int newDamage;

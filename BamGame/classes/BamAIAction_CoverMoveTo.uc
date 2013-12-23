@@ -1,6 +1,14 @@
 class BamAIAction_CoverMoveTo extends BamAIAction_Cover
 	noteditinlinenew;
 
+function Tick(float DeltaTime)
+{
+	if( !Manager.Controller.Is_Moving() )
+	{
+		Manager.Controller.Begin_Moving();
+	}
+}
+
 function OnBegin()
 {
 	super.OnBegin();

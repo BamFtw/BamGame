@@ -82,10 +82,6 @@ function HandlePOISelection()
 		return;
 	}
 
-	// Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
-	// Manager.Controller.Pawn.SetWalking(false);
-	// Manager.Controller.SetFinalDestination(CurrentPOI.Location);
-	// Manager.Controller.Begin_Moving();
 	Manager.Controller.InitializeMove(CurrentPOI.Location, 0, false, FinalDestinationReached);
 }
 
