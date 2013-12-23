@@ -59,6 +59,7 @@ function Initialize(BamAIController inController)
 		if( need != none )
 		{
 			need.Manager = self;
+			need.MasterInitialize();
 			Needs.AddItem(need);
 		}
 	}
@@ -73,7 +74,7 @@ function Tick(float DeltaTime)
 
 	for(q = 0; q < Needs.Length; ++q)
 	{
-		Needs[q].Tick(DeltaTime);
+		Needs[q].MasterTick(DeltaTime);
 	}
 
 	UpdatePawn(BamAIPawn(Controller.Pawn));

@@ -3,36 +3,51 @@ class BamNeed extends Object
 	dependson(BamAIPawn)
 	abstract;
 
+/** Default fuzzy levels */
 enum BamFuzzyLevels
 {
 	BFL_VeryLow<DisplayName=Very Low>,
 	BFL_Low<DisplayName=Low>,
 	BFL_Medium<DisplayName=Medium>,
 	BFL_High<DisplayName=High>,
-	BFL_VeryHigh<DisplayName=Very High>
+	BFL_VeryHigh<DisplayName=Very High>,
+	BFL_MAX
 };
+
 
 struct BamNeedPawnStatMod
 {
+	/** Type of affected stat */
 	var() BamPawnStat Stat;
+	/** value that will be added to this stat */
 	var() float Value;
 };
 
+
 struct BamNeedPawnStatModContainer
 {
+	/** Level of need */
 	var() editoronly editconst BamFuzzyLevels Level;
+	/** List of Pawn modifications for this level of need */
 	var() array<BamNeedPawnStatMod> Mods;
 };
 
 
+struct BamFuzzyMembershipFunctionContainer
+{
+	/** Level of need */
+	var() editoronly editconst BamFuzzyLevels Level;
+	/** Function used to calculate level of membership to this fuzzy level */
+	var() editinline BamFuzzyMembershipFunction Function;
+};
 
+/** Need manager this need belongs to */
 var BamNeedManager Manager;
 
-/** List of delegates that determine level of membership for each fuzzy level from BamFuzzyLevels */
-var array<delegate<BamMembershipFunctionDelegate> > MembershipFunctions;
-
-
+/** Cached value of this needs level to avoid multiple recalculations per tick */
 var BamFuzzyLevels CachedLevel;
+
+/** Whether this need requires CachedLevel to be recalculated */
 var bool bRequiresUpdate;
 
 /** Name of this need */
@@ -40,35 +55,34 @@ var() editconst const protectedwrite string NeedName;
 
 /** Maximum level of this need */
 var() private float MaxValue;
+/** If true MaxValue will be set to value between MinLimit and MaxLimit */
 var(Random) bool bRandomLimit;
 var(Random) float MinLimit;
 var(Random) float MaxLimit;
 
 /** Current level of this need */
 var() private float CurrentValue;
+/** If true CurrentValue will be set to value between MinStartValue and MaxStartValue */
 var(Random) bool bRandomStartValue;
 var(Random) float MinStartValue;
 var(Random) float MaxStartValue;
 
 /** rate at which this needs value decreases per second */
 var() private float DecayRate;
+/** If true DecayRate will be set to value between MinDecayRate and MaxDecayRate */
 var(Random) bool bRandomDecayRate;
 var(Random) float MinDecayRate;
 var(Random) float MaxDecayRate;
 
-var(Mods) editfixedsize array<BamNeedPawnStatModContainer> StatMods;
+/** List of membership functions that determine level of membership for each fuzzy level from BamFuzzyLevels enum */
+var(MembershipFunctions) editfixedsize array<BamFuzzyMembershipFunctionContainer> MembershipFunctions;
+
+/** List of Pawn stat mods for each fuzzy level from BamFuzzyLevels enum */
+var(StatMods) editfixedsize array<BamNeedPawnStatModContainer> StatMods;
 
 
-
-
-
-
-
-
-
-delegate float BamMembershipFunctionDelegate(float val);
-
-function Initialize()
+/** Sets random values if needed, calls Initialize */
+final function MasterInitialize()
 {
 	if( bRandomLimit )
 		MaxValue = RandRange(MinLimit, MaxLimit);
@@ -78,14 +92,25 @@ function Initialize()
 
 	if( bRandomDecayRate )
 		DecayRate = RandRange(MinDecayRate, MaxDecayRate);
+
+	Initialize();
 }
 
-function Tick(float dt)
+/** Initializes */
+function Initialize();
+
+/** Updates value of the need and calls Tick */
+final function MasterTick(float DeltaTime)
 {
-	CurrentValue = FMax(0, CurrentValue - DecayRate * dt);
+	CurrentValue = FMax(0, CurrentValue - DecayRate * DeltaTime);
 	bRequiresUpdate = true;
+
+	Tick(DeltaTime);
 }
 
+function Tick(float DeltaTime);
+
+/** Updates Values of stat mods based on current level of this need */
 function GetStatMods(out array<float> Values)
 {
 	local int w, currentLevel;
@@ -105,35 +130,36 @@ function GetStatMods(out array<float> Values)
 	}
 }
 
+/** Returns current value of this need */
 function float GetValue()
 {
 	return CurrentValue;
 }
 
+/** Returns percent of this needs fulfillment */
 function float GetValuePct()
 {
 	return FClamp(CurrentValue / MaxValue, 0, 1);
 }
 
+/** Returns current fuzzy level of this need, recalculates it if bRequiresUpdate flag is true */
 function BamFuzzyLevels GetFuzzyLevel()
 {
 	local int q, idx;
 	local array<float> MembershipLevels;
-	local delegate<BamMembershipFunctionDelegate> deleg;
 
 	if( !bRequiresUpdate )
 		return CachedLevel;
 
 	for(q = 0; q < MembershipFunctions.Length; ++q)
 	{
-		deleg = MembershipFunctions[q];
-		if( deleg == none )
+		if( MembershipFunctions[q].Function == none )
 		{
 			MembershipLevels.AddItem(0);
 		}
 		else
 		{
-			MembershipLevels.AddItem(deleg(GetValue()));
+			MembershipLevels.AddItem(MembershipFunctions[q].Function.GetMembershipLevel(GetValue()));	
 		}
 	}
 
@@ -151,6 +177,7 @@ function BamFuzzyLevels GetFuzzyLevel()
 	return CachedLevel;
 }
 
+/** Returns fuzzy levels based on membership levels of each fuzzy level from MembershipLevels array */
 function int SelectFuzzyLevelIndex(array<float> MembershipLevels)
 {
 	local float highest;
@@ -174,70 +201,6 @@ function int SelectFuzzyLevelIndex(array<float> MembershipLevels)
 	return idx;
 }
 
-function float MF_VeryLow(float val)
-{
-	if( val <= 0 )
-		return 1;
-
-	return TriangleFunction(val, 0, 0, 20);
-}
-
-function float MF_Low(float val)
-{
-	return TriangleFunction(val, 10, 30, 50);
-}
-
-function float MF_Medium(float val)
-{
-	return TrapezoidalFunction(val, 20, 40, 70, 90);
-}
-
-function float MF_High(float val)
-{
-	return TriangleFunction(val, 80, 90, 100);
-}
-
-function float MF_VeryHigh(float val)
-{
-	if( val >= 100.0 )
-		return 1;
-
-	return TriangleFunction(val, 90, 100, 100);
-}
-
-/** Returns level of membership of value parameter to trapezoidal function specified by a, b, c, d params */
-function float TrapezoidalFunction(float value, float a, float b, float c, float d)
-{
-	if( !(a <= b && b <= c && c <= d) )
-	{
-		`trace("Trapezoidal function provided with bad params", `red);
-		return 0;
-	}
-
-	if( value <= a || value >= d )
-		return 0;
-
-	if( value >= b && value <= c )
-		return 1;
-
-	if( value < b )
-		return (value - a) / (b - a);
-
-	if( value > c )
-		return (d - value) / (d - c);
-}
-
-/** Returns level of membership of value parameter to triangular function specified by a, b, c params */
-function float TriangleFunction(float value, float a, float b, float c)
-{
-	if( !(a <= b && b <= c) )
-	{
-		`trace("Triangle function provided with bad params", `red);
-		return 0;
-	}
-
-	return TrapezoidalFunction(value, a, b, b, c);
-}
 
 defaultproperties
 {
@@ -247,7 +210,7 @@ defaultproperties
 
 	bRequiresUpdate=true
 
-	StatMods[BFL_VeryLow]=(Level=)
+	StatMods[BFL_VeryLow]=(Level=BFL_VeryLow)
 	StatMods[BFL_Low]=(Level=BFL_Low)
 	StatMods[BFL_Medium]=(Level=BFL_Medium)
 	StatMods[BFL_High]=(Level=BFL_High)
@@ -263,9 +226,44 @@ defaultproperties
 	MinDecayRate=0.75
 	MaxDecayRate=1.25
 
-	MembershipFunctions[BFL_VeryLow]=MF_VeryLow
-	MembershipFunctions[BFL_Low]=MF_Low
-	MembershipFunctions[BFL_Medium]=MF_Medium
-	MembershipFunctions[BFL_High]=MF_High
-	MembershipFunctions[BFL_VeryHigh]=MF_VeryHigh
+	
+	Begin Object class=BamFuzzyMembershipFunction_Trapezoidal name=MemFunc_VeryLow
+		A=-100
+		B=-100
+		C=0
+		D=20
+	End Object
+	
+	Begin Object class=BamFuzzyMembershipFunction_Triangular name=MemFunc_Low
+		A=10
+		B=30
+		C=50
+	End Object
+
+	Begin Object class=BamFuzzyMembershipFunction_Trapezoidal name=MemFunc_Medium
+		A=20
+		B=40
+		C=70
+		D=90
+	End Object
+
+	Begin Object class=BamFuzzyMembershipFunction_Triangular name=MemFunc_High
+		A=80
+		B=90
+		C=100
+	End Object
+
+	Begin Object class=BamFuzzyMembershipFunction_Trapezoidal name=MemFunc_VeryHigh
+		A=90
+		B=100
+		C=1000
+		D=1000
+	End Object
+
+
+	MembershipFunctions[BFL_VeryLow]=(Level=BFL_VeryLow,Function=MemFunc_VeryLow)
+	MembershipFunctions[BFL_Low]=(Level=BFL_Low,Function=MemFunc_Low)
+	MembershipFunctions[BFL_Medium]=(Level=BFL_Medium,Function=MemFunc_Medium)
+	MembershipFunctions[BFL_High]=(Level=BFL_High,Function=MemFunc_High)
+	MembershipFunctions[BFL_VeryHigh]=(Level=BFL_VeryHigh,Function=MemFunc_VeryHigh)
 }
