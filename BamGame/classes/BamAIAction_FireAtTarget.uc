@@ -10,6 +10,7 @@ var(Firing) float MinDotToTarget;
 /** Flag that tells whether Pawn is facing enemy and can fire */
 var bool bCanFire;
 
+
 function Tick(float DeltaTime)
 {
 	local BamHostilePawnData data;
@@ -21,9 +22,9 @@ function Tick(float DeltaTime)
 	{
 		if( !FindGoodTarget() )
 		{
-			`trace("Target is none, couldn't find new one", `red);
+			// `trace("Target is none, couldn't find new one", `red);
 			StopFiring();
-			Finish();
+			SetTickBreak(0.1);
 			return;
 		}
 	}
@@ -35,9 +36,9 @@ function Tick(float DeltaTime)
 	{
 		if( !TargetPawn.IsAliveAndWell() && !FindGoodTarget() )
 		{
-			`trace("Target Pawn is bad, couldn't find new one", `red);
+			// `trace("Target Pawn is bad, couldn't find new one", `red);
 			StopFiring();
-			Finish();
+			SetTickBreak(0.1);
 			return;
 		}
 
@@ -77,8 +78,6 @@ function bool CanStartFiring()
 function bool FindGoodTarget()
 {
 	local int q;
-	local Pawn lastSeenPwn;
-	local float lastSeenPwnTime;
 	local array<BamHostilePawnData> pwnData;
 
 	if( !Manager.Controller.HasEnemies() )
@@ -87,21 +86,12 @@ function bool FindGoodTarget()
 		return false;
 	}
 
-	lastSeenPwnTime = -999999.0;
-
 	pwnData = Manager.Controller.Team.EnemyData;
 
 	for(q = 0; q < pwnData.Length; ++q)
 	{
-		// find the last seen pawn
-		if( pwnData[q].LastSeenTime > lastSeenPwnTime )
-		{
-			lastSeenPwnTime = pwnData[q].LastSeenTime;	
-			lastSeenPwn = pwnData[q].Pawn;
-		}
-
 		// check if Pawn has clear line of sight to the target if not remove it from the list
-		if( !Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation) )
+		if( !Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation, , , true) )
 		{
 			pwnData.Remove(q--, 1);
 		}
@@ -114,20 +104,12 @@ function bool FindGoodTarget()
 		return true;
 	}
 
-	// if there are no viable targets select last seen one
-	if( lastSeenPwn != none )
-	{
-		`trace("Choosing last seen target", `yellow);
-		Target = lastSeenPwn;
-		return true;
-	}
-
-	`trace(Manager.Controller @ "fail", `red);
+	// `trace(Manager.Controller @ "fail", `yellow);
 	return false;
 }
 
 
-static function BamAIAction_FireAtTarget Create(optional Actor inTarget, optional float inDuration = -1)
+static function BamAIAction_FireAtTarget Create_FireAtTarget(optional Actor inTarget, optional float inDuration = -1)
 {
 	local BamAIAction_FireAtTarget action;
 
