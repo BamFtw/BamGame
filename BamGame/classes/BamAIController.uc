@@ -204,7 +204,7 @@ function bool SpawnActionManager()
 		return false;
 	}
 
-	ActionManager.Controller = self;
+	ActionManager.MasterInitialize(self);
 	return true;
 }
 
