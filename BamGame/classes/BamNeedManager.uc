@@ -111,3 +111,21 @@ function UpdatePawn(BamAIPawn pwn)
 
 	pwn.UpdateStats(Values);
 }
+
+/**
+ * Replenishes all of the needs of class passed as parameter by given amount
+ * @param needClass - class of need that should be replenished
+ * @param Amount - amount by which need should be replenished
+ */
+function ReplenishNeed(class<BamNeed> needClass, float Amount)
+{
+	local int q;
+	
+	for(q = 0; q < Needs.Length; ++q)
+	{
+		if( Needs[q].Class == needClass )
+		{
+			Needs[q].Replenish(Amount);
+		}
+	}
+}
