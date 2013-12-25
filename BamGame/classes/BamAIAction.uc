@@ -113,10 +113,19 @@ function ResetTimeElepsed()
 	TimeElapsed = 0;
 }
 
-/** Sets duration of this action */
-function SetDuration(float inDuration)
+/**
+ * Sets actions duration
+ * @param newDuration - how long should action last
+ * @param bResetTimeElepsed - (optional, true by default) whether to reset TimeElapsed variable
+ */
+function SetDuration(float newDuration, optional bool bResetTimeElepsed = true)
 {
-	Duration = inDuration;
+	if( bResetTimeElepsed )
+	{
+		ResetTimeElepsed();
+	}
+
+	Duration = newDuration;
 }
 
 /** Returns maximum duration of this action */
