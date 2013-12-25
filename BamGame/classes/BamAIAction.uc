@@ -3,8 +3,6 @@ class BamAIAction extends Object
 	abstract
 	hidecategories(Object);
 
-
-
 enum BamAIActionLane
 {
 	Lane_Moving,
@@ -12,7 +10,6 @@ enum BamAIActionLane
 	Lane_Covering,
 	Lane_Needs
 };
-
 
 /** Reference to ActionManager this action belongs to */
 var BamAIActionManager Manager;
@@ -38,8 +35,8 @@ var() private float Duration;
 /** Whether action is being blocked by other action */
 var bool bIsBlocked;
 
-
-
+/** If greater than 0 Tick function will not be called from MasterTick, MasterTick decreases its value */
+var float TickBreakTime;
 
 /** Returns lanes this action is running on */
 function array<BamAIactionLane> GetOccupiedLanes()
@@ -93,17 +90,27 @@ final function MasterTick(float DeltaTime)
 		Finish();
 	}
 
+	if( TickBreakTime > 0 )
+	{
+		TickBreakTime -= DeltaTime;
+		return;
+	}
+
 	Tick(DeltaTime);
 }
 
-/** Called each Controller Tick if this action is not blocked */
+/** Called each Controller Tick if this action is not blocked and TickBreakTime is not greater than 0 */
 function Tick(float DeltaTime);
+
 /** Called right after this action gets inserted into the Managers action list */
 function OnBegin();
+
 /** Called right before this action gets removed from the Managers action list */
 function OnEnd();
+
 /** Called the first time (until unblocking) this action is not Ticked becouse of being lane blocked */
 function OnBlocked();
+
 /** Called before ticking it if it was blocked during previous tick */
 function OnUnblocked();
 
@@ -134,7 +141,7 @@ function float GetDuration()
 	return Duration;
 }
 
-/** Returns how much time this action will run for */
+/** Returns for how long this action will run */
 function float TimeLeft()
 {
 	if( Duration <= 0 )
@@ -143,21 +150,42 @@ function float TimeLeft()
 	return (Duration - TimeElapsed);
 }
 
-/** Sets the lanes this action is runing on */
+/** 
+ * Sets the lanes this action is runing on
+ * @param inLanes - lanes this action occupies
+ */
 function SetLanes(array<BamAIActionLane> inLanes)
 {
 	Lanes = inLanes;
 }
 
+/** 
+ * Sets blocking flags
+ * @param newBlocking - (optional, current value by default) whether action is blocking or not
+ * @param blockAll - (optional, current value by default) whether action should block all available lanes
+ */
 function SetBlocking(optional bool newBlocking = bIsBlocking, optional bool blockAll = bBlockAllLanes)
 {
 	bIsBlocking = newBlocking;
 	bBlockAllLanes = blockAll;
 }
 
+/** Changes bIsFinished flag so function can be removed from ActionManager */
 function Finish()
 {
 	bIsFinished = true;
+}
+
+/** Blocks Tick function for specified amount of time */
+function SetTickBreak(float newDuration)
+{
+	TickBreakTime = FMax(0, newDuration);
+}
+
+/** Cancels Tick function break */
+function CancelTickBreak()
+{
+	SetTickBreak(0);
 }
 
 DefaultProperties
