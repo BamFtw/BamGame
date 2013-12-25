@@ -17,6 +17,9 @@ struct BamBlockedActionClassData
 };
 
 
+/** */
+var WorldInfo WorldInfo;
+
 /** Controller that is using this manager */
 var BamAIController Controller;
 
@@ -26,6 +29,21 @@ var array<BamAIAction> Actions;
 /** List of classes that are not allowed to be pushed on the Actions list */
 var array<BamBlockedActionClassData> LockedActionClasses;
 
+final function MasterInitialize(BamAIController C)
+{
+	if( C == none )
+	{
+		`trace("Initialized with invalid controller", `red);
+		return;
+	}
+
+	Controller = C;
+	WorldInfo = C.WorldInfo;
+
+	Initialize();
+}
+
+function Initialize();
 
 
 /** Manages Actions and LockedActionClasses lists */
