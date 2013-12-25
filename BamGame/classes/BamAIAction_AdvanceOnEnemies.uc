@@ -41,7 +41,7 @@ function OnBegin()
 	// if pawn shouldnt run and should fire create firing action
 	if( !bRun && bFireDuringWalk )
 	{
-		FiringAction = class'BamAIAction_FireAtTarget'.static.Create();
+		FiringAction = class'BamAIAction_FireAtTarget'.static.Create_FireAtTarget();
 
 		if( FiringAction != none )
 		{

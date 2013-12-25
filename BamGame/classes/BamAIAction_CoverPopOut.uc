@@ -28,7 +28,7 @@ function OnBegin()
 		CoverData.FailedPopOut();
 	}
 
-	FiringAction = class'BamAIAction_FireAtTarget'.static.Create(, TimeLeft());
+	FiringAction = class'BamAIAction_FireAtTarget'.static.Create_FireAtTarget(, TimeLeft());
 	if( FiringAction != none )
 	{
 		FiringAction.FiringBreakTimeLeft = 0.5;
