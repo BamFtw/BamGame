@@ -54,21 +54,21 @@ var bool bRequiresUpdate;
 var() editconst const protectedwrite string NeedName;
 
 /** Maximum level of this need */
-var() private float MaxValue;
+var() float MaxValue;
 /** If true MaxValue will be set to value between MinLimit and MaxLimit */
 var(Random) bool bRandomLimit;
 var(Random) float MinLimit;
 var(Random) float MaxLimit;
 
 /** Current level of this need */
-var() private float CurrentValue;
+var() float CurrentValue;
 /** If true CurrentValue will be set to value between MinStartValue and MaxStartValue */
 var(Random) bool bRandomStartValue;
 var(Random) float MinStartValue;
 var(Random) float MaxStartValue;
 
 /** rate at which this needs value decreases per second */
-var() private float DecayRate;
+var() float DecayRate;
 /** If true DecayRate will be set to value between MinDecayRate and MaxDecayRate */
 var(Random) bool bRandomDecayRate;
 var(Random) float MinDecayRate;
@@ -213,6 +213,13 @@ function int SelectFuzzyLevelIndex(array<float> MembershipLevels)
 	}
 
 	return idx;
+}
+
+/** Increases CurrentValue by Amount passed as parameter */
+function Replenish(float Amount)
+{
+	CurrentValue = Max(MaxValue, CurrentValue + Amount);
+	bRequiresUpdate = true;
 }
 
 
