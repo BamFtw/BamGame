@@ -21,6 +21,8 @@ function OnBegin()
 	Manager.Controller.BPawn.SetDesiredLocation(CoverData.Cover.Location);
 
 	Manager.Controller.BPawn.CharacterCoverState.SetState(SelectCoverState());
+
+	Manager.Controller.Subscribe(BSE_TakeDamage, TakeDamage);
 }
 
 function OnEnd()
@@ -29,7 +31,9 @@ function OnEnd()
 	Manager.Controller.BPawn.CharacterCoverState.SetState(0);
 	
 	if( !bIsBlocked )
+	{
 		Manager.PushFront(class'BamAIAction_CoverPopOut'.static.Create(CoverData));
+	}
 }
 
 function OnBlocked()
@@ -60,6 +64,14 @@ function BamAnimNodeCoveringState SelectCoverState()
 
 	return BamAnimNodeCoveringState(Rand(CoverState_MAX));
 }
+
+
+
+function TakeDamage(BamSubscriberParameters params)
+{
+	Finish();	
+}
+
 
 
 static function BamAIAction_CoverIdle Create(BamCoverActionData CovData, optional float minTime = -1, optional float maxTime = -1)
