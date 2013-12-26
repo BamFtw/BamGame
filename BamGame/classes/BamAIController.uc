@@ -298,7 +298,7 @@ function bool IsPawnHostile(Pawn pwn)
 		return false;
 	}
 
-	return (Team.RelationToPawn(pwn) < 0);
+	return Team.IsPawnHostile(pwn);
 }
 
 /** Adds enemy information to EnemyData list or updates it, calls DetectEnemy subscribers */
@@ -707,4 +707,6 @@ defaultproperties
 	CombatAction=(class=class'BamAIAction_Idle',Archetype=none)
 
 	FinalDestCollisionRadiusMod=1.0
+
+	NavMeshPath_SearchExtent_Modifier=(X=10.0,Y=10.0,Z=0.0)
 }
