@@ -1,4 +1,4 @@
-class BamAIAction_Wander extends BamAIAction;
+class BamAIAction_VisitPOIs extends BamAIAction;
 	//implements(BamInterface_FinalDestinationReached);
 
 /** If set POIClass is ignored, list of the only actors that will be considered for wander location */
@@ -69,7 +69,7 @@ function OnBlocked()
 function FinalDestinationReached(BamSubscriberParameters params)
 {
 	HandlePOISelection();
-	Manager.InsertBefore(class'BamAIAction_Delay'.static.Create(RandRange(CurrentPOI.MinWaitTime, CurrentPOI.MaxWaitTime), GetOccupiedLanes()), self);
+	Manager.InsertBefore(class'BamAIAction_Idle'.static.Create_Idle(CurrentPOI.GetWaitTime(), GetOccupiedLanes()), self);
 }
 
 /** Selects new POI to visit and initializes movement */
@@ -88,12 +88,9 @@ function HandlePOISelection()
 /** Finds all POI Actors of POIClass and adds them to CachedPOIList */
 function CachePOIList()
 {
-	local WorldInfo wi;
 	local BamActor_POI act;
-
-	wi = class'WorldInfo'.static.GetWorldInfo();
 	
-	foreach wi.AllActors(class'BamActor_POI', act)
+	foreach Manager.WorldInfo.AllActors(class'BamActor_POI', act)
 	{
 		if( act != none && ClassIsChildOf(act.Class, POIClass) )
 		{
@@ -143,6 +140,20 @@ function bool SelectNextPOI()
 	}
 
 	return false;
+}
+
+
+
+
+
+
+static function BamAIAction_VisitPOIs Create_VisitPOIs(optional class<BamActor_POI> inPOIClass, optional array<BamActor_POI> inSpecificPOIs)
+{
+	local BamAIAction_VisitPOIs action;
+	action = new class'BamAIAction_VisitPOIs';
+	action.POIClass = inPOIClass;
+	action.SpecificPointsOfInterest = inSpecificPOIs;
+	return action;
 }
 
 DefaultProperties
