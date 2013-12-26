@@ -54,12 +54,22 @@ function bool HasEnemies()
 /** Returns whether pawn given as parameter is hostile to this team */
 function bool IsPawnHostile(Pawn pwn)
 {
-	if( BamAIPawn(pwn) == none || BamAIPAwn(pwn).BController.Team == none )
+	local BamActor_TeamManager team;
+
+	if( BamPlayerPawn(pwn) != none )
+	{
+		team = Game.PlayerTeam;
+	}
+	else if( BamAIPawn(pwn) == none || BamAIPAwn(pwn).BController.Team == none )
 	{
 		return false;
 	}
+	else
+	{
+		team = BamAIPAwn(pwn).BController.Team;
+	}
 
-	return (Enemies.Find(BamAIPAwn(pwn).BController.Team) != INDEX_NONE);
+	return (team != none && Enemies.Find(team) != INDEX_NONE);
 }
 
 /** Returns list of vestors representing last known locations of all of the enemies */
