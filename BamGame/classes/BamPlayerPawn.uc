@@ -16,4 +16,6 @@ defaultproperties
 	HealthMax=10000
 
 	HatSkelMesh=SkeletalMesh'bam_ch_hats.SkeletalMeshes.Hat'
+
+	Detectability=0.75
 }

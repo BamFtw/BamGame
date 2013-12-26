@@ -52,6 +52,11 @@ var Repnotify float CharacterAimOffsetPitch;
 /** Arms will be offset forward by this value so they would not disappear at certain camera angles */
 var() float ArmsForwardOffset;
 
+
+/** Time this pawn was seen by the enemies is multiplied by this value which might lead to slower or faster detection */
+var float Detectability;
+
+
 /** Name of the socket on arms mesh where the weapon should be attached */
 var name FPWeaponSocketName;
 /** Name of the socket on character mesh where the weapon should be attached */
@@ -543,6 +548,8 @@ defaultproperties
 	TPWeaponSocketName=WeaponPoint
 
 	TickGroup=TG_PreAsyncWork
+
+	Detectability=1.0
 
 	MeleeProperties=(Damage=30,Range=100,bAllowFriendlyFire=false,MinDot=0.5,MaxNumOfHits=1)
 }
