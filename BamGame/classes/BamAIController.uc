@@ -45,10 +45,12 @@ var array<BamSubscribersList> SubscribersLists;
 /**  */
 var array<BamHostilePawnDetectionData> EnemyDetectionData;
 
-
+/** Reference to game object */
+var BamGameInfo Game;
 
 /** Reference to controlled pawn */
 var BamAIPawn BPawn;
+
 /** reference to TeamManager this controller belongs to */
 var BamActor_TeamManager Team;
 
@@ -58,26 +60,25 @@ var BamActor_TeamManager Team;
 
 /** While in 'Moving' state, how often should pathfinding algorithm be ran */
 var() float PathfindingInterval;
+
 /** Modifier of Pawns collision extent used while testing whether anyting is blocking its way */
 var() float PathfindingFrontCollisionExtentMod;
+
 /** Modifier of Pawns collision radius used while testing whether anyting is blocking its way */
 var() float PathfindingFrontCollisionRadiusMultiplier;
 
 /** Location on the Pawns path that Pawn is currently heading toward */
 var Vector MoveLocation;
+
 /** Location to which Pawn should head while in 'Moving' state */
 var protectedwrite Vector FinalDestination;
+
 /** Radius from FinalDestination location that allows for reaching it */
 var protectedwrite float FinalDestinationDistanceOffset;
-/** Last reached destination stored so FinalDestinationReached wouldn't be called multiple times for one location */
-// var Vector LastReachedFinalDestination;
-/**  */
+
+/** Pawns collision radius will be multipleied by this value while checking whether pawn reached its goal */
 var() float FinalDestCollisionRadiusMod;
 
-/** Class of the default action that will be set on ActionManager creation (not needed if archetype is set) */
-var() class<BamAIAction> DefaultActionClass;
-/** Archetype of the default action that will be set on ActionManager creation (if set, DefaultActionClass is not needed) */
-var() BamAIAction DefaultActionArchetype;
 
 /** Flag that is used for switching between default and combat actions */
 var bool bIsInCombat;
@@ -106,11 +107,15 @@ var bool bUseMoveFocusActor;
 /** Currently claimed cover */
 var BamActor_Cover Cover;
 
-// debug
-var name currentState;
 
-/** Delegate used for subscribing to certain events specified in BamSubscribableEvents enum */
+
+
+/** 
+ * Delegate used for subscribing to certain events specified in BamSubscribableEvents enum
+ * @param params - events parameters
+ */
 delegate BamSubscriber(BamSubscriberParameters params);
+
 
 /** Cleanup */
 event Destroyed()
@@ -132,6 +137,7 @@ event Destroyed()
 	super.Destroyed();
 }
 
+/** Spawns MoveFocusActor and sets the length of SubscribersList */
 event PreBeginPlay()
 {
 	super.PreBeginPlay();
@@ -141,18 +147,26 @@ event PreBeginPlay()
 	MoveFocusActor = Spawn(class'BamActor_MoveFocus', self, , , , , true);
 }
 
-
-
+/** Caches reference to BamGame object */
 event PostBeginPlay()
 {
 	super.PostBeginPlay();
+
+	Game = BamGameInfo(WorldInfo.Game);
 }
 
+/** Spawns managers, sets reference to possessed BamAIPawn, joins team if needed */
 event Possess(Pawn inPawn, bool bVehicleTransition)
 {
 	super.Possess(inPawn, bVehicleTransition);
 
 	BPawn = BamAIPawn(inPawn);
+
+	// if team is none join neutral
+	if( Team == none )
+	{
+		SetTeamManager(Game.NeutralTeam);
+	}
 
 	if( SpawnActionManager() )
 	{
@@ -208,6 +222,7 @@ function bool SpawnActionManager()
 	return true;
 }
 
+/** Spawns default noncombat action */
 function BamAIAction SpawnDefaultAIAction()
 {
 	if( DefaultAction.Archetype != none )
@@ -226,16 +241,17 @@ event Tick(float DeltaTime)
 {
 	super.Tick(DeltaTime);
 
+	// sets the bIsInCombat flag and spawns combat action
 	if( !bIsInCombat && IsInCombat() )
 	{
 		bIsInCombat = true;
 		if( CombatAction.Archetype != none )
 		{
-			ActionManager.PushFront(new CombatAction.Archetype.Class(CombatAction.Archetype));//class'BamAIAction_Combat'.static.Create());
+			ActionManager.PushFront(new CombatAction.Archetype.Class(CombatAction.Archetype));
 		}
 		else if( CombatAction.Class != none )
 		{
-			ActionManager.PushFront(new CombatAction.Class);//class'BamAIAction_Combat'.static.Create());
+			ActionManager.PushFront(new CombatAction.Class);
 		}
 		else
 		{
@@ -247,7 +263,11 @@ event Tick(float DeltaTime)
 		bIsInCombat = false;
 	}
 
-	NeedManager.Tick(DeltaTime);
+	// tick need mamanger
+	if( NeedManager != none )
+	{
+		NeedManager.MasterTick(DeltaTime);
+	}
 
 	// tick action manager
 	if( ActionManager != none )
@@ -257,18 +277,21 @@ event Tick(float DeltaTime)
 }
 
 
+/** Calls delegates subscribed to this event */
 event HearNoise(float Loudness, Actor NoiseMaker, optional Name NoiseType)
 {
 	super.HearNoise(Loudness, NoiseMaker, NoiseType);
 	CallSubscribers(BSE_HearNoise, class'BamSubscriberParameters_HearNoise'.static.Create(self, BPawn, Loudness, NoiseMaker, NoiseType));
 }
 
+/** Forwards Seen pawn to SeePawn function */
 event SeeMonster(Pawn Seen)
 {
 	super.SeePlayer(Seen);
 	SeePawn(Seen);
 }
 
+/** Forwards Seen pawn to SeePawn function */
 event SeePlayer(Pawn Seen)
 {
 	super.SeePlayer(Seen);
@@ -411,10 +434,13 @@ function Vector FindNavMeshPath(Vector goal)
 	return moveLoc;
 }
 
-
+/** 
+ * Sets reference to team manager adn joins it, quits previous team if needed
+ * @return whether controller successfuly joined team
+ */
 function bool SetTeamManager(BamActor_TeamManager teamMgr)
 {
-	if( teamMgr == none )
+	if( teamMgr == none && Team == teamMgr )
 	{
 		return false;
 	}
@@ -430,26 +456,39 @@ function bool SetTeamManager(BamActor_TeamManager teamMgr)
 	return true;
 }
 
+/** Returns whether controller knows about any enemies */
 function bool HasEnemies()
 {
 	return Team.HasEnemies();
 }
 
+/** Returns whether controller is in combat */
 event bool IsInCombat(optional bool bForceCheck)
 {
 	return Team.IsInCombat();
 }
 
+/** Returns list of last known locations of all enemies */
 function array<Vector> GetEnemyLocations()
 {
 	return Team.GetEnemyLocations();
 }
 
+/** 
+ * Gets data data of the pawn given as param
+ * @param enemyPwn - pawn whose data will be returned
+ * @param data - pawns info will be set in this struct
+ * @return whether pawns data was found
+ */
 function bool GetEnemyData(Pawn enemyPwn, out BamHostilePawnData data)
 {
 	return Team.GetEnemyData(enemyPwn, data);
 }
 
+/** 
+ * Sets reference to currently occupied cover, unclaims previously claimed one
+ * @param cov - cover to claim
+ */
 function ClaimCover(BamActor_Cover cov)
 {
 	if( cov == none )
@@ -465,7 +504,7 @@ function ClaimCover(BamActor_Cover cov)
 	}
 }
 
-
+/** Unclaims current cover and removes reference to it */
 function UnClaimCover()
 {
 	if( Cover == none )
@@ -480,7 +519,6 @@ function UnClaimCover()
 
 /**
  * Changes state to the on given as parameter
- *
  * @return name of the state that was just entered
  */
 function name ChangeStateRequest(name stateName)
@@ -493,13 +531,19 @@ function name ChangeStateRequest(name stateName)
 	return stateName;
 }
 
-/** state transition to 'Idle' */
+/** 
+ * State transition to 'Idle'
+ * @return name of the state that was just entered
+ */
 function name Begin_Idle()
 {
 	return ChangeStateRequest('Idle');
 }
 
-/** state transition to 'Moving' */
+/** 
+ * State transition to 'Moving' 
+ * @return name of the state that was just entered
+ */
 function name Begin_Moving()
 {
 	return ChangeStateRequest('Moving');
@@ -708,5 +752,5 @@ defaultproperties
 
 	FinalDestCollisionRadiusMod=1.0
 
-	NavMeshPath_SearchExtent_Modifier=(X=10.0,Y=10.0,Z=0.0)
+	NavMeshPath_SearchExtent_Modifier=(X=5.0,Y=5.0,Z=0.0)
 }

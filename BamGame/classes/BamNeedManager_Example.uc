@@ -16,8 +16,6 @@ function Initialize(BamAIController inController)
 
 function Tick(float DeltaTime)
 {
-	super.Tick(DeltaTime);
-
 	UpdateLevels();
 	SelectAction();
 }

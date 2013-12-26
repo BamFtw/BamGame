@@ -9,12 +9,12 @@ enum BamAnimNodeCoveringState
 	CoverState_CrouchingRight
 };
 
+/** */
 var BamAnimNodeCoveringState CurrentState;
 
+/** */
 var() float BlendDuration;
 
-//native function SetBlendTarget( float BlendTarget, float BlendTime );
-//native function SetActiveChild( INT ChildIndex, FLOAT BlendTime );
 
 function SetState(BamAnimNodeCoveringState newState, optional float blendTime = BlendDuration)
 {

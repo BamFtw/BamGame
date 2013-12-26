@@ -1,3 +1,0 @@
-interface BamInterface_FinalDestinationReached;
-
-function FinalDestinationReached(BamAIController ctrl);

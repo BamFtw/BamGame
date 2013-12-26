@@ -1,6 +1,7 @@
 class BamFuzzyMembershipFunction_Parabolic extends BamFuzzyMembershipFunction;
 
 var(BamFuzzyMembershipFunction) float A;
+
 var(BamFuzzyMembershipFunction) float B;
 
 function float GetMembershipLevel(int value)

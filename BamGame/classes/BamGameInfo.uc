@@ -27,23 +27,14 @@ function Killed(Controller Killer, Controller KilledPlayer, Pawn KilledPawn, cla
 }
 
 
-/** */
+/** Caches references to player and neutral teams */
 event PreBeginPlay()
 {
 	super.PreBeginPlay();
 	GetDefaultTeams();
 }
 
-
-/** */
-event Tick(float DeltaTime)
-{
-	super.Tick(DeltaTime);
-}
-
-/**
- * Finds player and neutral team managers on the map, if not found creates them
- */
+/** Finds player and neutral team managers on the map, if not found creates them */
 function GetDefaultTeams()
 {
 	local BamActor_TeamManager tm;
@@ -97,14 +88,18 @@ function BamActor_TeamManager CreateTeam(string teamName, optional class<BamActo
 	local int q;
 
 	if( teamClass == none )
+	{
 		return none;
+	}
 
 	team = Spawn(teamClass);
 
 	team.TeamName = (Len(teamName) == 0 ? string(team.Name) : teamName);
 
 	for(q = 0; q < teamMembers.Length; ++q)
+	{
 		team.Join(teamMembers[q]);
+	}
 
 	return team;
 }

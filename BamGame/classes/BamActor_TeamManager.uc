@@ -138,13 +138,21 @@ event PostBeginPlay()
 function bool Join(BamAIController ctrl)
 {
 	if( ctrl == none )
+	{
 		return false;
+	}
 	
 	if( Members.Find(ctrl) != INDEX_NONE )
+	{
 		return true;
+	}
 	
-	Members.AddItem(ctrl);
+	if( ctrl.Team != none )
+	{
+		ctrl.Team.Quit(ctrl);
+	}
 
+	Members.AddItem(ctrl);
 	ctrl.Team = self;
 
 	return true;
@@ -155,7 +163,9 @@ function bool Quit(BamAIController ctrl)
 	local int idx;
 
 	if( ctrl == none || Members.Length == 0 )
+	{
 		return false;
+	}
 
 	idx = Members.Find(ctrl);
 

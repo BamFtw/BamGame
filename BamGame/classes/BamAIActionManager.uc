@@ -17,7 +17,7 @@ struct BamBlockedActionClassData
 };
 
 
-/** */
+/** reference to WorilInfo */
 var WorldInfo WorldInfo;
 
 /** Controller that is using this manager */
@@ -29,6 +29,7 @@ var array<BamAIAction> Actions;
 /** List of classes that are not allowed to be pushed on the Actions list */
 var array<BamBlockedActionClassData> LockedActionClasses;
 
+/** Sets reference to Controller and WorldInfo, calls Initialize */
 final function MasterInitialize(BamAIController C)
 {
 	if( C == none )
@@ -43,6 +44,7 @@ final function MasterInitialize(BamAIController C)
 	Initialize();
 }
 
+/** Used for initializing custom ActionManagers */
 function Initialize();
 
 
@@ -130,6 +132,7 @@ function Tick(float DeltaTime)
 	}
 }
 
+/** Removes references to Controller and actions */
 function Destroyed()
 {
 	Controller = none;
@@ -177,7 +180,10 @@ function bool LaneOverlap(array<BamAIActionLane> a1, array<BamAIActionLane> a2)
 	return false;
 }
 
-/** Removes all actions from the list */
+/** 
+ * Removes all actions from the list
+ * @param bEndAction - (optional, false by default) whether removed action should have their OnEnd functions called before they are removed
+ */
 function Clear(optional bool bEndActions = false)
 {
 	if( bEndActions )
@@ -192,7 +198,11 @@ function Clear(optional bool bEndActions = false)
 	Actions.Length = 0;
 }
 
-/** Removes action given as parameter from the list. Returns removed action if it was in the list, none otherwise. */
+/** 
+ * Removes action from the list
+ * @param action - action to remove
+ * @return action removed from the list or none if action was not on the list
+ */
 function BamAIAction Remove(BamAIAction action)
 {
 	if( action != none && Actions.Find(action) != INDEX_NONE )
@@ -205,7 +215,10 @@ function BamAIAction Remove(BamAIAction action)
 	return none;
 }
 
-/** Adds action given as parameter to the front of the list */
+/** 
+ * Adds action to the front of the list
+ * @param action - action to insert
+ */
 function PushFront(BamAIAction action)
 {
 	if( action == none || IsClassBlocked(action.Class) )
@@ -223,7 +236,10 @@ function PushFront(BamAIAction action)
 	InitAction(action);
 }
 
-/** Adds action given as parameter to the back of the list */
+/** 
+ * Adds action to the back of the list
+ * @param action - action to insert
+ */
 function PushBack(BamAIAction action)
 {
 	if( action == none || IsClassBlocked(action.Class) )
@@ -233,7 +249,11 @@ function PushBack(BamAIAction action)
 	InitAction(action);
 }
 
-/** Adds action given as parameter(1) to the listso it is after action giver as parameter(2). Returns whether it succeded. */
+/** 
+ * Inserts action after another action
+ * @param action - action to insert
+ * @param marker - action will be inserted after this one
+ */
 function bool InsertAfter(BamAIAction action, BamAIAction marker)
 {
 	if( InsertNearMarker(action, marker, 1) )
@@ -245,7 +265,11 @@ function bool InsertAfter(BamAIAction action, BamAIAction marker)
 	return false;
 }
 
-/** Adds action given as parameter(1) to the listso it is before action giver as parameter(2). Returns whether it succeded. */
+/** 
+ * Inserts action before another action
+ * @param action - action to insert
+ * @param marker - action will be inserted before this one
+ */
 function bool InsertBefore(BamAIAction action, BamAIAction marker)
 {
 	if( InsertNearMarker(action, marker) )
@@ -257,20 +281,30 @@ function bool InsertBefore(BamAIAction action, BamAIAction marker)
 	return false;
 }
 
-/** Sets action manager reference and initializes it */
+/** 
+ * Sets Actions action manager reference and initializes it 
+ * @param action - action to initialize
+ */
 private function InitAction(BamAIAction action)
 {
 	action.Manager = self;
 	action.OnBegin();
 }
 
-/** Insetrts action given as 1st param near action given as 2nd parameter with offset(param 3). Offset 0 = insert before marker. */
+/** 
+ * 	Inserts action near merker action with specified ofset
+ *  @param action - action to insert
+ *  @param marker - action will be inserted near this one
+ *  @param offset - offset from the markers position
+ */
 private function bool InsertNearMarker(BamAIAction action, BamAIAction marker, optional int offset = 0)
 {
 	local int index;
 
 	if( action == none || marker == none || IsClassBlocked(action.Class) )
+	{
 		return false;
+	}
 
 	index = Actions.Find(marker);
 
@@ -295,7 +329,9 @@ function BlockActionClass(class<BamAIAction> actClass, float blockDuration, opti
 	local BamBlockedActionClassData data;
 
 	if( actClass == none || blockDuration <= 0 )
+	{
 		return;
+	}
 
 	for(q = 0; q < LockedActionClasses.Length; ++q)
 	{
@@ -321,7 +357,9 @@ function UnblockActionClass(class<BamAIAction> actClass)
 	local int q;
 
 	if( actClass == none )
+	{
 		return;
+	}
 
 	for(q = 0; q < LockedActionClasses.Length; ++q)
 	{
@@ -335,9 +373,7 @@ function UnblockActionClass(class<BamAIAction> actClass)
 
 
 
-/**
- * Returns whether class given as parameter is not currently allowed to be added to Action list
- */
+/** Returns whether class given as parameter is not currently allowed to be added to Action list */
 function bool IsClassBlocked(class<BamAIAction> actClass)
 {
 	local int q;

@@ -70,8 +70,8 @@ function Initialize(BamAIController inController)
 	}
 }
 
-/** Ticks all of the needs and updates pawns stats */
-function Tick(float DeltaTime)
+/** Ticks all of the needs, updates pawns stats and calls Tick */
+final function MasterTick(float DeltaTime)
 {
 	local int q;
 
@@ -86,7 +86,11 @@ function Tick(float DeltaTime)
 	}
 
 	UpdatePawn(BamAIPawn(Controller.Pawn));
+
+	Tick(DeltaTime);
 }
+
+function Tick(float DeltaTime);
 
 /** 
  * Collects all stat mods from all of the needs and applies them to the Pawn passed as parameter
