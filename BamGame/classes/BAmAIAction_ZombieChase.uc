@@ -10,7 +10,7 @@ function OnBegin()
 		return;
 	}
 
-	if( !FindGoodTarget() )
+	if( Target == none && !FindGoodTarget() )
 	{
 		Finish();
 		return;
@@ -51,7 +51,7 @@ function FinalDestinationReached(BamSubscriberParameters params)
 	if( bIsBlocked )
 		return;
 
-	Manager.Controller.ActionManager.PushFront(class'BAmAIAction_ZombieAttack'.static.Create(Target));
+	Manager.Controller.ActionManager.PushFront(class'BAmAIAction_ZombieAttack'.static.Create_ZombieAttack(Target));
 }
 
 function bool FindGoodTarget()
@@ -76,6 +76,18 @@ function bool FindGoodTarget()
 	Target = closestPawn;
 
 	return Target != none;
+}
+
+
+
+
+
+static function BAmAIAction_ZombieChase Create_ZombieChase(optional Pawn inTarget = none)
+{
+	local BAmAIAction_ZombieChase action;
+	action = new class'BAmAIAction_ZombieChase';
+	action.Target = inTarget;
+	return action;
 }
 
 DefaultProperties

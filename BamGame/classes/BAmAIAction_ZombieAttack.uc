@@ -2,6 +2,7 @@ class BAmAIAction_ZombieAttack extends BamAIAction;
 
 var() Pawn Target;
 
+/** Names of animation */
 var() array<name> AnimationNames;
 
 function Tick(float DeltaTime)
@@ -50,10 +51,14 @@ function OnBlocked()
 	Finish();
 }
 
-static function BAmAIAction_ZombieAttack Create(Pawn inTarget)
+
+
+
+
+static function BAmAIAction_ZombieAttack Create_ZombieAttack(Pawn inTarget)
 {
 	local BAmAIAction_ZombieAttack action;
-	action = new default.class;
+	action = new class'BAmAIAction_ZombieAttack';
 	action.Target = inTarget;
 	return action;
 }
