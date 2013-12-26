@@ -1,12 +1,21 @@
 class BamNeedManager_Example extends BamNeedManager;
 
+/** how often action selection can happen */
 var float ActionSelectionInterval;
+
+/** Time last action selection happened */
 var float LastActionSelectionTime;
 
+/** Level of thirst */
 var BamFuzzyLevels Thirst;
+
+/** Level of hunger */
 var BamFuzzyLevels Hunger;
+
+/** Level of tiredness */
 var BamFuzzyLevels Tiredness;
 
+/** Sets last action selection time */
 function Initialize(BamAIController inController)
 {
 	super.Initialize(inController);
@@ -14,12 +23,14 @@ function Initialize(BamAIController inController)
 	LastActionSelectionTime = class'WorldInfo'.static.GetWorldInfo().TimeSeconds - RandRange(0, ActionSelectionInterval);
 }
 
+/** Updates levels and selects action */
 function Tick(float DeltaTime)
 {
 	UpdateLevels();
 	SelectAction();
 }
 
+/** Updates levels of needs */
 function UpdateLevels()
 {
 	Tiredness = Needs[0].GetFuzzyLevel();
@@ -27,6 +38,7 @@ function UpdateLevels()
 	Hunger = Needs[2].GetFuzzyLevel();
 }
 
+/** Every ActionSelectionInterval seconds tries to select action to replenish needs based on their levels */
 function SelectAction()
 {
 	local int averageLevel;
@@ -52,7 +64,7 @@ function SelectAction()
 
 	LastActionSelectionTime = now;
 
-	averageLevel = CalcAverageNeedsLevel();//(Tiredness + Thirst + Hunger) / 3;
+	averageLevel = CalcAverageNeedsLevel();
 	
 	// if average level is high there is no need to replenish needs
 	// if level is lower RNG decides whether needs should be replenished
@@ -81,12 +93,11 @@ function SelectAction()
 		`trace("go to fridge", `green);
 		return;
 	}
-
 	
-	`trace("no need replenishment rule was met for", `yellow);
-	`trace("     Tiredness:" @ Tiredness);
-	`trace("     Thirst   :" @ Thirst);
-	`trace("     Hunger   :" @ Hunger);
+	// `trace("no need replenishment rule was met for", `yellow);
+	// `trace("     Tiredness:" @ Tiredness);
+	// `trace("     Thirst   :" @ Thirst);
+	// `trace("     Hunger   :" @ Hunger);
 }
 
 /** Returns average level of all needs of this manager */
@@ -107,9 +118,19 @@ function int CalcAverageNeedsLevel()
 	return (sum / Needs.Length);
 }
 
+/** 
+ * Adds replenish needs action that will look for replenish actors of specified class
+ * @param actorClass - class of the actors that Pawn should got to
+ */
 function PushAction(class<BamActor_Replenish> actorClass)
 {
 	local BamAIAction action;
+
+	if( actorClass == none )
+	{
+		`trace("Action class is none", `red);
+		return;
+	}
 
 	action = class'BamAIAction_ReplenishNeeds'.static.Create_ReplenishNeeds(actorClass);
 
