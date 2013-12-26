@@ -1,6 +1,6 @@
 class BamAIController extends AIController;
 
-
+/** Events that can be subscribed to with Subscribe function */
 enum BamSubscribableEvents
 {
 	BSE_None,
@@ -12,21 +12,31 @@ enum BamSubscribableEvents
 
 struct BamHostilePawnDetectionData
 {
+	/** Enemy Pawn */
 	var Pawn Pawn;
-	var float DetectionChance;
-	var float LastRaiseTime;
+
+	/** How long this pawn is in view */
+	var float SeenFor;
 };
 
 struct BamHostilePawnData
 {
+	/** Enemy Pawn */
 	var Pawn Pawn;
+
+	/** Location where Pawn was last spotted */
 	var Vector LastSeenLocation;
+
+	/** Time at which Pawn was last spotted */
 	var float LastSeenTime;
 };
 
 struct BamAIActionContainer
 {
+	/** Actions class */
 	var() class<BamAIAction> Class;
+
+	/** Actions archetype */
 	var() editinline BamAIAction Archetype;
 };
 
@@ -41,9 +51,12 @@ struct BamSubscribersList
 /** List of all event subscribers, indexes of this array are the same as enums in BamSubscribableEvents */
 var array<BamSubscribersList> SubscribersLists;
 
-
 /**  */
 var array<BamHostilePawnDetectionData> EnemyDetectionData;
+
+/** for how long pawn must stay in this controllers view to be detected */
+var float EnemyDetectionDelay;
+
 
 /** Reference to game object */
 var BamGameInfo Game;
@@ -241,6 +254,8 @@ event Tick(float DeltaTime)
 {
 	super.Tick(DeltaTime);
 
+	UpdateDetectionData(DeltaTime);
+	
 	// sets the bIsInCombat flag and spawns combat action
 	if( !bIsInCombat && IsInCombat() )
 	{
@@ -276,6 +291,56 @@ event Tick(float DeltaTime)
 	}
 }
 
+/** Updates times the pawns were seen and handles detecting them */
+function UpdateDetectionData(float DeltaTime)
+{
+	local int q;
+	local float seenFor;
+	local BamHostilePawnData pawnData;
+
+	for(q = 0; q < EnemyDetectionData.Length; ++q)
+	{
+		// if pawn is bad or already detected remove it from the list
+		if( EnemyDetectionData[q].Pawn == none || !EnemyDetectionData[q].Pawn.IsAliveAndWell() || Team.GetEnemyData(EnemyDetectionData[q].Pawn, pawnData) )
+		{
+			EnemyDetectionData.Remove(q--, 1);
+			continue;
+		}
+
+		// check if controller can see enemy pawn
+		if( CanSee(EnemyDetectionData[q].Pawn) )
+		{
+			EnemyDetectionData[q].SeenFor += DeltaTime;
+
+			seenFor = EnemyDetectionData[q].SeenFor;
+
+			// if Pawn is BamPawn adjust seen duration by its detectability
+			if( BamPawn(EnemyDetectionData[q].Pawn) != none )
+			{
+				seenFor *= BamPawn(EnemyDetectionData[q].Pawn).Detectability;
+			}
+
+			// test if pawn was seen long enough to be detected
+			if( seenFor >= EnemyDetectionDelay )
+			{
+				EnemySpotted(EnemyDetectionData[q].Pawn);
+				EnemyDetectionData.Remove(q--, 1);
+			}
+		}
+		else
+		{
+			// if pawn is not visible tick down seen time
+			EnemyDetectionData[q].SeenFor -= DeltaTime;
+
+			// remove if seen time reaches 0
+			if( EnemyDetectionData[q].SeenFor <= 0 )
+			{
+				EnemyDetectionData.Remove(q--, 1);
+			}
+		}
+		
+	}
+}
 
 /** Calls delegates subscribed to this event */
 event HearNoise(float Loudness, Actor NoiseMaker, optional Name NoiseType)
@@ -301,9 +366,46 @@ event SeePlayer(Pawn Seen)
 /** Called by SeeMonster and SeePlayer, checks if Seen is hostile and adds it to enemies list if needed */
 function SeePawn(Pawn Seen)
 {
-	if( IsPawnHostile(Seen) )
+	local int q;
+	local BamHostilePawnData pawnData;
+	local BamHostilePawnDetectionData detectionData;
+
+	if( Seen == none || !IsPawnHostile(Seen) )
+	{
+		`trace(GetFuncName() @ Seen @ "is not hostile toward" @ Team.TeamName, `cyan);
+		return;
+	}
+
+	// if pawn is already detected update its last seen location and time
+	if( Team.GetEnemyData(Seen, pawnData) )
 	{
 		EnemySpotted(Seen);
+		return;
+	}
+
+	// check if pawn already is in EnemyDetectionData list
+	for(q = 0; q < EnemyDetectionData.Length; ++q)
+	{
+		if( EnemyDetectionData[q].Pawn == Seen )
+		{
+			`trace(GetFuncName() @ Seen @ "already in detection list" @ Team.TeamName, `purple);
+			return;
+		}
+	}
+
+	// if there should be no delay detect immediately
+	if( EnemyDetectionDelay <= 0 )
+	{
+		`trace(GetFuncName() @ Seen @ "instant detect" @ Team.TeamName, `yellow);
+		EnemySpotted(Seen);
+	}
+	else
+	{
+		detectionData.Pawn = Seen;
+		detectionData.SeenFor = 0;
+
+		EnemyDetectionData.AddItem(detectionData);
+		`trace(GetFuncName() @ Seen @ "adding to detect list" @ Team.TeamName, `green);
 	}
 }
 
@@ -753,4 +855,6 @@ defaultproperties
 	FinalDestCollisionRadiusMod=1.0
 
 	NavMeshPath_SearchExtent_Modifier=(X=5.0,Y=5.0,Z=0.0)
+
+	EnemyDetectionDelay=1.0
 }
