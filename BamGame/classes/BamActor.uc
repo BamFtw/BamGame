@@ -2,8 +2,10 @@ class BamActor extends Actor
 	abstract
 	placeable;
 
+/** Reference to game info */
 var BamGameInfo Game;
 
+/** Caches reference to game info object */
 event PreBeginPlay()
 {
 	super.PreBeginPlay();

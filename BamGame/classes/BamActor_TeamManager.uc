@@ -3,26 +3,24 @@ class BamActor_TeamManager extends BamActor
 	dependson(BamAIController)
 	hidecategories(Object, Debug, Collision, Mobile, Advanced, Attachment, Physics);
 
-/** */
+/** Name of the team */
 var() string TeamName;
 
-/** */
+/** Whether this is the team player belongs to */
 var() bool bIsPlayerTeam<EditCondition=!bIsNeutralTeam>;
 
-/** */
+/** Whether this is the neutral team */
 var() bool bIsNeutralTeam<EditCondition=!bIsPlayerTeam>;
 
-/** List of all the teams that are friendly */
-var() array<BamActor_TeamManager> Friends;
 /** List of all the teams that are hostile */
 var() array<BamActor_TeamManager> Enemies;
-/** */
+
+/** List of controllers that belong to this team */
 var array<BamAIController> Members;
 
-/**  */
+/** List of the enemies that this team knows about */
 var array<BamHostilePawnData> EnemyData;
 
-var float MaxEnemyOutOfSightDuration;
 
 function Tick(float DeltaTime)
 {
@@ -36,26 +34,35 @@ function Tick(float DeltaTime)
 			EnemyData.Remove(q--, 1);
 			continue;
 		}
-
-		// DrawDebugBox(EnemyData[q].Pawn.Location, vect(6, 6, 40), 255, 255, 255, false);
-		// DrawDebugBox(EnemyData[q].LastSeenLocation, vect(6, 6, 40), 255, 0, 0, false);
-		// DrawDebugLine(EnemyData[q].Pawn.Location, EnemyData[q].LastSeenLocation, 255, 255, 255, false); 
 	}
 
 
 }
 
+/** Returns whether team is currently in combat */
 function bool IsInCombat()
 {
 	return HasEnemies();
 }
 
+/** Returns whether team knows about any enemy */
 function bool HasEnemies()
 {
 	return EnemyData.Length > 0;
 }
 
+/** Returns whether pawn given as parameter is hostile to this team */
+function bool IsPawnHostile(Pawn pwn)
+{
+	if( BamAIPawn(pwn) == none || BamAIPAwn(pwn).BController.Team == none )
+	{
+		return false;
+	}
 
+	return (Enemies.Find(BamAIPAwn(pwn).BController.Team) != INDEX_NONE);
+}
+
+/** Returns list of vestors representing last known locations of all of the enemies */
 function array<Vector> GetEnemyLocations()
 {
 	local array<Vector> locations;
@@ -63,17 +70,13 @@ function array<Vector> GetEnemyLocations()
 	
 	for(q = 0; q < EnemyData.Length; ++q)
 	{
-
-		/**if( `TimeSince(EnemyData[q].LastSeenTime) < MaxEnemyOutOfSightDuration )
-		{
-		}*/
-
 		locations.AddItem(EnemyData[q].LastSeenLocation);
 	}
 
 	return locations;
 }
 
+/**  */
 function bool GetEnemyData(Pawn enemyPwn, out BamHostilePawnData data)
 {
 	local int q;
@@ -116,7 +119,7 @@ function bool EnemySpotted(Pawn pwn)
 	data.LastSeenLocation = pwn.Location;
 	data.LastSeenTime = WorldInfo.TimeSeconds;
 
-	`trace(self @"Someone spotted"@pwn, `cyan);
+	`trace(self @"Someone spotted" @ pwn, `cyan);
 	EnemyData.AddItem(data);
 
 	return true;
@@ -171,75 +174,6 @@ function bool Quit(BamAIController ctrl)
 	return false;
 }
 
-/** 
- * Returns relation of the pawn given as parameter to this team
- *
- * @return (0) - neutral, (-1) - hostile, (1) - friendly
- */
-function int RelationToPawn(Pawn pwn)
-{
-	local BamAIPawn aiPwn;
-	local BamActor_TeamManager team;
-
-	if( pwn == none || !pwn.IsAliveAndWell() )
-		return 0;
-
-	aiPwn = BamAIPawn(pwn);
-	if( aiPwn != none )
-	{
-		team = aiPwn.BController.Team;
-	}
-	else if( pwn.IsPlayerPawn() )
-	{
-		team = Game.PlayerTeam;
-	}
-
-	return RelationToTeam(team);
-}
-
-/** 
- * Returns relation of the controller given as parameter to this team
- *
- * @return (0) - neutral, (-1) - hostile, (1) - friendly
- */
-function int RelationToController(Controller C)
-{
-	local BamActor_TeamManager team;
-
-	if( PlayerController(C) != none )
-	{
-		team = Game.PlayerTeam;
-	}
-	else if( BamAIController(C) != none )
-	{
-		team = BamAIController(C).Team;
-	}
-
-	return RelationToTeam(team);
-}
-
-/** 
- * Returns relation of the team given as parameter to this team
- *
- * @return (0) - neutral, (-1) - hostile, (1) - friendly
- */
-function int RelationToTeam(BamActor_TeamManager team)
-{
-	if( team != none && team != Game.NeutralTeam )
-	{
-		if( Friends.Find(team) != INDEX_NONE )
-		{
-			return 1;
-		}
-		else if( Enemies.Find(team) != INDEX_NONE )
-		{
-			return -1;
-		}
-	}
-
-	return 0;
-}
-
 
 DefaultProperties
 {
@@ -258,6 +192,4 @@ DefaultProperties
 
 	TeamName=""
 	bIsPlayerTeam=false
-
-	MaxEnemyOutOfSightDuration=7.0
 }

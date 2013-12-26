@@ -75,7 +75,7 @@ var array<class<Inventory> > DefaultInventory;
 
 
 
-/** Caches reference to BamGameInfo */
+/** Caches reference to BamGameInfo object */
 simulated event PreBeginPlay()
 {
 	super.PreBeginPlay();

@@ -29,7 +29,7 @@ event Tick(float DeltaTime)
 	super.Tick(DeltaTime);
 	AdjustPeripheralVision();
 
-	// to prevent bouncing on world geometry on collision
+	// to prevent bouncing on collision with world geometry
 	Velocity.Z = 0;
 }
 
