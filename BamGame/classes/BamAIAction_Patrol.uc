@@ -79,7 +79,7 @@ function FinalDestinationReached(BamSubscriberParameters params)
 
 	StartPatrol();
 
-	Manager.PushFront(class'BamAIAction_Idle'.static.Create(waitTime, GetOccupiedLanes(), true, true));
+	Manager.PushFront(class'BamAIAction_Idle'.static.Create_Idle(waitTime, GetOccupiedLanes(), true, true));
 }
 
 
@@ -135,15 +135,20 @@ function FixCurrentIndex()
 		CurrentIndex = 0;
 }
 
-static function BamAIAction_Patrol Create(array<BamActor_PatrolPoint> inRoute, optional BamPatrolType inType, optional int inStartIndex = 0, optional bool _bRunWhilePatrolling = false)
+
+
+
+
+
+static function BamAIAction_Patrol Create_Patrol(array<BamActor_PatrolPoint> inRoute, optional BamPatrolType inType, optional int inStartIndex = 0, optional bool inRunWhilePatrolling = false)
 {
 	local BamAIAction_Patrol act;
-	act = new default.class;
+	act = new class'BamAIAction_Patrol';
 
 	act.Route = inRoute;
 	act.StartIndex = inStartIndex;
 	act.Type = inType;
-	act.bRunWhilePatrolling = _bRunWhilePatrolling;
+	act.bRunWhilePatrolling = inRunWhilePatrolling;
 
 	return act;
 }

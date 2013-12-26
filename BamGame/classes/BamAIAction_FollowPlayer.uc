@@ -19,7 +19,7 @@ var() float MaxDelayedMoveOutDelay;
 
 function OnBegin()
 {
-	PlayerPawn = BamPawn(class'WorldInfo'.static.GetWorldInfo().GetALocalPlayerController().Pawn);
+	PlayerPawn = BamPawn(Manager.WorldInfo.GetALocalPlayerController().Pawn);
 
 	if( PlayerPawn == none || !PlayerPawn.IsAliveAndWell() )
 	{
@@ -49,7 +49,9 @@ function Tick(float DeltaTime)
 	if( VSize(PlayerPawn.Location - Manager.Controller.Pawn.Location) < DesiredDistanceToPlayer )
 	{
 		if( bFinishActionOnPlayerReached )
+		{
 			Finish();
+		}
 
 		bDelayOnMoveOut = true;
 		Manager.Controller.Begin_Idle();
@@ -59,7 +61,7 @@ function Tick(float DeltaTime)
 	if( bDelayOnMoveOut )
 	{
 		bDelayOnMoveOut = false;
-		Manager.InsertBefore(class'BamAIAction_Delay'.static.Create(RandRange(MinDelayedMoveOutDelay, MaxDelayedMoveOutDelay), GetOccupiedLanes()), self);
+		Manager.InsertBefore(class'BamAIAction_Idle'.static.Create_Idle(RandRange(MinDelayedMoveOutDelay, MaxDelayedMoveOutDelay), GetOccupiedLanes()), self);
 		return;
 	}
 
@@ -69,10 +71,10 @@ function Tick(float DeltaTime)
 }
 
 
-static function BamAIAction_FollowPlayer Create()
+static function BamAIAction_FollowPlayer Create_FollowPlayer()
 {
 	local BamAIAction_FollowPlayer action;
-	action = new default.class;
+	action = new class'BamAIAction_FollowPlayer';
 	return action;
 }
 

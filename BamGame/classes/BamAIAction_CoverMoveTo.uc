@@ -46,21 +46,20 @@ function FinalDestinationReached(BamSubscriberParameters params)
 	if( bIsBlocked )
 		return;
 
-	Manager.PushFront(class'BamAIAction_CoverIdle'.static.Create(CoverData));
+	Manager.PushFront(class'BamAIAction_CoverIdle'.static.Create_CoverIdle(CoverData));
 	Finish();
 }
 
 
 
 
-static function BamAIAction_CoverMoveTo Create(BamCoverActionData CovData)
+
+
+static function BamAIAction_CoverMoveTo Create_CoverMoveTo(BamCoverActionData CovData)
 {
 	local BamAIAction_CoverMoveTo act;
-	act = new default.class;
-
-	// act.Cover = cov;
+	act = new class'BamAIAction_CoverMoveTo';
 	act.CoverData = CovData;
-
 	return act;
 }
 

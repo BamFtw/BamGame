@@ -2,10 +2,10 @@ class BamAIAction_CombatBlocker extends BamAIAction
 	hidecategories(BamAIAction)
 	editinlinenew;
 
-static function BamAIAction_CombatBlocker Create()
+static function BamAIAction_CombatBlocker Create_CombatBlocker()
 {
 	local BamAIAction_CombatBlocker action;
-	action = new default.class;
+	action = new class'BamAIAction_CombatBlocker';
 	return action;
 }
 

@@ -32,7 +32,7 @@ function OnEnd()
 	
 	if( !bIsBlocked )
 	{
-		Manager.PushFront(class'BamAIAction_CoverPopOut'.static.Create(CoverData));
+		Manager.PushFront(class'BamAIAction_CoverPopOut'.static.Create_CoverPopOut(CoverData));
 	}
 }
 
@@ -50,14 +50,18 @@ function BamAnimNodeCoveringState SelectCoverState()
 	if( BamActor_Cover_Standing(CoverData.Cover) != none )
 	{
 		if( CoverData.Cover.CanPopLeft() && CoverData.Cover.CanPopRight() )
+		{
 			return (RandRange(0, 1) < 0.5 ? CoverState_StandingLeft : CoverState_StandingLeft);
+		}
 
 		return (CoverData.Cover.CanPopLeft() ? CoverState_StandingLeft : CoverState_StandingLeft);
 	}
 	else
 	{
 		if( CoverData.Cover.CanPopLeft() && CoverData.Cover.CanPopRight() )
+		{
 			return (RandRange(0, 1) < 0.5 ? CoverState_CrouchingLeft : CoverState_CrouchingLeft);
+		}
 
 		return (CoverData.Cover.CanPopLeft() ? CoverState_CrouchingLeft : CoverState_CrouchingLeft);
 	}
@@ -74,10 +78,11 @@ function TakeDamage(BamSubscriberParameters params)
 
 
 
-static function BamAIAction_CoverIdle Create(BamCoverActionData CovData, optional float minTime = -1, optional float maxTime = -1)
+
+static function BamAIAction_CoverIdle Create_CoverIdle(BamCoverActionData CovData, optional float minTime = -1, optional float maxTime = -1)
 {
 	local BamAIAction_CoverIdle act;
-	act = new default.class;
+	act = new class'BamAIAction_CoverIdle';
 	act.CoverData = CovData;
 	return act;
 }

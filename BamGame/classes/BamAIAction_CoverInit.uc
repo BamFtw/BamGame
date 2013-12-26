@@ -65,21 +65,22 @@ function OnBegin()
 	
 	Manager.Controller.ClaimCover(CoverData.Cover);
 
-	Manager.PushFront(class'BamAIAction_CoverMoveTo'.static.Create(CoverData));
+	Manager.PushFront(class'BamAIAction_CoverMoveTo'.static.Create_CoverMoveTo(CoverData));
 	Finish();
 }
 
 
 
 
-static function BamAIAction_CoverInit Create(optional BamCoverActionData CovData)
+
+
+static function BamAIAction_CoverInit Create_CoverInit(optional BamCoverActionData CovData)
 {
 	local BamAIAction_CoverInit action;
-	action = new default.class;
+	action = new class'BamAIAction_CoverInit';
 	action.CoverData = CovData;
 	return action;
 }
-
 
 
 DefaultProperties

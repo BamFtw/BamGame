@@ -109,15 +109,18 @@ function bool FindGoodTarget()
 }
 
 
-static function BamAIAction_FireAtTarget Create_FireAtTarget(optional Actor inTarget, optional float inDuration = -1)
+static function BamAIAction_FireAtTarget Create_FireAtTarget(optional Actor inTarget = none, optional float inDuration = -1, optional int inFireMode = 0)
 {
 	local BamAIAction_FireAtTarget action;
 
-	action = new default.class;
+	action = new class'BamAIAction_FireAtTarget';
 	action.Target = inTarget;
+	action.WeaponFireMode = inFireMode;
 
 	if( inDuration >= 0 )
+	{
 		action.SetDuration(inDuration);
+	}
 
 	return action;
 }

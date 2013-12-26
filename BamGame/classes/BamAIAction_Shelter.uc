@@ -1,4 +1,5 @@
-class BamAIAction_Shelter extends BamAIAction;
+class BamAIAction_Shelter extends BamAIAction
+	noteditinlinenew;
 
 var BamActor_Shelter Shelter;
 
@@ -54,35 +55,48 @@ event Tick(float DeltaTime)
 	}
 
 	if( Shelter == none && !FindShelter() )
+	{
 		return;
-
-
+	}
 }
 
 function bool FindShelter()
 {
-	local WorldInfo wi;
-	local BamActor_Shelter act;
+	local BamActor_Shelter act, closestShelter;
+	local float closestShelterDistance, currentDistance;
 
-	wi = class'WorldInfo'.static.GetWorldInfo();
+	closestShelterDistance = 99999999999;
+	closestShelter = none;
 
-	foreach wi.DynamicActors(class'BamActor_Shelter', act)
+	foreach Manager.WorldInfo.DynamicActors(class'BamActor_Shelter', act)
 	{
 		if( act.OccupiedBy == none || !act.OccupiedBy.IsAliveAndWell() )
 		{
-			Shelter = act;
-			Shelter.OccupiedBy = Manager.Controller.Pawn;
-			
-			Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
-			Manager.Controller.SetFinalDestination(Shelter.Location);
-			Manager.Controller.Pawn.SetWalking(true);
-			Manager.Controller.Begin_Moving();
+			currentDistance = VSizeSq(Manager.Controller.Pawn.Location - act.Location);
 
-			return true;
+			if( currentDistance < closestShelterDistance )
+			{
+				closestShelterDistance = currentDistance;
+				closestShelter = act;
+			}			
 		}
 	}
 
-	return false;
+	if( closestShelter == none )
+	{
+		return false;
+	}
+
+	Shelter = closestShelter;
+
+	Shelter.OccupiedBy = Manager.Controller.Pawn;
+
+	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.SetFinalDestination(Shelter.Location);
+	Manager.Controller.Pawn.SetWalking(true);
+	Manager.Controller.Begin_Moving();
+
+	return true;
 }
 
 
@@ -92,8 +106,9 @@ function bool FindShelter()
 function FinalDestinationReached(BamSubscriberParameters params)
 {
 	if( bIsBlocked )
-	
+	{
 		return;
+	}
 
 	if( Manager.Controller.BPawn.CharacterTopBodySlot != none )
 	{
@@ -102,12 +117,27 @@ function FinalDestinationReached(BamSubscriberParameters params)
 
 	if( Manager.Controller.BPawn.CharacterFullBodySlot != none )
 	{
-		`trace("Playing CoverAnimationName on FBS", `green);
 		Manager.Controller.BPawn.CharacterFullBodySlot.PlayCustomAnim(CoverAnimationName, 1.0, 0.4, 0.4, true, true);
 	}
 
 	Manager.Controller.BPawn.SetDesiredLocation(Shelter.Location);
 }
+
+
+
+
+
+
+function BamAIAction_Shelter Create_Shelter()
+{
+	local BamAIAction_Shelter action;
+	action = new class'BamAIAction_Shelter';
+	return action;
+}
+
+
+
+
 
 DefaultProperties
 {

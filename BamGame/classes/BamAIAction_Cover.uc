@@ -5,16 +5,6 @@ class BamAIAction_Cover extends BamAIAction
 /** Object storing preferences of the cover action */
 var() editinline BamCoverActionData CoverData;
 
-/**  */
-var WorldInfo WorldInfo;
-
-/** Caches reference to WorldInfo */
-function OnBegin()
-{
-	super.OnBegin();
-	WorldInfo = class'WorldInfo'.static.GetWorldInfo();
-}
-
 /** 
  * Finds best available cover on the map, returns whether cover was successfuly found
  * @param maxDistance - max distance between cover and pawn above which covers desirability is always 0
@@ -45,7 +35,7 @@ function bool FindBestCover(optional float maxDistance = CoverData.MaxCoverSearc
 	currentCoverDesirability = 0;
 
 	// go through all of the covers and find the one with the highest desirability within specified range
-	foreach WorldInfo.AllActors(class'BamActor_Cover', currentCover)
+	foreach Manager.WorldInfo.AllActors(class'BamActor_Cover', currentCover)
 	{
 		// make sure cover is free and in range
 		if( currentCover.IsClaimed() || VSize2D(Manager.Controller.Pawn.Location - currentCover.Location) > maxDistance )

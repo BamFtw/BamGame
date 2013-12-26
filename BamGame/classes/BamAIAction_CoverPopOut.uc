@@ -46,7 +46,7 @@ function OnEnd()
 
 	if( !bIsBlocked )
 	{
-		Manager.PushFront(class'BamAIAction_CoverInit'.static.Create(CoverData));
+		Manager.PushFront(class'BamAIAction_CoverInit'.static.Create_CoverInit(CoverData));
 	}
 
 	if( FiringAction != none )
@@ -219,10 +219,10 @@ function FinalDestinationReached(BamSubscriberParameters params)
 
 
 
-static function BamAIAction_CoverPopOut Create(BamCoverActionData CovData)
+static function BamAIAction_CoverPopOut Create_CoverPopOut(BamCoverActionData CovData)
 {
 	local BamAIAction_CoverPopOut act;
-	act = new default.class;
+	act = new class'BamAIAction_CoverPopOut';
 	act.CoverData = CovData;
 	return act;
 }

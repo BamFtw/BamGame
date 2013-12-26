@@ -1,8 +1,12 @@
 class BamAIAction_Fire extends BamAIAction;
 
+
 var float FiringBreakTimeLeft;
+
 var float FiringTimeLeft;
+
 var bool bIsFiring;
+
 
 var(Firing) int WeaponFireMode;
 
@@ -12,8 +16,6 @@ var(Firing) float MaxFireBreak;
 var(Firing) float MinFireDuration;
 var(Firing) float MaxFireDuration;
 
-// displayall BamAIAction_Fire FiringBreakTimeLeft
-// displayall BamAIAction_Fire FiringTimeLeft
 
 function OnBegin()
 {
@@ -22,7 +24,8 @@ function OnBegin()
 
 function OnBlocked()
 {
-	StopFiring(false);
+	// blocking action should stop firing if needed
+	// StopFiring(false);
 }
 
 function OnEnd()
@@ -88,6 +91,23 @@ function bool CanStartFiring()
 {
 	return true;
 }
+
+
+static function BamAIAction_Fire Create_Fire(optional float inDuration = -1, optional int inFireMode = 0)
+{
+	local BamAIAction_Fire action;
+
+	action = new class'BamAIAction_Fire';
+	action.WeaponFireMode = inFireMode;
+
+	if( inDuration >= 0 )
+	{
+		action.SetDuration(inDuration);
+	}
+
+	return action;
+}
+
 
 DefaultProperties
 {

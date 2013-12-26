@@ -86,9 +86,24 @@ function FinalDestinationReached(BamSubscriberParameters params)
 
 	Manager.Controller.Begin_Idle();
 	// delay end
-	SetDuration(RandRange(1.0, 2.0));
+	SetDuration(RandRange(0.5, 1.5));
 }
 
+
+
+
+
+static function BamAIAction_AdvanceOnEnemies Create_AdvanceOnEnemies(optional float inDuration = 0, optional bool inRun = false, optional bool inFireDuringWalk = true)
+{
+	local BamAIAction_AdvanceOnEnemies action;
+	action = new class'BamAIAction_AdvanceOnEnemies';
+
+	action.bRun = inRun;
+	action.bFireDuringWalk = inFireDuringWalk;
+	action.SetDuration(inDuration);
+
+	return action;
+}
 
 DefaultProperties
 {

@@ -7,6 +7,7 @@ var() float MinWaitTime;
 var() float MaxWaitTime;
 
 var Vector WanderLocation;
+
 var float WaitTime;
 
 function OnBegin()
@@ -87,8 +88,48 @@ function FinalDestinationReached(BamSubscriberParameters params)
 	}
 }
 
+
+
+
+
+
+
+
+static function BamAIAction_ZombieWander Create_ZombieWander(optional float inMaxRadius = -1, optional float inMinRadius = -1, optional float inMinWaitTime = -1, optional float inMaxWaitTime = -1)
+{
+	local BamAIAction_ZombieWander action;
+	action = new class'BamAIAction_ZombieWander';
+	
+	if( inMinRadius >= 0 )
+	{
+		action.MinRadius = inMinRadius;
+	}
+	
+	if( inMaxRadius >= 0 )
+	{
+		action.MaxRadius = inMaxRadius;
+	}
+
+	if( inMinWaitTime >= 0 )
+	{
+		action.MinWaitTime = inMinWaitTime;
+	}
+	
+	if( inMaxWaitTime >= 0 )
+	{
+		action.MaxWaitTime = inMaxWaitTime;
+	}
+	
+	return action;
+}
+
 DefaultProperties
 {
 	bIsBlocking=true;
 	Lanes=(Lane_Moving)
+
+	MaxRadius=0
+	MinRadius=0
+	MinWaitTime=0.5
+	MaxWaitTime=1.0
 }

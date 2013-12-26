@@ -4,7 +4,7 @@ class BamAIAction_Combat extends BamAIAction
 
 var BamAIAction_CombatBlocker BlockerAction;
 
-var float LastCoverTryTime, LastFollowPlayerTime;
+var float LastCoverTryTime;
 
 
 
@@ -23,17 +23,17 @@ function Tick(float DeltaTime)
 
 	if( Manager.Front() == self )
 	{
-		if( (class'WorldInfo'.static.GetWorldInfo().TimeSeconds - LastCoverTryTime) >= 5.0 )
+		if( (Manager.WorldInfo.TimeSeconds - LastCoverTryTime) >= 5.0 )
 		{
-			LastCoverTryTime = class'WorldInfo'.static.GetWorldInfo().TimeSeconds;
-			Manager.PushFront(class'BamAIAction_CoverInit'.static.Create());
+			LastCoverTryTime = Manager.WorldInfo.TimeSeconds;
+			Manager.PushFront(class'BamAIAction_CoverInit'.static.Create_CoverInit());
 		}
 	}
 }
 
 function OnBegin()
 {
-	BlockerAction = class'BamAIAction_CombatBlocker'.static.Create();
+	BlockerAction = class'BamAIAction_CombatBlocker'.static.Create_CombatBlocker();
 	Manager.InsertAfter(BlockerAction, self);
 }
 
@@ -47,10 +47,15 @@ function OnEnd()
 	Manager.Remove(blockerAction);
 }
 
-static function BamAIAction_Combat Create()
+
+
+
+
+
+static function BamAIAction_Combat Create_Combat()
 {
 	local BamAIAction_Combat action;
-	action = new default.class;
+	action = new class'BamAIAction_Combat';
 	return action;
 }
 
@@ -61,5 +66,4 @@ DefaultProperties
 	Duration=0
 
 	LastCoverTryTime=-999.0
-	LastFollowPlayerTime=-999.0
 }
