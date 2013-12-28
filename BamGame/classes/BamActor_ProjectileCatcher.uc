@@ -3,33 +3,39 @@ class BamActor_ProjectileCatcher extends BamActor;
 
 struct CaughtProjectileData
 {
+	/** Time projectile was caught */
 	var float CatchTime;
+	/** Caught proejctile */
 	var Projectile Projectile;
 };
 
+/** List of projectiles that are already caught */
+var array<CaughtProjectileData> CaughtProjectiles;
 
-var array<CaughtProjectileData> DetectedProjectiles;
-
+/** Reference to Owner */
 var BamAIPawn BPawn;
 
+/** Sets collision type, initializes CaughtProjectiles list cleanup timer and reference to Owner */
 event PostBeginPlay()
 {
 	super.PostBeginPlay();
+
 	SetCollisionType(COLLIDE_TouchWeapons);
-	SetTimer(1.0, true, nameof(DetectedProjectilesCleanup));
+	SetTimer(1.0, true, nameof(CaughtProjectilesCleanup));
 
 	BPawn = BamAIPawn(Owner);
 }
 
-function DetectedProjectilesCleanup()
+/** Removes old projectiles from CaughtProjectiles list */
+function CaughtProjectilesCleanup()
 {
 	local int q;
 
-	for(q = 0; q < DetectedProjectiles.Length; ++q)
+	for(q = 0; q < CaughtProjectiles.Length; ++q)
 	{
-		if( `TimeSince(DetectedProjectiles[q].CatchTime) >= 2.0 )
+		if( `TimeSince(CaughtProjectiles[q].CatchTime) >= 2.0 )
 		{
-			DetectedProjectiles.Remove(q--, 1);
+			CaughtProjectiles.Remove(q--, 1);
 		}
 	}
 }
@@ -37,29 +43,35 @@ function DetectedProjectilesCleanup()
 event Touch(Actor Other, PrimitiveComponent OtherComp, vector HitLocation, vector HitNormal)
 {
 	local Projectile pj;
+	local BamPawn PjOwner;
 
 	super.Touch(Other, OtherComp, HitLocation, HitNormal);
 
-	if( !BPawn.BController.IsInCombat() )
+	pj = Projectile(Other);
+
+	// make sure touched actor is projectile and Pawn is not in combat
+	if( pj == none || BPawn == none || BPawn.BController == none || BPawn.BController.IsInCombat() )
 	{
 		return;
 	}
-	
-	pj = Projectile(Other);
 
-	if( pj != none && BPawn.BController.IsPawnHostile(FindPawnOwner(pj)) && !IsProjectileCought(Projectile(Other)) )
+	PjOwner = BamPawn(FindPawnOwner(pj));
+
+	// make sure owner of projectile is hostile and projectile wasn't already caught
+	if( BPawn.BController.IsPawnHostile(PjOwner) && !IsProjectileCaught(Projectile(Other)) )
 	{
-		ProjectileCought(Projectile(Other));
+		ProjectileCaught(pj, PjOwner);
 	}
 }
 
-function bool IsProjectileCought(Projectile pj)
+/** Returns whether projectile is in the  */
+function bool IsProjectileCaught(Projectile pj)
 {
 	local int q;
 
-	for(q = 0; q < DetectedProjectiles.Length; ++q)
+	for(q = 0; q < CaughtProjectiles.Length; ++q)
 	{
-		if( DetectedProjectiles[q].Projectile == pj )
+		if( CaughtProjectiles[q].Projectile == pj )
 		{
 			return true;
 		}
@@ -68,6 +80,7 @@ function bool IsProjectileCought(Projectile pj)
 	return false;
 }
 
+/** Returns Pawn owner of the projectile */
 function Pawn FindPawnOwner(Projectile pj)
 {
 	local array<Actor> PrevActors;
@@ -80,6 +93,7 @@ function Pawn FindPawnOwner(Projectile pj)
 	{
 		if( ++q > 20 || currentActor.Owner == none || PrevActors.Find(currentActor.Owner) != INDEX_NONE )
 		{
+			`trace("failed to get owner pawn", `red);
 			return none;
 		}
 
@@ -93,11 +107,12 @@ function Pawn FindPawnOwner(Projectile pj)
 	}
 }
 
-function ProjectileCought(Projectile pj)
+/** Called when this actor touches new projectile */
+function ProjectileCaught(Projectile pj, BamPawn PjOnwer)
 {
 	local CaughtProjectileData data;
 
-	if( pj == none )
+	if( BPawn == none || BPawn.BController == none || pj == none )
 	{
 		return;
 	}
@@ -105,11 +120,13 @@ function ProjectileCought(Projectile pj)
 	data.CatchTime = WorldInfo.TimeSeconds;
 	data.Projectile = pj;
 
-	DetectedProjectiles.AddItem(data);
+	CaughtProjectiles.AddItem(data);
 
-
-	BPawn.BController.ProjectileCaught(pj);
+	BPawn.BController.ProjectileCaught(pj, PjOnwer);
 }
+
+
+
 
 DefaultProperties
 {
