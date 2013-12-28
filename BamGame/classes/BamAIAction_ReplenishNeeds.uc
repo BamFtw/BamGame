@@ -83,25 +83,28 @@ function FinalDestinationReached(BamSubscriberParameters params)
 
 	Manager.Controller.Begin_Idle();
 
-	ReplenishActor.StartReplenishing();
-
-	Manager.Controller.BPawn.CharacterFullBodySlot.PlayCustomAnim(ReplenishActor.ReplenishAnimationNames[Rand(ReplenishActor.ReplenishAnimationNames.Length)], 1.0, 0.2, 0.2, true, true);
-
-	Manager.Controller.BPawn.SetDesiredRotation(ReplenishActor.Rotation, true);
-	Manager.Controller.BPawn.SetDesiredLocation(ReplenishActor.Location);
-
-	// calculate duration
-	for(q = 0; q < ReplenishActor.NeedReplenishmentRates.Length; ++q)
+	if( ReplenishActor != none )
 	{
-		for(w = 0; w < Manager.Controller.NeedManager.Needs.Length; ++w)
+		ReplenishActor.StartReplenishing();
+
+		Manager.Controller.BPawn.CharacterFullBodySlot.PlayCustomAnim(ReplenishActor.ReplenishAnimationNames[Rand(ReplenishActor.ReplenishAnimationNames.Length)], 1.0, 0.2, 0.2, true, true);
+
+		Manager.Controller.BPawn.SetDesiredRotation(ReplenishActor.Rotation, true);
+		Manager.Controller.BPawn.SetDesiredLocation(ReplenishActor.Location);
+
+		// calculate duration
+		for(q = 0; q < ReplenishActor.NeedReplenishmentRates.Length; ++q)
 		{
-			if( Manager.Controller.NeedManager.Needs[w].Class == ReplenishActor.NeedReplenishmentRates[q].NeedClass )
+			for(w = 0; w < Manager.Controller.NeedManager.Needs.Length; ++w)
 			{
-				currentTime = (Manager.Controller.NeedManager.Needs[w].MaxValue - Manager.Controller.NeedManager.Needs[w].CurrentValue) / ReplenishActor.NeedReplenishmentRates[q].ReplenishmentRate;
-				
-				if( currentTime > maxTime )
+				if( Manager.Controller.NeedManager.Needs[w].Class == ReplenishActor.NeedReplenishmentRates[q].NeedClass )
 				{
-					maxTime = currentTime;
+					currentTime = (Manager.Controller.NeedManager.Needs[w].MaxValue - Manager.Controller.NeedManager.Needs[w].CurrentValue) / ReplenishActor.NeedReplenishmentRates[q].ReplenishmentRate;
+					
+					if( currentTime > maxTime )
+					{
+						maxTime = currentTime;
+					}
 				}
 			}
 		}
