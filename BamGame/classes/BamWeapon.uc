@@ -17,6 +17,7 @@ var ParticleSystemComponent TPMuzzleFlashPS;
 /** Sound played on FireAmmunition */
 var SoundCue FireSound;
 
+
 /** Attaches particle systems to correct sockets */
 simulated function PostBeginPlay()
 {
@@ -30,13 +31,19 @@ simulated function PostBeginPlay()
 function ActivateMuzzleFlashEffects()
 {
 	if( FPMuzzleFlashPS != none )
+	{
 		FPMuzzleFlashPS.ActivateSystem(true);
+	}
 
 	if( TPMuzzleFlashPS != none )
+	{
 		TPMuzzleFlashPS.ActivateSystem(true);
+	}
 
 	if( Owner != none && FireSound != none )
+	{
 		Owner.PlaySound(FireSound);
+	}
 }
 
 /** Returns location of the third person meshes MuzzleFlashSocket */
@@ -230,8 +237,8 @@ DefaultProperties
 	FiringStatesArray(0)=WeaponFiring
 	WeaponFireTypes(0)=EWFT_Projectile
 	WeaponProjectiles(0)=class'BamProjectile'
-	FireInterval(0)=0.13
-	Spread(0)=0.05
+	FireInterval(0)=0.15
+	Spread(0)=0.04
 	InstantHitDamage(0)=0
 	InstantHitMomentum(0)=0
 	InstantHitDamageTypes(0)=class'DamageType'
