@@ -141,7 +141,7 @@ simulated event PostInitAnimTree(SkeletalMeshComponent SkelComp)
 
 event Tick(float DeltaTime)
 {
-	local float Pitch;
+	
 
 	super.Tick(DeltaTime);
 
@@ -154,23 +154,39 @@ event Tick(float DeltaTime)
 		ArmsMesh.SetTranslation((GetPawnViewLocation() - Location) + Vector(GetViewRotation()) * ArmsForwardOffset);
 	}
 
-	// update aim offset of the character mesh
+	
+	AdjustAimOffset();
+}
+
+function float GetViewPitch()
+{
+	if( Controller != none )
+	{
+		return Controller.Rotation.Pitch;
+	}
+
+	return Rotation.Pitch;
+}
+
+/** Updates aim offset of the character mesh */
+function AdjustAimOffset()
+{
+	local float Pitch;
+
 	if( CharacterAimOffset != none && Controller != none )
 	{
-		Pitch = GetViewRotation().Pitch;
+		Pitch = GetViewPitch();
+		
 		if( Pitch > 16383.1 )
+		{
 			Pitch = -(65536.0 - Pitch);
+		}
 
 		CharacterAimOffsetPitch = FClamp(Pitch / 16383.0, -1.0, 1.0);
 
-		if( Role == ROLE_Authority)
-		{
-			if( CharacterAimOffset != none )
-				CharacterAimOffset.Aim.Y = CharacterAimOffsetPitch;
-		}
+		CharacterAimOffset.Aim.Y = CharacterAimOffsetPitch;
 	}
 }
-
 
 /**
  * Moves Pawn to specified location without using velocity
@@ -399,7 +415,8 @@ defaultproperties
 	Components.Remove(Sprite)
 
 	Begin Object Name=CollisionCylinder
-		CollisionRadius=20.0
+		// CollisionRadius=20.0
+		CollisionRadius=16.0
 		CollisionHeight=45.0
 		bAlwaysRenderIfSelected=true
 		BlockNonZeroExtent=true
