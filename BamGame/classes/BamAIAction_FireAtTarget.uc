@@ -16,13 +16,13 @@ function Tick(float DeltaTime)
 	local BamHostilePawnData data;
 	local Vector toTargetDir;
 	local Pawn TargetPawn;
+	local Rotator rot;
 
 	// make sure target is correct
 	if( Target == none )
 	{
 		if( !FindGoodTarget() )
 		{
-			// `trace("Target is none, couldn't find new one", `red);
 			StopFiring();
 			SetTickBreak(0.1);
 			return;
@@ -36,7 +36,6 @@ function Tick(float DeltaTime)
 	{
 		if( !TargetPawn.IsAliveAndWell() && !FindGoodTarget() )
 		{
-			// `trace("Target Pawn is bad, couldn't find new one", `red);
 			StopFiring();
 			SetTickBreak(0.1);
 			return;
@@ -57,13 +56,14 @@ function Tick(float DeltaTime)
 
 	// calculate vector from Pawn to target
 	toTargetDir = data.LastSeenLocation - Manager.Controller.Pawn.Location;
-	toTargetDir.Z = 0;
 
 	// turn pawn toward target
-	Manager.Controller.Pawn.SetDesiredRotation(Rotator(Normal(toTargetDir)));
+	rot = Rotator(Normal(toTargetDir));
+	Manager.Controller.Pawn.SetDesiredRotation(rot);
+	Manager.Controller.SetDesiredViewRotation(rot);
 
 	// check dot between pawns rotation and targets location
-	bCanFire = (Vector(Manager.Controller.Pawn.Rotation) dot toTargetDir) >= MinDotToTarget;
+	bCanFire = (Vector(Manager.Controller.GetViewRotation()) dot toTargetDir >= MinDotToTarget);
 
 	super.Tick(DeltaTime);
 }
@@ -79,6 +79,8 @@ function bool FindGoodTarget()
 {
 	local int q;
 	local array<BamHostilePawnData> pwnData;
+	local Vector loc;
+	local Rotator rot;
 
 	if( !Manager.Controller.HasEnemies() )
 	{
@@ -88,10 +90,14 @@ function bool FindGoodTarget()
 
 	pwnData = Manager.Controller.Team.EnemyData;
 
+	Manager.Controller.GetActorEyesViewPoint(loc, rot);
+
 	for(q = 0; q < pwnData.Length; ++q)
 	{
+		
 		// check if Pawn has clear line of sight to the target if not remove it from the list
-		if( !Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation, , , true) )
+		if( !Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation, loc, , true) && 
+			!Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation + vect(0,0,1) * pwnData[q].Pawn.EyeHeight, loc, , true) )
 		{
 			pwnData.Remove(q--, 1);
 		}
@@ -104,10 +110,15 @@ function bool FindGoodTarget()
 		return true;
 	}
 
-	// `trace(Manager.Controller @ "fail", `yellow);
 	return false;
 }
 
+
+function OnEnd()
+{
+	super.OnEnd();
+	Manager.Controller.SetDesiredViewRotation(MakeRotator(0, 0, 0));
+}
 
 static function BamAIAction_FireAtTarget Create_FireAtTarget(optional Actor inTarget = none, optional float inDuration = -1, optional int inFireMode = 0)
 {
