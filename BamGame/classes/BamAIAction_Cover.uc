@@ -13,8 +13,10 @@ var() editinline BamCoverActionData CoverData;
 function bool FindBestCover(optional float maxDistance = CoverData.MaxCoverSearchDistance, optional float  desirabilityBase = 0)
 {
 	local BamActor_Cover currentCover, bestCover;
-	local float bestCoverDesirability, currentCoverDesirability, distanceRatio;
+	local float bestCoverDesirability, currentCoverDesirability, distanceToCover, distanceRatio, pawnCollisionHeight, maxDistanceFromCenter, distanceToEnemyCenter;
 	local array<Vector> EnemyLocations;
+	local Vector enemyCenter;
+	local int q;
 
 	// make sure controller and pawn are ok
 	if( Manager.Controller == none || Manager.Controller.Pawn == none )
@@ -34,14 +36,36 @@ function bool FindBestCover(optional float maxDistance = CoverData.MaxCoverSearc
 	EnemyLocations = Manager.Controller.GetEnemyLocations();
 	currentCoverDesirability = 0;
 
+	for(q = 0; q < EnemyLocations.Length; ++q)
+	{
+		enemyCenter += EnemyLocations[q];
+	}
+
+	enemyCenter /= EnemyLocations.Length;
+
+	maxDistanceFromCenter = CoverData.MaxDistanceFromEnemyCenter * CoverData.MaxDistanceFromEnemyCenter;
+
+	// so sqared vsize can be used
+	maxDistance *= maxDistance;
+
+	
+
+	// max allowed difference between pawns and covers location Z component
+	pawnCollisionHeight = Manager.Controller.Pawn.GetCollisionHeight() * 1.5;
+
 	// go through all of the covers and find the one with the highest desirability within specified range
 	foreach Manager.WorldInfo.AllActors(class'BamActor_Cover', currentCover)
 	{
-		// make sure cover is free and in range
-		if( currentCover.IsClaimed() || VSize2D(Manager.Controller.Pawn.Location - currentCover.Location) > maxDistance )
-			continue;
+		distanceToEnemyCenter = VSizeSq2D(currentCover.Location - enemyCenter);
+		distanceToCover = VSizeSq2D(currentCover.Location - Manager.Controller.Pawn.Location);
 
-		distanceRatio = 1 - FClamp(VSize2D((currentCover.Location - Manager.Controller.Pawn.Location) / maxDistance) ** 0.125, 0, 1);
+		// make sure cover is free and in range
+		if( currentCover.IsClaimed() || distanceToEnemyCenter > maxDistanceFromCenter || distanceToCover > maxDistance || Abs(currentCover.Location.Z - Manager.Controller.Pawn.Location.Z) > pawnCollisionHeight )
+		{
+			continue;
+		}
+
+		distanceRatio = 1 - FClamp((distanceToCover / maxDistance) ** 0.125, 0, 1);
 
 		currentCoverDesirability = currentCover.GetDesirability(EnemyLocations) * distanceRatio * CoverData.GetCoverDesirabilityMod(currentCover);
 
