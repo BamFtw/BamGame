@@ -48,6 +48,15 @@ struct BamSubscribersList
 	var array<delegate<BamSubscriber> > List;
 };
 
+/** Becouse pitch in Rotation variable is set to 0 each tick this one is storing it
+ *  and should be used for Aim offset and such things */
+var float ViewPitch;
+/** Used for smooth pitch transition */
+var float DesiredViewPitch;
+/** How fast can ViewPitch change */
+var float ViewPitchRotationRate;
+
+
 /** List of all event subscribers, indexes of this array are the same as enums in BamSubscribableEvents */
 var array<BamSubscribersList> SubscribersLists;
 
@@ -56,6 +65,18 @@ var array<BamHostilePawnDetectionData> EnemyDetectionData;
 
 /** for how long pawn must stay in this controllers view to be detected */
 var float EnemyDetectionDelay;
+
+/** From this distance to EnemyDetectionOuterRadius pawn suffers no detection penalties related to distance,
+ *	below it gains up to double detection speed
+ */
+var float EnemyDetectionInnerRadius;
+
+/** Up to this distance from enemy pawn suffers no detection penalties related to distance */
+var float EnemyDetectionOuterRadius;
+
+/** If distance between pawn and enemy is greater than this, detection cappabilites are halved */
+var float EnemyDetectionMaxRadius;
+
 
 
 /** Reference to game object */
@@ -128,6 +149,7 @@ var BamActor_Cover Cover;
  * @param params - events parameters
  */
 delegate BamSubscriber(BamSubscriberParameters params);
+
 
 
 /** Cleanup */
@@ -252,7 +274,25 @@ function BamAIAction SpawnDefaultAIAction()
 
 event Tick(float DeltaTime)
 {
+	local float deltaPitch;
+
 	super.Tick(DeltaTime);
+
+	if( ViewPitch != DesiredViewPitch )
+	{
+		//`log("Lerp(" $ DesiredViewPitch $ "," @ ViewPitch $ ", " @ DeltaTime * ViewPitchRotationRate $ ") =" @ Lerp(DesiredViewPitch, ViewPitch, DeltaTime * ViewPitchRotationRate));
+		//ViewPitch = Lerp(DesiredViewPitch, ViewPitch, DeltaTime * ViewPitchRotationRate);
+		deltaPitch = Abs(DeltaTime * ViewPitchRotationRate);
+		if( Abs(DesiredViewPitch - ViewPitch) <= deltaPitch )
+		{
+			ViewPitch = DesiredViewPitch;
+		}
+		else
+		{
+			ViewPitch += ((DesiredViewPitch - ViewPitch) < 0 ? -1.0 : 1.0) * deltaPitch;
+		}
+	}	
+
 
 	UpdateDetectionData(DeltaTime);
 	
@@ -295,7 +335,7 @@ event Tick(float DeltaTime)
 function UpdateDetectionData(float DeltaTime)
 {
 	local int q;
-	local float seenFor;
+	local float seenFor, distanceToEnemy;
 	local BamHostilePawnData pawnData;
 
 	for(q = 0; q < EnemyDetectionData.Length; ++q)
@@ -314,10 +354,35 @@ function UpdateDetectionData(float DeltaTime)
 
 			seenFor = EnemyDetectionData[q].SeenFor;
 
-			// if Pawn is BamPawn adjust seen duration by its detectability
+			// if enemy Pawn is BamPawn adjust seen duration by its detectability
 			if( BamPawn(EnemyDetectionData[q].Pawn) != none )
 			{
 				seenFor *= BamPawn(EnemyDetectionData[q].Pawn).Detectability;
+			}
+
+			// adjust for controlled Pawns Awareness
+			if( BPawn != none )
+			{
+				seenFor *= BPawn.Awareness;
+			}
+
+			// adjust for distance from enemy pawn
+			distanceToEnemy = VSize2D(Pawn.Location - EnemyDetectionData[q].Pawn.Location);
+			if( distanceToEnemy < EnemyDetectionInnerRadius )
+			{
+				seenFor *= 2.0 - (distanceToEnemy / EnemyDetectionInnerRadius);
+			}
+			// else if( distanceToEnemy >= EnemyDetectionInnerRadius && distanceToEnemy <= EnemyDetectionOuterRadius )
+			// {
+			// 	seenFor *= 1.0;
+			// }
+			else if( distanceToEnemy > EnemyDetectionOuterRadius && distanceToEnemy < EnemyDetectionMaxRadius )
+			{
+				seenFor *= 1.0 - 0.5 * ((distanceToEnemy - EnemyDetectionOuterRadius) / (EnemyDetectionMaxRadius - EnemyDetectionOuterRadius));
+			}
+			else if( distanceToEnemy > EnemyDetectionMaxRadius )
+			{
+				seenFor *= 0.5;
 			}
 
 			// test if pawn was seen long enough to be detected
@@ -340,6 +405,25 @@ function UpdateDetectionData(float DeltaTime)
 		}
 		
 	}
+}
+
+/** Sets ViewPitch */
+function SetViewRotation(Rotator rot)
+{
+	ViewPitch = rot.Pitch;
+	DesiredViewPitch = rot.Pitch;
+}
+
+/** Sets DesiredViewPitch */
+function SetDesiredViewRotation(Rotator rot)
+{
+	DesiredViewPitch = rot.Pitch;
+}
+
+/** Returns controllers Rotation adjusted by ViewPitch */
+function Rotator GetViewRotation()
+{
+	return MakeRotator(ViewPitch, Rotation.Yaw, 0);
 }
 
 /** Calls delegates subscribed to this event */
@@ -372,7 +456,6 @@ function SeePawn(Pawn Seen)
 
 	if( Seen == none || !IsPawnHostile(Seen) )
 	{
-		`trace(GetFuncName() @ Seen @ "is not hostile toward" @ Team.TeamName, `cyan);
 		return;
 	}
 
@@ -854,7 +937,16 @@ defaultproperties
 
 	FinalDestCollisionRadiusMod=1.0
 
-	NavMeshPath_SearchExtent_Modifier=(X=5.0,Y=5.0,Z=0.0)
+	NavMeshPath_SearchExtent_Modifier=(X=3.0,Y=3.0,Z=0.0)
 
 	EnemyDetectionDelay=1.0
+
+
+	EnemyDetectionInnerRadius=300.0
+	EnemyDetectionOuterRadius=1000.0
+	EnemyDetectionMaxRadius=2500.0
+
+	ViewPitch=0
+	DesiredViewPitch=0
+	ViewPitchRotationRate=32500.0
 }
