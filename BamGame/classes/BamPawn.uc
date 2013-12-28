@@ -59,9 +59,15 @@ var float Detectability;
 
 /** Name of the socket on arms mesh where the weapon should be attached */
 var name FPWeaponSocketName;
+
 /** Name of the socket on character mesh where the weapon should be attached */
 var name TPWeaponSocketName;
 
+/** Names of the bones that count as head */
+var array<string> HeadBoneNames;
+
+
+var float HeadshotDamageMultiplier;
 
 /** Whether DesiredLocation is currently in use */
 var bool bUseDesiredLocation;
@@ -256,8 +262,18 @@ function DesiredLocationReached()
 	DesiredLocation = Location;
 }
 
+/** Checks for haedshot */
+event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
+{
+	local int newDamage;
 
+	if( HeadBoneNames.Find(string(HitInfo.BoneName)) != INDEX_NONE )
+	{
+		newDamage = HeadshotDamageMultiplier * Damage;
+	}
 
+	super.TakeDamage(newDamage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser);
+}
 
 /** Kills pawn */
 simulated event TornOff()
@@ -569,4 +585,7 @@ defaultproperties
 	Detectability=1.0
 
 	MeleeProperties=(Damage=30,Range=100,bAllowFriendlyFire=false,MinDot=0.5,MaxNumOfHits=1)
+
+	HeadBoneNames=("Bip001-Head")
+	HeadshotDamageMultiplier=2.0
 }
