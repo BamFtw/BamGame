@@ -22,15 +22,39 @@ var(Stats) float Awareness;
 /** Multiplier of damage taken by pawn */
 var(Stats) float DamageTakenMultiplier;
 
+var BamActor_ProjectileCatcher ProjectileCatcher;
+
+
+
+simulated function Rotator GetAdjustedAimFor(Weapon W, vector StartFireLoc)
+{
+	local Rotator rot;
+
+	rot.Yaw = Rotation.Yaw;
+	rot.Pitch = BController.ViewPitch;
+
+	return rot;
+}
+
+function float GetViewPitch()
+{
+	return BController.ViewPitch;
+}
 
 /**  */
 event Tick(float DeltaTime)
 {
 	super.Tick(DeltaTime);
+
 	AdjustPeripheralVision();
 
-	// to prevent bouncing on collision with world geometry
+	// to prevent bouncing
 	Velocity.Z = 0;
+
+	if( BController != none && BController.Team != none )
+	{
+		DrawDebugCylinder(Location + vect(0, 0, 1) * GetCollisionHeight(), Location + vect(0, 0, 6) * GetCollisionHeight(), 10, 24, BController.Team.TeamColor.R, BController.Team.TeamColor.G, BController.Team.TeamColor.B, false);
+	}
 }
 
 /** Sets PeripheralVision depending on Awareness */
@@ -131,6 +155,13 @@ event PostBeginPlay()
 	if( Controller == none )
 	{
 		SpawnDefaultController();
+	}
+
+	ProjectileCatcher = Spawn(class'BamActor_ProjectileCatcher', self, , Location, Rotation, , true);
+	
+	if( ProjectileCatcher != none )
+	{
+		Attach(ProjectileCatcher);
 	}
 }
 
