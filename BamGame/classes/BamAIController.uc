@@ -426,6 +426,20 @@ function Rotator GetViewRotation()
 	return MakeRotator(ViewPitch, Rotation.Yaw, 0);
 }
 
+/**
+ * Called by ProjectileCatcher when
+ * @param pj - projectile that was caught
+ * @param PjOwner - owner of caught projectile
+ */
+function ProjectileCaught(Projectile pj, BamPawn PjOwner)
+{
+	if( !IsInCombat() && IsPawnHostile(PjOwner) )
+	{
+		// `trace("Enemy spotted by projectile catcher", `green);
+		EnemySpotted(PjOwner);
+	}
+}
+
 /** Calls delegates subscribed to this event */
 event HearNoise(float Loudness, Actor NoiseMaker, optional Name NoiseType)
 {
@@ -471,7 +485,6 @@ function SeePawn(Pawn Seen)
 	{
 		if( EnemyDetectionData[q].Pawn == Seen )
 		{
-			`trace(GetFuncName() @ Seen @ "already in detection list" @ Team.TeamName, `purple);
 			return;
 		}
 	}
@@ -479,7 +492,6 @@ function SeePawn(Pawn Seen)
 	// if there should be no delay detect immediately
 	if( EnemyDetectionDelay <= 0 )
 	{
-		`trace(GetFuncName() @ Seen @ "instant detect" @ Team.TeamName, `yellow);
 		EnemySpotted(Seen);
 	}
 	else
@@ -488,7 +500,6 @@ function SeePawn(Pawn Seen)
 		detectionData.SeenFor = 0;
 
 		EnemyDetectionData.AddItem(detectionData);
-		`trace(GetFuncName() @ Seen @ "adding to detect list" @ Team.TeamName, `green);
 	}
 }
 
@@ -496,6 +507,8 @@ function SeePawn(Pawn Seen)
 event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
 {
 	CallSubscribers(BSE_TakeDamage, class'BamSubscriberParameters_TakeDamage'.static.Create(self, BPawn, Damage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser));
+
+
 }
 
 /** Returns whether pawn given as parameter is hostile */
@@ -650,6 +663,11 @@ function bool HasEnemies()
 /** Returns whether controller is in combat */
 event bool IsInCombat(optional bool bForceCheck)
 {
+	if( Team == none )
+	{
+		`trace("No team for" @ Pawn, `red);
+		return false;
+	}
 	return Team.IsInCombat();
 }
 
