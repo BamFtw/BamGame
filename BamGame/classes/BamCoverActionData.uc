@@ -46,7 +46,7 @@ var(Search) float FailedSearchCoverBlockDuration;
 /** Action that should be used when covering fails */
 var(Search) BamAIActionContainer FailedCoverSearchReplacementAction;
 
-
+var(Search) float MaxDistanceFromEnemyCenter;
 
 
 /** Sets reference to new cover, unclaims (not on controller) current one, resets failed popout count */
@@ -128,8 +128,9 @@ DefaultProperties
 
 	MinCoverIdleTime=1.0
 	MaxCoverIdleTime=3.5
-	MaxCoverSearchDistance=1600.0
+	MaxCoverSearchDistance=800.0
 	FailedSearchCoverBlockDuration=3.5
+	MaxDistanceFromEnemyCenter=2000.0
 
 	FailedPopOutCount=0
 	FailedPopOutThreashold=2
