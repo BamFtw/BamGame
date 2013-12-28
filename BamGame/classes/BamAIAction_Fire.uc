@@ -30,10 +30,17 @@ function OnBlocked()
 
 function OnEnd()
 {
-	if( !IsBlocked() )
+	/**local int q;
+	if( IsBlocked() )
 	{
-		StopFiring(false);
-	}
+		`trace("Cant stop firing, blocked", `red);
+		for(q = 0; q < Manager.Actions.Length; ++q)
+		{
+			`log(Manager.Actions[q]);
+		}
+	}*/
+
+	StopFiring(false);
 }
 
 function Tick(float DeltaTime)
