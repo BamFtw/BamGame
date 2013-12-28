@@ -22,6 +22,7 @@ var(Stats) float Awareness;
 /** Multiplier of damage taken by pawn */
 var(Stats) float DamageTakenMultiplier;
 
+/** Actor responsible for informing controller about projectiles passing by */
 var BamActor_ProjectileCatcher ProjectileCatcher;
 
 
@@ -194,6 +195,11 @@ State Dying
 
 	event BeginState(Name PreviousStateName)
 	{
+		if( ProjectileCatcher != none )
+		{
+			ProjectileCatcher.Destroy();
+		}
+
 		if( Controller != none )
 		{
 			Controller.Destroy();
