@@ -22,6 +22,9 @@ event Tick(float DeltaTime)
 
 simulated function ProcessTouch(Actor Other, Vector HitLocation, Vector HitNormal)
 {
+	local TraceHitInfo HitInfo;
+	local Vector traceHitLocation, traceHitNormal;
+
 	if( Pawn(Other) != none )
 	{
 		DrawDebugBox(HitLocation, vect(2,2,2), 255, 0, 0, true);
@@ -39,6 +42,10 @@ simulated function ProcessTouch(Actor Other, Vector HitLocation, Vector HitNorma
 
 			if( Pawn(Other) != none )
 			{
+				// get hit info
+				Trace(traceHitLocation, traceHitNormal, Location + Vector(Rotation) * 20.0, Location - Vector(Rotation) * 20.0, true, , HitInfo, TRACEFLAG_Bullet);
+				DrawDebugLine(Location - Vector(Rotation) * 20.0,  Location + Vector(Rotation) * 20.0, 255, 255, 255, true);
+
 				if( CharacterImpactSound != none )
 				{
 					PlaySound(CharacterImpactSound, , , , HitLocation);
@@ -52,7 +59,7 @@ simulated function ProcessTouch(Actor Other, Vector HitLocation, Vector HitNorma
 				}
 			}
 
-			Other.TakeDamage(Damage, InstigatorController, Location, MomentumTransfer * Normal(Velocity), MyDamageType,, self);
+			Other.TakeDamage(Damage, InstigatorController, Location, MomentumTransfer * Normal(Velocity), MyDamageType, HitInfo, self);
 		}
 		Explode(HitLocation, HitNormal);
 	}
@@ -109,7 +116,7 @@ DefaultProperties
 	Components.Add(TrailComp)
 
 	DamageRadius=0.0
-	Damage=10
+	Damage=25
 	Speed=3000.0
 	MaxSpeed=3000.0
 
