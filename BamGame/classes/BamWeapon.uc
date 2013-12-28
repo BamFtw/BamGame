@@ -42,12 +42,29 @@ function ActivateMuzzleFlashEffects()
 /** Returns location of the third person meshes MuzzleFlashSocket */
 simulated event vector GetPhysicalFireStartLoc(optional vector AimDir)
 {
-	local Vector Loc;
+	local int q;
+	local Vector Loc, HitNormal, HitLocation, adjustedLoc;
 	local Rotator Rot;
 
 	if( BamAIPawn(Owner) != none )
 	{
 		ThirdPersonMesh.GetSocketWorldLocationAndRotation(MuzzleFlashSocket, Loc, Rot);
+
+		// test if location is not too close to world geometry if so try increasing height of start location
+		for(q = 0; q < 5; ++q)
+		{
+			adjustedLoc = Loc + vect(0, 0, 5.0) * q;
+
+			if( Trace(HitLocation, HitNormal, adjustedLoc + Vector(Rot) * 20.0, adjustedLoc, true, , , TRACEFLAG_Bullet) == none )
+			{
+				return adjustedLoc;
+			}
+			else
+			{
+				DrawDebugLine(adjustedLoc, adjustedLoc + Vector(Rot) * 20.0,  0, 255, 255, true);
+			}
+		}
+
 		return Loc;
 	}
 
