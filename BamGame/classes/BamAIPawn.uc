@@ -25,7 +25,8 @@ var(Stats) float DamageTakenMultiplier;
 /** Actor responsible for informing controller about projectiles passing by */
 var BamActor_ProjectileCatcher ProjectileCatcher;
 
-
+/** Percent of default GroundSpeed that should be used */
+var float GroundSpeedPct;
 
 simulated function Rotator GetAdjustedAimFor(Weapon W, vector StartFireLoc)
 {
@@ -79,7 +80,7 @@ function float GetDefaultStatValue(BamPawnStat stat)
 	switch(stat)
 	{
 		case BPS_GroundSpeed:
-			return arch == none ? default.GroundSpeed : arch.GroundSpeed;
+			return (arch == none ? default.GroundSpeed : arch.GroundSpeed) * GroundSpeedPct;
 			break;
 		case BPS_WeaponSpread:
 			return arch == none ? default.WeaponSpread : arch.WeaponSpread;
@@ -135,8 +136,11 @@ function UpdateStats(array<float> values)
 	}
 }
 
-
-
+/** Sets ground speed multiplier */
+function SetGroundSpeedPct(float pct)
+{
+	GroundSpeedPct = FMax(0, pct);
+}
 
 
 
@@ -220,4 +224,6 @@ defaultproperties
 	WeaponSpread=0.0
 	Awareness=1.0
 	DamageTakenMultiplier=1.0
+
+	GroundSpeedPct=1.0
 }
