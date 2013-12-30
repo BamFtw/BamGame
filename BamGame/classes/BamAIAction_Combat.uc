@@ -39,8 +39,9 @@ function OnBegin()
 
 function OnEnd()
 {
-	while( Manager.Front() != self )
+	while( Manager.Front() != self && Manager.Front() != none )
 	{
+		Manager.Front().bIsBlocked = false;
 		Manager.Remove(Manager.Front());
 	}
 
