@@ -147,8 +147,6 @@ simulated event PostInitAnimTree(SkeletalMeshComponent SkelComp)
 
 event Tick(float DeltaTime)
 {
-	
-
 	super.Tick(DeltaTime);
 
 	HandleDesiredLocation(DeltaTime);
@@ -223,7 +221,7 @@ function CancelDesiredLocation()
 }
 
 /**
- * Moves Pawn toward DesiredLocation with right speed
+ * Moves Pawn toward DesiredLocation with right speed without using velocity
  * @param DeltaTime 
  */
 function HandleDesiredLocation(float DeltaTime)
@@ -234,6 +232,8 @@ function HandleDesiredLocation(float DeltaTime)
 	{
 		return;
 	}
+
+	Velocity = vect(0, 0, 0);
 
 	distance = VSize2D(Location - DesiredLocation);
 	if( distance > 0 )
@@ -265,14 +265,88 @@ function DesiredLocationReached()
 /** Checks for haedshot */
 event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
 {
-	local int newDamage;
+	local int actualDamage;
+	local PlayerController PC;
+	local Controller Killer;
 
+	// check for headshot bones and adjust damage
 	if( HeadBoneNames.Find(string(HitInfo.BoneName)) != INDEX_NONE )
 	{
-		newDamage = HeadshotDamageMultiplier * Damage;
+		Damage *= HeadshotDamageMultiplier;
 	}
 
-	super.TakeDamage(newDamage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser);
+	// below copy of super(Pawn).TakeDamage with exclusion of MakeNoise
+	if ( (Role < ROLE_Authority) || (Health <= 0) )
+	{
+		return;
+	}
+
+	if ( damagetype == None )
+	{
+		if ( InstigatedBy == None )
+			`warn("No damagetype for damage with no instigator");
+		else
+			`warn("No damagetype for damage by "$instigatedby.pawn$" with weapon "$InstigatedBy.Pawn.Weapon);
+		//scripttrace();
+		DamageType = class'DamageType';
+	}
+	Damage = Max(Damage, 0);
+
+	if (Physics == PHYS_None && DrivenVehicle == None)
+	{
+		SetMovementPhysics();
+	}
+	if (Physics == PHYS_Walking && damageType.default.bExtraMomentumZ)
+	{
+		momentum.Z = FMax(momentum.Z, 0.4 * VSize(momentum));
+	}
+	momentum = momentum/Mass;
+
+	if ( DrivenVehicle != None )
+	{
+		DrivenVehicle.AdjustDriverDamage( Damage, InstigatedBy, HitLocation, Momentum, DamageType );
+	}
+
+	ActualDamage = Damage;
+	WorldInfo.Game.ReduceDamage(ActualDamage, self, instigatedBy, HitLocation, Momentum, DamageType, DamageCauser);
+	AdjustDamage(ActualDamage, Momentum, instigatedBy, HitLocation, DamageType, HitInfo, DamageCauser);
+
+	// call Actor's version to handle any SeqEvent_TakeDamage for scripting
+	Super.TakeDamage(ActualDamage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser);
+
+	Health -= actualDamage;
+	if (HitLocation == vect(0,0,0))
+	{
+		HitLocation = Location;
+	}
+
+	if ( Health <= 0 )
+	{
+		PC = PlayerController(Controller);
+		// play force feedback for death
+		if (PC != None)
+		{
+			PC.ClientPlayForceFeedbackWaveform(damageType.default.KilledFFWaveform);
+		}
+		// pawn died
+		Killer = SetKillInstigator(InstigatedBy, DamageType);
+		TearOffMomentum = momentum;
+		Died(Killer, damageType, HitLocation);
+	}
+	else
+	{
+		HandleMomentum( momentum, HitLocation, DamageType, HitInfo );
+		NotifyTakeHit(InstigatedBy, HitLocation, ActualDamage, DamageType, Momentum, DamageCauser);
+		if (DrivenVehicle != None)
+		{
+			DrivenVehicle.NotifyDriverTakeHit(InstigatedBy, HitLocation, actualDamage, DamageType, Momentum);
+		}
+		if ( instigatedBy != None && instigatedBy != controller )
+		{
+			LastHitBy = instigatedBy;
+		}
+	}
+	PlayHit(actualDamage,InstigatedBy, hitLocation, damageType, Momentum, HitInfo);
 }
 
 /** Kills pawn */
