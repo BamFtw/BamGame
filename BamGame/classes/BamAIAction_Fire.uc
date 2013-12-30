@@ -1,19 +1,23 @@
 class BamAIAction_Fire extends BamAIAction;
 
-
+/** Time of firing break left */
 var float FiringBreakTimeLeft;
-
+/** Time of burst left */
 var float FiringTimeLeft;
-
+/** Whether Pawn is currently firing */
 var bool bIsFiring;
 
-
+/** Which weapons mode should be used while firing */
 var(Firing) int WeaponFireMode;
 
+/** Min time between bursts */
 var(Firing) float MinFireBreak;
+/** Max time between bursts */
 var(Firing) float MaxFireBreak;
 
+/** Min burst duration */
 var(Firing) float MinFireDuration;
+/** Max burst duration */
 var(Firing) float MaxFireDuration;
 
 
@@ -24,22 +28,12 @@ function OnBegin()
 
 function OnBlocked()
 {
-	// blocking action should stop firing if needed
+	// blocking action should stop firing in its OnBegin if needed
 	// StopFiring(false);
 }
 
 function OnEnd()
 {
-	/**local int q;
-	if( IsBlocked() )
-	{
-		`trace("Cant stop firing, blocked", `red);
-		for(q = 0; q < Manager.Actions.Length; ++q)
-		{
-			`log(Manager.Actions[q]);
-		}
-	}*/
-
 	StopFiring(false);
 }
 
