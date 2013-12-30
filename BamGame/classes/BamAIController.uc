@@ -443,8 +443,32 @@ function ProjectileCaught(Projectile pj, BamPawn PjOwner)
 /** Calls delegates subscribed to this event */
 event HearNoise(float Loudness, Actor NoiseMaker, optional Name NoiseType)
 {
+	local Pawn heardPawn;
+
 	super.HearNoise(Loudness, NoiseMaker, NoiseType);
 	CallSubscribers(BSE_HearNoise, class'BamSubscriberParameters_HearNoise'.static.Create(self, BPawn, Loudness, NoiseMaker, NoiseType));
+	
+	if( IsInCombat() || NoiseMaker == Pawn || NoiseMaker == Pawn.Weapon )
+	{
+		return;
+	}
+
+	if( Pawn(NoiseMaker) != none )
+	{
+		heardPawn = Pawn(NoiseMaker);
+	}
+	else if( Weapon(NoiseMaker) != none )
+	{
+		heardPawn = Pawn(Weapon(NoiseMaker).Owner);
+	}
+
+
+	if( !IsPawnHostile(heardPawn) )
+	{
+		return;
+	}
+
+	ActionManager.PushFront(class'BamAIAction_Investigate'.static.Create_Investigate(heardPawn.Location));
 }
 
 /** Forwards Seen pawn to SeePawn function */
@@ -468,6 +492,7 @@ function SeePawn(Pawn Seen)
 	local BamHostilePawnData pawnData;
 	local BamHostilePawnDetectionData detectionData;
 
+	// make sure Seen is enemy
 	if( Seen == none || !IsPawnHostile(Seen) )
 	{
 		return;
@@ -507,8 +532,6 @@ function SeePawn(Pawn Seen)
 event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
 {
 	CallSubscribers(BSE_TakeDamage, class'BamSubscriberParameters_TakeDamage'.static.Create(self, BPawn, Damage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser));
-
-
 }
 
 /** Returns whether pawn given as parameter is hostile */
@@ -522,7 +545,10 @@ function bool IsPawnHostile(Pawn pwn)
 	return Team.IsPawnHostile(pwn);
 }
 
-/** Adds enemy information to EnemyData list or updates it, calls DetectEnemy subscribers */
+/** 
+ * Adds enemy information to EnemyData list or updates it, calls DetectEnemy subscribers 
+ * @param pwn - detected enemy pawn
+ */
 function EnemySpotted(Pawn pwn)
 {
 	if( Team.EnemySpotted(pwn) )
@@ -531,10 +557,8 @@ function EnemySpotted(Pawn pwn)
 	}
 }
 
-/**
- * Returns whether distance between vectors given as parameter (v1 and v2) is smaller or equal to maxDistance
- */
-function bool CompareVectors2D(Vector v1, Vector v2, optional float maxDistance = 0)
+/** Returns whether distance between vectors given as parameter (v1 and v2) is smaller or equal to maxDistance */
+static function bool CompareVectors2D(Vector v1, Vector v2, optional float maxDistance = 0)
 {
 	return (Vsize2D(v1 - v2) <= maxDistance);
 }
@@ -542,7 +566,6 @@ function bool CompareVectors2D(Vector v1, Vector v2, optional float maxDistance 
 /**
  *  Returns Location of the next Point in the path to the goal that Controlled Pawn should head toward
  *  Checks if anything is blocking path and if so tries to avoid it
- *
  *  @param goal - final destination that should be reached
  */
 function Vector FindNavMeshPath(Vector goal)
@@ -634,6 +657,7 @@ function Vector FindNavMeshPath(Vector goal)
 
 /** 
  * Sets reference to team manager adn joins it, quits previous team if needed
+ * @param temMgr - team to join
  * @return whether controller successfuly joined team
  */
 function bool SetTeamManager(BamActor_TeamManager teamMgr)
@@ -671,7 +695,7 @@ event bool IsInCombat(optional bool bForceCheck)
 	return Team.IsInCombat();
 }
 
-/** Returns list of last known locations of all enemies */
+/** Returns list of last known locations of all known enemies */
 function array<Vector> GetEnemyLocations()
 {
 	return Team.GetEnemyLocations();
@@ -690,7 +714,7 @@ function bool GetEnemyData(Pawn enemyPwn, out BamHostilePawnData data)
 
 /** 
  * Sets reference to currently occupied cover, unclaims previously claimed one
- * @param cov - cover to claim
+ * @param cov - cover actor to claim
  */
 function ClaimCover(BamActor_Cover cov)
 {
@@ -740,6 +764,8 @@ function name ChangeStateRequest(name stateName)
  */
 function name Begin_Idle()
 {
+	`trace("Start idle", `red);
+	ScriptTrace();
 	return ChangeStateRequest('Idle');
 }
 
@@ -781,6 +807,7 @@ function InitializeMove(Vector newFinalDest, optional float MaxDistanceOffset = 
 	BPawn.SetWalking(bRun);
 	SetFinalDestination(newFinalDest, MaxDistanceOffset);
 	Begin_Moving();
+	`trace("Init Move", `green);
 }
 
 /**
@@ -812,7 +839,11 @@ function StopMovement()
 }
 
 
-/** Subscribes delegate given as parameter to event from BamSubscribableEvents enum */
+/** 
+ * Subscribes delegate to an event
+ * @param evnt - event that sub will be subscribed for
+ * @param sub - delegate to call when event is triggered
+ */
 function Subscribe(BamSubscribableEvents evnt, delegate<BamSubscriber> sub)
 {
 	// check if event is correct and delegate is not none
@@ -830,7 +861,11 @@ function Subscribe(BamSubscribableEvents evnt, delegate<BamSubscriber> sub)
 	SubscribersLists[evnt].List.AddItem(sub);
 }
 
-/** Removes subscribed delegate from the list for specified event */
+/** 
+ * Removes subscribed delegate from the list for specified event
+ * @param evnt - event that sub is subscribed for
+ * @param sub - delegate to remove
+ */
 function UnSubscribe(BamSubscribableEvents evnt, delegate<BamSubscriber> sub)
 {
 	// check if event is correct and delegate is not none
@@ -845,6 +880,8 @@ function UnSubscribe(BamSubscribableEvents evnt, delegate<BamSubscriber> sub)
 /** 
  * Calls all subscribers of the event given as parameter and passes params object to them.
  * Clears subscribers list for event given as parameter.
+ * @param evnt - index of an event that was triggered
+ * @param params - (optional) parameters that will passed to all subscribers
  */
 function CallSubscribers(BamSubscribableEvents evnt, optional BamSubscriberParameters params)
 {
@@ -896,7 +933,7 @@ state Moving
 {
 	event EndState(name NextStateName)
 	{
-		StopMovement();
+		// StopMovement();
 	}
 
 	event Tick(float DeltaTime)
@@ -914,9 +951,9 @@ state Moving
 
 		if( distToFD <= FDRange )
 		{
+			Begin_Idle();
 			FinalDestinationDistanceOffset = 0;
 			FinalDestinationReached();
-			Begin_Idle();
 		}
 	}
 
