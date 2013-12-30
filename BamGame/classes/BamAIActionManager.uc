@@ -190,6 +190,7 @@ function Clear(optional bool bEndActions = false)
 	{
 		while( !IsEmpty() )
 		{
+			Actions[0].bIsBlocked = false;
 			Actions[0].OnEnd();
 			Actions.Remove(0, 1);
 		}
@@ -379,7 +380,9 @@ function bool IsClassBlocked(class<BamAIAction> actClass)
 	local int q;
 
 	if( actClass == none )
+	{
 		return false;
+	}
 
 	for(q = 0; q < LockedActionClasses.Length; ++q)
 	{
@@ -388,6 +391,6 @@ function bool IsClassBlocked(class<BamAIAction> actClass)
 			return true;
 		}
 	}
-
+	
 	return false;
 }
