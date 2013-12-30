@@ -19,11 +19,7 @@ function OnBegin()
 		return;
 	}
 
-	Manager.Controller.Pawn.SetWalking(true);
-
-	Manager.Controller.SetFinalDestination(CoverData.Cover.Location);
-	Manager.Controller.Begin_Moving();
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.InitializeMove(CoverData.Cover.Location, , true, FinalDestinationReached);
 }
 
 function OnEnd()
