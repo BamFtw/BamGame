@@ -20,6 +20,12 @@ event Tick(float DeltaTime)
 	}
 }
 
+function Init(Vector Direction)
+{
+	super.Init(Direction);
+	SetRotation(Rotator(Direction));
+}
+
 simulated function ProcessTouch(Actor Other, Vector HitLocation, Vector HitNormal)
 {
 	local TraceHitInfo HitInfo;
