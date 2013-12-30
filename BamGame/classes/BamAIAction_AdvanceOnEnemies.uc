@@ -16,6 +16,9 @@ var() float MinDuration;
 /** Maximum duration of this action */
 var() float MaxDuration;
 
+/** Whether to finish firing action when this one ends */
+var() bool bDontFinishFiringAction;
+
 /** Selects target to move to and creates firing action if needed */
 function OnBegin()
 {
@@ -52,7 +55,7 @@ function OnBegin()
 	SetDuration(RandRange(MinDuration, MaxDuration));
 	 
 	// move to randomly selected enemy
-	Manager.Controller.InitializeMove(EnemyLocations[Rand(EnemyLocations.Length)], Manager.Controller.Pawn.GetCollisionRadius() * 4.0, bRun, FinalDestinationReached);
+	Manager.Controller.InitializeMove(EnemyLocations[Rand(EnemyLocations.Length)], Manager.Controller.Pawn.GetCollisionRadius() * 9.0, bRun, FinalDestinationReached);
 }
 
 function OnBlocked()
@@ -64,7 +67,7 @@ function OnBlocked()
 function OnEnd()
 {
 	// finish firing action
-	if( FiringAction != none )
+	if( !bDontFinishFiringAction && FiringAction != none )
 	{
 		FiringAction.Finish();
 	}
@@ -82,11 +85,24 @@ function OnEnd()
 function FinalDestinationReached(BamSubscriberParameters params)
 {
 	if( bIsBlocked )
+	{
 		return;
+	}
 
 	Manager.Controller.Begin_Idle();
-	// delay end
-	SetDuration(RandRange(0.5, 1.5));
+	
+	if( TimeLeft() > 1 )
+	{
+		bDontFinishFiringAction = true;
+		Finish();
+		FiringAction.SetDuration(TimeLeft());
+		Manager.PushFront(class'BamAIAction_Strafe'.static.Create_Strafe(TimeLeft(), BSD_RandomLeftRight));
+	}
+	else
+	{
+		// delay end
+		SetDuration(RandRange(0.5, 1.5));
+	}
 }
 
 
@@ -115,4 +131,6 @@ DefaultProperties
 
 	MinDuration=4.0
 	MaxDuration=6.0
+
+	bDontFinishFiringAction=false
 }
