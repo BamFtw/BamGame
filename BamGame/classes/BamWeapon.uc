@@ -17,6 +17,8 @@ var ParticleSystemComponent TPMuzzleFlashPS;
 /** Sound played on FireAmmunition */
 var SoundCue FireSound;
 
+/** Amount of noise weapon makes when firing */
+var float FiringNoise;
 
 /** Attaches particle systems to correct sockets */
 simulated function PostBeginPlay()
@@ -30,6 +32,11 @@ simulated function PostBeginPlay()
 /** Activates Muzzle particles and plays fire sound */
 function ActivateMuzzleFlashEffects()
 {
+	if( FiringNoise > 0 )
+	{
+		MakeNoise(FiringNoise, 'WeaponFire');
+	}
+
 	if( FPMuzzleFlashPS != none )
 	{
 		FPMuzzleFlashPS.ActivateSystem(true);
@@ -83,6 +90,50 @@ simulated function FireAmmunition()
 {
 	super.FireAmmunition();
 	ActivateMuzzleFlashEffects();
+}
+
+/** Added no collision fail for projectile spawning */
+simulated function Projectile ProjectileFire()
+{
+	local vector		StartTrace, EndTrace, RealStartLoc, AimDir;
+	local ImpactInfo	TestImpact;
+	local Projectile	SpawnedProjectile;
+
+	// tell remote clients that we fired, to trigger effects
+	IncrementFlashCount();
+
+	if( Role == ROLE_Authority )
+	{
+		// This is where we would start an instant trace. (what CalcWeaponFire uses)
+		StartTrace = Instigator.GetWeaponStartTraceLocation();
+		AimDir = Vector(GetAdjustedAim( StartTrace ));
+
+		// this is the location where the projectile is spawned.
+		RealStartLoc = GetPhysicalFireStartLoc(AimDir);
+
+		if( StartTrace != RealStartLoc )
+		{
+			// if projectile is spawned at different location of crosshair,
+			// then simulate an instant trace where crosshair is aiming at, Get hit info.
+			EndTrace = StartTrace + AimDir * GetTraceRange();
+			TestImpact = CalcWeaponFire( StartTrace, EndTrace );
+
+			// Then we realign projectile aim direction to match where the crosshair did hit.
+			AimDir = Normal(TestImpact.HitLocation - RealStartLoc);
+		}
+
+		// Spawn projectile
+		SpawnedProjectile = Spawn(GetProjectileClass(), Self,, RealStartLoc, , , true);
+		if( SpawnedProjectile != None && !SpawnedProjectile.bDeleteMe )
+		{
+			SpawnedProjectile.Init( AimDir );
+		}
+
+		// Return it up the line
+		return SpawnedProjectile;
+	}
+
+	return None;
 }
 
 /** Attaches weapon meshes to Owners first and third person meshes */
@@ -229,6 +280,8 @@ DefaultProperties
 	End Object
 	Components.Add(TPMuzzleFlash)
 	TPMuzzleFlashPS=TPMuzzleFlash
+
+	FiringNoise=1.0
 
 	MuzzleFlashSocket=MuzzleFlashSocket
 
