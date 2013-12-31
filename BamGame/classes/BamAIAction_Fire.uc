@@ -1,9 +1,10 @@
 class BamAIAction_Fire extends BamAIAction;
 
-/** Time of firing break left */
-var float FiringBreakTimeLeft;
-/** Time of burst left */
-var float FiringTimeLeft;
+/** Time at which firing break should end */
+var float FiringBreakEndTime;
+/** Time at which firing should end */
+var float FiringEndTime;
+
 /** Whether Pawn is currently firing */
 var bool bIsFiring;
 
@@ -41,16 +42,14 @@ function Tick(float DeltaTime)
 {
 	if( bIsFiring )
 	{
-		FiringTimeLeft -= DeltaTime;
-		if( FiringTimeLeft <= 0 )
+		if( FiringEndTime <= Manager.WorldInfo.TimeSeconds )
 		{
 			StopFiring(true);
 		}
 	}
 	else
 	{
-		FiringBreakTimeLeft -= DeltaTime;
-		if( FiringBreakTimeLeft <= 0 )
+		if( FiringBreakEndTime <= Manager.WorldInfo.TimeSeconds )
 		{
 			StartFiring(true);
 		}
@@ -69,7 +68,7 @@ function bool StartFiring(optional bool bSetTimer = false)
 
 	if( bSetTimer )
 	{
-		FiringTimeLeft = RandRange(MinFireDuration, MaxFireDuration);
+		FiringEndTime = Manager.WorldInfo.TimeSeconds + RandRange(MinFireDuration, MaxFireDuration);
 	}
 
 	return true;
@@ -82,7 +81,7 @@ function bool StopFiring(optional bool bSetTimer = false)
 
 	if( bSetTimer )
 	{
-		FiringBreakTimeLeft = RandRange(MinFireBreak, MaxFireBreak);
+		FiringBreakEndTime = Manager.WorldInfo.TimeSeconds + RandRange(MinFireBreak, MaxFireBreak);
 	}
 
 	return true;
@@ -94,7 +93,7 @@ function bool CanStartFiring()
 }
 
 
-static function BamAIAction_Fire Create_Fire(optional float inDuration = -1, optional int inFireMode = 0)
+static function BamAIAction_Fire Create_Fire(optional float inDuration = -1, optional int inFireMode = default.WeaponFireMode)
 {
 	local BamAIAction_Fire action;
 
@@ -114,9 +113,6 @@ DefaultProperties
 {
 	bIsBlocking=true
 	Lanes=(Lane_Firing)
-
-	FiringBreakTimeLeft=0
-	FiringTimeLeft=0
 
 	WeaponFireMode=0
 

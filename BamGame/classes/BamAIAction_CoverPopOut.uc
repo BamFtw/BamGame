@@ -31,7 +31,6 @@ function OnBegin()
 	FiringAction = class'BamAIAction_FireAtTarget'.static.Create_FireAtTarget(, TimeLeft());
 	if( FiringAction != none )
 	{
-		FiringAction.FiringBreakTimeLeft = 0.5;
 		Manager.PushFront(FiringAction);
 	}
 	else

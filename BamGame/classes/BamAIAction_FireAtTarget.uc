@@ -23,6 +23,7 @@ function Tick(float DeltaTime)
 	{
 		if( !FindGoodTarget() )
 		{
+			`trace("StopFire 1", `green);
 			StopFiring();
 			SetTickBreak(0.1);
 			return;
@@ -36,6 +37,7 @@ function Tick(float DeltaTime)
 	{
 		if( !TargetPawn.IsAliveAndWell() && !FindGoodTarget() )
 		{
+			`trace("StopFire 2", `green);
 			StopFiring();
 			SetTickBreak(0.1);
 			return;
@@ -57,6 +59,13 @@ function Tick(float DeltaTime)
 	// calculate vector from Pawn to target
 	toTargetDir = data.LastSeenLocation - Manager.Controller.Pawn.Location;
 
+	// if( !HasClearLOS(data.LastSeenLocation, data.Pawn) )
+	// {
+	// 	`trace("StopFire 3", `green);
+	// 	StopFiring();
+	// 	return;
+	// }
+
 	// turn pawn toward target
 	rot = Rotator(Normal(toTargetDir));
 	Manager.Controller.Pawn.SetDesiredRotation(rot);
@@ -68,6 +77,12 @@ function Tick(float DeltaTime)
 	super.Tick(DeltaTime);
 }
 
+
+function OnEnd()
+{
+	super.OnEnd();
+	Manager.Controller.SetDesiredViewRotation(MakeRotator(0, 0, 0));
+}
 
 function bool CanStartFiring()
 {
@@ -81,7 +96,7 @@ function bool FindGoodTarget()
 	local array<BamHostilePawnData> pwnData;
 	local Vector loc;
 	local Rotator rot;
-
+	
 	if( !Manager.Controller.HasEnemies() )
 	{
 		`trace(Manager.Controller @ "has no enemies", `red);
@@ -96,12 +111,23 @@ function bool FindGoodTarget()
 	{
 		
 		// check if Pawn has clear line of sight to the target if not remove it from the list
-		if( !Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation, loc, , true) && 
-			!Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation + vect(0,0,1) * pwnData[q].Pawn.EyeHeight, loc, , true) )
+		// if( !Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation, loc, , true) && 
+		// 	!Manager.Controller.Pawn.FastTrace(pwnData[q].LastSeenLocation + vect(0,0,1) * pwnData[q].Pawn.EyeHeight, loc, , true) )
+		// 	
+		
+		// Manager.Controller.DrawDebugLine(pwnData[q].LastSeenLocation + vect(0,0,1) * pwnData[q].Pawn.EyeHeight, loc, 0, 255, 0, true);
+
+		if( !HasClearLOS(pwnData[q].LastSeenLocation, pwnData[q].Pawn) )
 		{
 			pwnData.Remove(q--, 1);
 		}
+
+		// Manager.AILog("Firing check actors:");
+		// Manager.AILog("     -" @ a1);
+		// Manager.AILog("     -" @ a2);
 	}
+
+	`trace(Manager.Controller.Pawn @ pwnData.length, `purple);
 
 	// randomly select one of viable targets
 	if( pwnData.length > 0 )
@@ -113,12 +139,29 @@ function bool FindGoodTarget()
 	return false;
 }
 
-
-function OnEnd()
+function bool HasClearLOS(Vector enemyLoc, Pawn enemy)
 {
-	super.OnEnd();
-	Manager.Controller.SetDesiredViewRotation(MakeRotator(0, 0, 0));
+	local Vector HitLocation, HitNormal, eyeLoc;
+	local Rotator rot;
+	local Actor a1, a2;
+
+	Manager.Controller.GetActorEyesViewPoint(eyeLoc, rot);
+
+	a1 = Manager.Controller.Pawn.Trace(HitLocation, HitNormal, enemyLoc, eyeLoc, true, , , class'Actor'.const.TRACEFLAG_Bullet);
+	// if( a1 != none && a1 != target )
+	// {
+	// 	Manager.Controller.DrawDebugLine(HitLocation, eyeLoc, 255, 0, 0, true);
+	// }
+
+	a2 = Manager.Controller.Pawn.Trace(HitLocation, HitNormal, enemyLoc + vect(0,0,1) * enemy.EyeHeight, enemyLoc, true, , , class'Actor'.const.TRACEFLAG_Bullet);
+	// if( a2 != none && a2 != target )
+	// {
+	// 	Manager.Controller.DrawDebugLine(HitLocation, eyeLoc, 0, 255, 0, true);
+	// }
+
+	return (a1 == none || a1 == target) && (a2 == none || a2 == target);
 }
+
 
 static function BamAIAction_FireAtTarget Create_FireAtTarget(optional Actor inTarget = none, optional float inDuration = -1, optional int inFireMode = 0)
 {
