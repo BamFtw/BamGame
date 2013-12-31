@@ -93,11 +93,6 @@ function SelectAction()
 		`trace("go to fridge", `green);
 		return;
 	}
-	
-	// `trace("no need replenishment rule was met for", `yellow);
-	// `trace("     Tiredness:" @ Tiredness);
-	// `trace("     Thirst   :" @ Thirst);
-	// `trace("     Hunger   :" @ Hunger);
 }
 
 /** Returns average level of all needs of this manager */

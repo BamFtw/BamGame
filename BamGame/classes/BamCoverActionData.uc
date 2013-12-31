@@ -38,7 +38,6 @@ var(PopOut) float MinPopOutDuration;
 /** Max time of the popout */
 var(PopOut) float MaxPopOutDuration;
 
-
 /** Max distance from Pawn to Cover that allows cover to be desirable */
 var(Search) float MaxCoverSearchDistance;
 /** For how long cover actions should be blocked after failed cover search */

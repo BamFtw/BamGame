@@ -129,7 +129,7 @@ function DebugNextPawn()
 
 	if( allPawns.length == 0 )
 	{
-		`trace("No alive pawns to debug", `cyan);
+		`trace("No alive pawns to debug", `yellow);
 		PawnToDebug = none;
 		return;
 	}

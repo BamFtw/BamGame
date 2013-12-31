@@ -174,7 +174,6 @@ event PostBeginPlay()
 event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
 {
 	local int newDamage;
-
 	newDamage = DamageTakenMultiplier * Damage;
 
 	super.TakeDamage(newDamage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser);

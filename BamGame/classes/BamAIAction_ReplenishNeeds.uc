@@ -111,7 +111,6 @@ function FinalDestinationReached(BamSubscriberParameters params)
 	}
 
 	dur = FClamp(maxTime, 4, 10);
-	`trace("Selected dur:" @ dur, `cyan);
 	
 	SetDuration(dur);
 }

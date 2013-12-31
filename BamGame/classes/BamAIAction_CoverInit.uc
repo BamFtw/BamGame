@@ -46,9 +46,8 @@ function OnBegin()
 
 	if( CoverData.Cover == none )
 	{
-		// Manager.BlockActionClass(class'BamAIAction_Cover', FailedCoverBlockDuration);
 		Manager.BlockActionClass(class'BamAIAction_Cover', CoverData.FailedSearchCoverBlockDuration);
-		`trace("cover not found for" @ Manager.Controller, `red);
+		`trace("Cover not found for" @ Manager.Controller, `yellow);
 		
 		if( CoverData.FailedCoverSearchReplacementAction.Archetype != none )
 		{

@@ -16,7 +16,6 @@ function OnBegin()
 	Manager.BlockActionClass(class'BamAIAction', 9999999);
 	if( Manager.Controller.BPawn.CharacterTopBodySlot != none )
 	{
-		`trace("Playing CoverAnimationName on top slot", `green);
 		Manager.Controller.BPawn.CharacterTopBodySlot.PlayCustomAnim(CoverAnimationName, 1.0, 0.4, 0.4, true, true);
 	}
 	else
