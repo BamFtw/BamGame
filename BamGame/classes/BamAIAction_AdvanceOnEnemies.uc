@@ -19,10 +19,14 @@ var() float MaxDuration;
 /** Whether to finish firing action when this one ends */
 var() bool bDontFinishFiringAction;
 
+var float OldFDROffset;
+
 /** Selects target to move to and creates firing action if needed */
 function OnBegin()
 {
 	local array<Vector> EnemyLocations;
+
+	OldFDROffset = Manager.Controller.FinalDestinationDistanceOffset;
 
 	if( !Manager.Controller.IsInCombat() )
 	{
@@ -53,7 +57,7 @@ function OnBegin()
 	}
 
 	SetDuration(RandRange(MinDuration, MaxDuration));
-	 
+
 	// move to randomly selected enemy
 	Manager.Controller.InitializeMove(EnemyLocations[Rand(EnemyLocations.Length)], Manager.Controller.Pawn.GetCollisionRadius() * 9.0, bRun, FinalDestinationReached);
 }
@@ -66,6 +70,8 @@ function OnBlocked()
 
 function OnEnd()
 {
+	Manager.Controller.SetFinalDestinationDistanceOffset(OldFDROffset);
+
 	// finish firing action
 	if( !bDontFinishFiringAction && FiringAction != none )
 	{
