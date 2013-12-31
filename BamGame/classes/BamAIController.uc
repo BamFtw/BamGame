@@ -1,4 +1,4 @@
-class BamAIController extends AIController;
+class BamAIController extends GameAIController;
 
 /** Events that can be subscribed to with Subscribe function */
 enum BamSubscribableEvents
@@ -176,6 +176,9 @@ event Destroyed()
 event PreBeginPlay()
 {
 	super.PreBeginPlay();
+	
+	class'Engine'.static.GetEngine().bDisableAILogging = false;
+	bAILogging = true;
 
 	SubscribersLists.Length = BSE_MAX;
 
@@ -280,8 +283,6 @@ event Tick(float DeltaTime)
 
 	if( ViewPitch != DesiredViewPitch )
 	{
-		//`log("Lerp(" $ DesiredViewPitch $ "," @ ViewPitch $ ", " @ DeltaTime * ViewPitchRotationRate $ ") =" @ Lerp(DesiredViewPitch, ViewPitch, DeltaTime * ViewPitchRotationRate));
-		//ViewPitch = Lerp(DesiredViewPitch, ViewPitch, DeltaTime * ViewPitchRotationRate);
 		deltaPitch = Abs(DeltaTime * ViewPitchRotationRate);
 		if( Abs(DesiredViewPitch - ViewPitch) <= deltaPitch )
 		{
@@ -435,8 +436,8 @@ function ProjectileCaught(Projectile pj, BamPawn PjOwner)
 {
 	if( !IsInCombat() && IsPawnHostile(PjOwner) )
 	{
-		// `trace("Enemy spotted by projectile catcher", `green);
-		EnemySpotted(PjOwner);
+		ActionManager.PushFront(class'BamAIAction_Investigate'.static.Create_Investigate(PjOwner.Location));
+		ActionManager.BlockActionClass(class'BamAIAction_Investigate', 1.0);
 	}
 }
 
@@ -469,6 +470,7 @@ event HearNoise(float Loudness, Actor NoiseMaker, optional Name NoiseType)
 	}
 
 	ActionManager.PushFront(class'BamAIAction_Investigate'.static.Create_Investigate(heardPawn.Location));
+	ActionManager.BlockActionClass(class'BamAIAction_Investigate', 1.0);
 }
 
 /** Forwards Seen pawn to SeePawn function */
@@ -764,8 +766,6 @@ function name ChangeStateRequest(name stateName)
  */
 function name Begin_Idle()
 {
-	`trace("Start idle", `red);
-	ScriptTrace();
 	return ChangeStateRequest('Idle');
 }
 
@@ -807,7 +807,6 @@ function InitializeMove(Vector newFinalDest, optional float MaxDistanceOffset = 
 	BPawn.SetWalking(bRun);
 	SetFinalDestination(newFinalDest, MaxDistanceOffset);
 	Begin_Moving();
-	`trace("Init Move", `green);
 }
 
 /**
@@ -818,7 +817,12 @@ function InitializeMove(Vector newFinalDest, optional float MaxDistanceOffset = 
 function SetFinalDestination(Vector destination, optional float MaxDistanceOffset = 0.0)
 {
 	FinalDestination = destination;
-	FinalDestinationDistanceOffset = FMax(0, MaxDistanceOffset);
+	SetFinalDestinationDistanceOffset(FMax(0, MaxDistanceOffset));
+}
+
+function SetFinalDestinationDistanceOffset(float newOffset)
+{
+	FinalDestinationDistanceOffset = newOffset;
 }
 
 /** Called by 'Moving' state when Pawn gets within CollisionRadius range with FinalDestination, informs active Action about it */
@@ -899,8 +903,7 @@ function CallSubscribers(BamSubscribableEvents evnt, optional BamSubscriberParam
 	// check if size of SubscribersLists is correct
 	if( SubscribersLists.Length <= evnt )
 	{
-		`trace("Subscribers lists array is too short (" $ SubscribersLists.Length $ ")", `red);
-		return;
+		SubscribersLists.Length = BSE_MAX;
 	}
 
 	subsList = SubscribersLists[evnt].List;
@@ -933,7 +936,7 @@ state Moving
 {
 	event EndState(name NextStateName)
 	{
-		// StopMovement();
+		StopMovement();
 	}
 
 	event Tick(float DeltaTime)
