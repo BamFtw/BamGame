@@ -122,7 +122,7 @@ DefaultProperties
 	Components.Add(TrailComp)
 
 	DamageRadius=0.0
-	Damage=25
+	Damage=10
 	Speed=3000.0
 	MaxSpeed=3000.0
 
