@@ -820,6 +820,7 @@ function SetFinalDestination(Vector destination, optional float MaxDistanceOffse
 	SetFinalDestinationDistanceOffset(FMax(0, MaxDistanceOffset));
 }
 
+/** Sets distance from the FinalDestination that will allow reaching it */
 function SetFinalDestinationDistanceOffset(float newOffset)
 {
 	FinalDestinationDistanceOffset = newOffset;
@@ -955,7 +956,7 @@ state Moving
 		if( distToFD <= FDRange )
 		{
 			Begin_Idle();
-			FinalDestinationDistanceOffset = 0;
+			SetFinalDestinationDistanceOffset(0);
 			FinalDestinationReached();
 		}
 	}
