@@ -134,7 +134,6 @@ function bool EnemySpotted(Pawn pwn)
 	data.LastSeenLocation = pwn.Location;
 	data.LastSeenTime = WorldInfo.TimeSeconds;
 
-	`trace(self @"Someone spotted" @ pwn, `cyan);
 	EnemyData.AddItem(data);
 
 	return true;
