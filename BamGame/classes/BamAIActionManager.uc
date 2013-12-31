@@ -56,7 +56,9 @@ function Tick(float DeltaTime)
 	local array<BamAIAction> tempActions;
 
 	if( Controller == none || Controller.Pawn == none || !Controller.Pawn.IsAliveAndWell() )
+	{
 		return;
+	}
 
 	// so compiler wouldn't warn about uninitialized use of variable
 	blockedLanes.Length = 0;
@@ -96,8 +98,12 @@ function Tick(float DeltaTime)
 				if( tempActions[q].IsBlocking() )
 				{
 					for(w = 0; w < currentActionLanes.Length; w++)
+					{
 						if( blockedLanes.Find(currentActionLanes[w]) == INDEX_NONE )
+						{
 							blockedLanes.AddItem(currentActionLanes[w]);
+						}
+					}
 				}
 
 				// check if action was blocked last tick and unblock it if needed
@@ -105,6 +111,7 @@ function Tick(float DeltaTime)
 				{
 					tempActions[q].bIsBlocked = false;
 					tempActions[q].OnUnblocked();
+					AILog("Unblocked action:" @ tempActions[q]);
 				}
 
 				// tick current action if it is not finished
@@ -120,12 +127,14 @@ function Tick(float DeltaTime)
 				{
 					tempActions[q].bIsBlocked = true;
 					tempActions[q].OnBlocked();
+					AILog("Blocked action:" @ tempActions[q]);
 				}
 			}
 
 			// remove action from the list if it is finished
 			if( tempActions[q].IsFinished() )
 			{
+				AILog("Action finished:" @ tempActions[q]);
 				Remove(tempActions[q]);
 			}
 		}
@@ -188,12 +197,17 @@ function Clear(optional bool bEndActions = false)
 {
 	if( bEndActions )
 	{
+		AILog("Clearing action list WITH ending action");
 		while( !IsEmpty() )
 		{
 			Actions[0].bIsBlocked = false;
 			Actions[0].OnEnd();
 			Actions.Remove(0, 1);
 		}
+	}
+	else
+	{
+		AILog("Clearing action list WITHOUT ending action");
 	}
 
 	Actions.Length = 0;
@@ -210,6 +224,7 @@ function BamAIAction Remove(BamAIAction action)
 	{
 		action.OnEnd();
 		Actions.RemoveItem(action);
+		AILog("Removed action:" @ action);
 		return action;
 	}
 
@@ -223,7 +238,9 @@ function BamAIAction Remove(BamAIAction action)
 function PushFront(BamAIAction action)
 {
 	if( action == none || IsClassBlocked(action.Class) )
+	{
 		return;
+	}
 
 	if( Actions.Length == 0 )
 	{
@@ -233,6 +250,8 @@ function PushFront(BamAIAction action)
 	{
 		Actions.InsertItem(0, action);
 	}
+
+	AILog("Action inserted at the start:" @ action);
 
 	InitAction(action);
 }
@@ -244,8 +263,11 @@ function PushFront(BamAIAction action)
 function PushBack(BamAIAction action)
 {
 	if( action == none || IsClassBlocked(action.Class) )
+	{
 		return;
-		
+	}
+	
+	AILog("Action inserted at the end:" @ action);
 	Actions.AddItem(action);
 	InitAction(action);
 }
@@ -288,6 +310,7 @@ function bool InsertBefore(BamAIAction action, BamAIAction marker)
  */
 private function InitAction(BamAIAction action)
 {
+	AILog("Initializing action:" @ action);
 	action.Manager = self;
 	action.OnBegin();
 }
@@ -312,6 +335,7 @@ private function bool InsertNearMarker(BamAIAction action, BamAIAction marker, o
 	if( index != INDEX_NONE )
 	{
 		Actions.InsertItem(index + offset, action);
+		AILog("Action (" $ action $ "inserted near" @ marker);
 		return true;
 	}
 
@@ -341,6 +365,8 @@ function BlockActionClass(class<BamAIAction> actClass, float blockDuration, opti
 			return;
 		}
 	}
+
+	AILog("Blocked action class" @ actClass);
 
 	data.bUseInheritance = bInheritance;
 	data.ActionClass = actClass;
@@ -393,4 +419,12 @@ function bool IsClassBlocked(class<BamAIAction> actClass)
 	}
 	
 	return false;
+}
+
+function AILog(string msg)
+{
+	if( Controller != none )
+	{
+		Controller.AILog_Internal(msg);
+	}
 }
