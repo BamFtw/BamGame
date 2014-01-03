@@ -1,6 +1,12 @@
 class BamWeapon extends UDKWeapon
 	dependson(BamPawn);
 
+/** 
+ * Whether this weapon is only capable of dealing damage at melee range,
+ * this will determine whether covering is needed agaist enemies equiped with this weapon
+ */
+var bool bIsStrictlyMeleeWeapon;
+
 /** Skeletal mesh component that should be attached to first person arms */
 var UDKSkeletalMeshComponent FirstPersonMesh;
 /** Skeletal mesh component that should be attached to third person character mesh */
@@ -280,6 +286,8 @@ DefaultProperties
 	End Object
 	Components.Add(TPMuzzleFlash)
 	TPMuzzleFlashPS=TPMuzzleFlash
+
+	bIsStrictlyMeleeWeapon=false
 
 	FiringNoise=1.0
 
