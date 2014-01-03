@@ -10,6 +10,7 @@ var(Firing) float MinDotToTarget;
 /** Flag that tells whether Pawn is facing enemy and can fire */
 var bool bCanFire;
 
+var bool bFiringAtPlayer;
 
 function Tick(float DeltaTime)
 {
@@ -74,6 +75,34 @@ function Tick(float DeltaTime)
 	super.Tick(DeltaTime);
 }
 
+function bool StartFiring(optional bool bSetTimer = false)
+{
+	if( !super.StartFiring(bSetTimer) )
+	{
+		return false;
+	}
+
+	if( Target == Manager.WorldInfo.GetALocalPlayerController().Pawn )
+	{
+		Manager.Game.GameIntensity.StartedFiringAtPlayer(Manager.Controller.Pawn);
+		bFiringAtPlayer = true;
+	}
+
+	return true;
+}
+
+function bool StopFiring(optional bool bSetTimer = false)
+{
+	super.StopFiring(bSetTimer);
+
+	if( bFiringAtPlayer )
+	{
+		Manager.Game.GameIntensity.StoppedFiringAtPlayer(Manager.Controller.Pawn);
+		bFiringAtPlayer = false;
+	}
+
+	return true;
+}
 
 function OnEnd()
 {
@@ -106,7 +135,7 @@ function bool FindGoodTarget()
 
 	for(q = 0; q < pwnData.Length; ++q)
 	{
-		if( !HasClearLOS(pwnData[q].LastSeenLocation, pwnData[q].Pawn) )
+		if( !IsPawnViableTarget(pwnData[q].Pawn) || !HasClearLOS(pwnData[q].LastSeenLocation, pwnData[q].Pawn) )
 		{
 			pwnData.Remove(q--, 1);
 		}
@@ -120,6 +149,17 @@ function bool FindGoodTarget()
 	}
 
 	return false;
+}
+
+function bool IsPawnViableTarget(Pawn pwn)
+{
+	// check if pawn belongs to player and GI allows shooting at him
+	if( pwn == Manager.WorldInfo.GetALocalPlayerController().Pawn )
+	{
+		return Manager.Game.GameIntensity.CanFireAtPlayer();
+	}
+
+	return pwn != none;
 }
 
 /** 
@@ -165,4 +205,5 @@ DefaultProperties
 	Lanes=(Lane_Firing)
 
 	MinDotToTarget=0.9
+	bFiringAtPlayer=false
 }
