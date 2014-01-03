@@ -17,8 +17,11 @@ struct BamBlockedActionClassData
 };
 
 
-/** reference to WorilInfo */
+/** Reference to WorilInfo */
 var WorldInfo WorldInfo;
+
+/** Reference to GameInfo */
+var BamGameInfo Game;
 
 /** Controller that is using this manager */
 var BamAIController Controller;
@@ -40,6 +43,7 @@ final function MasterInitialize(BamAIController C)
 
 	Controller = C;
 	WorldInfo = C.WorldInfo;
+	Game = BamGameInfo(WorldInfo.Game);
 
 	Initialize();
 }
@@ -70,7 +74,9 @@ function Tick(float DeltaTime)
 		{
 			LockedActionClasses[q].TimeLeft -= DeltaTime;
 			if( LockedActionClasses[q].TimeLeft <= 0 )
+			{
 				LockedActionClasses.Remove(q--, 1);
+			}
 		}
 	}
 
@@ -170,19 +176,18 @@ function BamAIAction Back()
 /** Retruns whether any of the elements in a1 exists in a2 */
 function bool LaneOverlap(array<BamAIActionLane> a1, array<BamAIActionLane> a2)
 {
-	local int q, w;
+	local int q;
 
 	if( a1.Length == 0 || a2.Length == 0 )
+	{
 		return false;
+	}
 
 	for(q = 0; q < a1.Length; ++q)
 	{
-		for(w = 0; w < a2.Length; w++)
+		if( a2.Find(a1[q]) != INDEX_NONE )
 		{
-			if( a1[q] == a2[w] )
-			{
-				return true;
-			}
+			return true;
 		}
 	}
 
@@ -197,7 +202,7 @@ function Clear(optional bool bEndActions = false)
 {
 	if( bEndActions )
 	{
-		AILog("Clearing action list WITH ending action");
+		AILog("Clearing action list WITH ending actions");
 		while( !IsEmpty() )
 		{
 			Actions[0].bIsBlocked = false;
@@ -207,7 +212,7 @@ function Clear(optional bool bEndActions = false)
 	}
 	else
 	{
-		AILog("Clearing action list WITHOUT ending action");
+		AILog("Clearing action list WITHOUT ending actions");
 	}
 
 	Actions.Length = 0;
