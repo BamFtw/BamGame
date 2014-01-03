@@ -269,6 +269,18 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 	local PlayerController PC;
 	local Controller Killer;
 
+	if( Game.GameIntensity.GetParamValue(BGIP_AllowFriendlyFire) == 0 && IsPawnFriendly(InstigatedBy.Pawn) )
+	{
+		`trace("Friendly fire ignored", `cyan);
+		return;
+	}
+
+	// adjust damage for GI
+	if( GetALocalPlayerController().Pawn == self )
+	{
+		Damage *= Game.GameIntensity.GetParamValue(BGIP_DamageTakenMultiplier_Player);
+	}
+
 	// check for headshot bones and adjust damage
 	if( HeadBoneNames.Find(string(HitInfo.BoneName)) != INDEX_NONE )
 	{
@@ -426,6 +438,11 @@ simulated function DealMeleeDamage()
 				}
 			}
 		}
+	}
+
+	if( PotentialTargets.Length == 0 )
+	{
+		return;
 	}
 
 	// choose number of units hit
