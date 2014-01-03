@@ -93,13 +93,16 @@ var BamActor_TeamManager Team;
 
 
 /** While in 'Moving' state, how often should pathfinding algorithm be ran */
-var() float PathfindingInterval;
+var(Pathfinding) float PathfindingInterval;
 
 /** Modifier of Pawns collision extent used while testing whether anyting is blocking its way */
-var() float PathfindingFrontCollisionExtentMod;
+var(Pathfinding) float PathfindingFrontCollisionExtentMod;
 
 /** Modifier of Pawns collision radius used while testing whether anyting is blocking its way */
-var() float PathfindingFrontCollisionRadiusMultiplier;
+var(Pathfinding) float PathfindingFrontCollisionRadiusMultiplier;
+
+/** Whether pathfinding should analyze closest surroundings while pathfinding */
+var(Pathfinding) bool bUseDynamicActorAvoidance;
 
 /** Location on the Pawns path that Pawn is currently heading toward */
 var Vector MoveLocation;
@@ -606,51 +609,54 @@ function Vector FindNavMeshPath(Vector goal)
 	}
 
 	// check if there is anything in front of the pawn
-	TestMoveDistance = Pawn.GetCollisionRadius() * PathfindingFrontCollisionRadiusMultiplier;
-	if( TestMoveDistance > VSize2D(Pawn.Location - moveLoc) )
+	if( bUseDynamicActorAvoidance )
 	{
-		TestMoveDistance = VSize2D(Pawn.Location - moveLoc);
-	}
-
-	TraceEnd = moveLoc - Pawn.Location;
-	TraceEnd.Z = Pawn.Location.Z;
-	TraceEnd = Normal(TraceEnd) * TestMoveDistance;
-
-	Extent = Pawn.GetCollisionExtent() * PathfindingFrontCollisionExtentMod;
-
-	HitActor = Trace(HitLocation, HitNormal, Pawn.Location + TraceEnd, Pawn.Location,  true, Extent);
-
-	// if there is, test if pawn can step to the side
-	if( HitActor != none )
-	{
-		for(q = -2; q < 3; ++q)
+		TestMoveDistance = Pawn.GetCollisionRadius() * PathfindingFrontCollisionRadiusMultiplier;
+		if( TestMoveDistance > VSize2D(Pawn.Location - moveLoc) )
 		{
-			if( q == 0 )
-				continue;
-
-			TraceEndFinal = Pawn.Location + (TraceEnd << MakeRotator(0, q * 16384, 0));
-			TraceEndFinal.Z = Pawn.Location.Z;
-			HitActor = Trace(HitLocation, HitNormal, TraceEndFinal, Pawn.Location,  true, Extent);
-			
-			if( HitActor == none && NavigationHandle.PointReachable(TraceEndFinal) )
-				availableMoveLocations.AddItem(TraceEndFinal);
+			TestMoveDistance = VSize2D(Pawn.Location - moveLoc);
 		}
-		
-		// if step to the side location was found get the closest one to the goal
-		if( availableMoveLocations.Length > 0 )
+
+		TraceEnd = moveLoc - Pawn.Location;
+		TraceEnd.Z = Pawn.Location.Z;
+		TraceEnd = Normal(TraceEnd) * TestMoveDistance;
+
+		Extent = Pawn.GetCollisionExtent() * PathfindingFrontCollisionExtentMod;
+
+		HitActor = Trace(HitLocation, HitNormal, Pawn.Location + TraceEnd, Pawn.Location,  true, Extent);
+
+		// if there is, test if pawn can step to the side
+		if( HitActor != none )
 		{
-			tempDistance = 999999999;
-
-			for(q = 0; q < availableMoveLocations.Length; ++q)
+			for(q = -2; q < 3; ++q)
 			{
-				if( Vsize2D(moveLoc - availableMoveLocations[q]) < tempDistance )
-				{
-					tempDistance = Vsize2D(moveLoc - availableMoveLocations[q]);
-					goal = availableMoveLocations[q];
-				}
-			}
+				if( q == 0 )
+					continue;
 
-			return goal;
+				TraceEndFinal = Pawn.Location + (TraceEnd << MakeRotator(0, q * 16384, 0));
+				TraceEndFinal.Z = Pawn.Location.Z;
+				HitActor = Trace(HitLocation, HitNormal, TraceEndFinal, Pawn.Location,  true, Extent);
+				
+				if( HitActor == none && NavigationHandle.PointReachable(TraceEndFinal) )
+					availableMoveLocations.AddItem(TraceEndFinal);
+			}
+			
+			// if step to the side location was found get the closest one to the goal
+			if( availableMoveLocations.Length > 0 )
+			{
+				tempDistance = 999999999;
+
+				for(q = 0; q < availableMoveLocations.Length; ++q)
+				{
+					if( Vsize2D(moveLoc - availableMoveLocations[q]) < tempDistance )
+					{
+						tempDistance = Vsize2D(moveLoc - availableMoveLocations[q]);
+						goal = availableMoveLocations[q];
+					}
+				}
+
+				return goal;
+			}
 		}
 	}
 
@@ -998,6 +1004,7 @@ defaultproperties
 	PathfindingInterval=0.5
 	PathfindingFrontCollisionExtentMod=0.75
 	PathfindingFrontCollisionRadiusMultiplier=2.5
+	bUseDynamicActorAvoidance=true
 
 	NeedManagerClass=class'BamNeedManager_Example'
 	ActionManagerClass=class'BamAIActionManager'
@@ -1010,7 +1017,6 @@ defaultproperties
 	NavMeshPath_SearchExtent_Modifier=(X=3.0,Y=3.0,Z=0.0)
 
 	EnemyDetectionDelay=1.0
-
 
 	EnemyDetectionInnerRadius=300.0
 	EnemyDetectionOuterRadius=1000.0
