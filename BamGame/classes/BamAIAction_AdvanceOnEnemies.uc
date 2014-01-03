@@ -25,6 +25,8 @@ var float OldFDROffset;
 function OnBegin()
 {
 	local array<Vector> EnemyLocations;
+	local int q, closestIndex;
+	local float closestDistance, currentDistance;
 
 	OldFDROffset = Manager.Controller.FinalDestinationDistanceOffset;
 
@@ -58,8 +60,18 @@ function OnBegin()
 
 	SetDuration(RandRange(MinDuration, MaxDuration));
 
-	// move to randomly selected enemy
-	Manager.Controller.InitializeMove(EnemyLocations[Rand(EnemyLocations.Length)], Manager.Controller.Pawn.GetCollisionRadius() * 9.0, bRun, FinalDestinationReached);
+	for(q = 0; q < EnemyLocations.Length; ++q)
+	{
+		currentDistance = VSizeSq(Manager.Controller.Pawn.Location - EnemyLocations[q]);
+		if( closestDistance == 0 || currentDistance < closestDistance )
+		{
+			closestIndex = q;
+			closestDistance = currentDistance;
+		}
+	}
+
+	// move to closes enemy
+	Manager.Controller.InitializeMove(EnemyLocations[closestIndex], Manager.Controller.Pawn.GetCollisionRadius() * 9.0, bRun, FinalDestinationReached);
 }
 
 function OnBlocked()
