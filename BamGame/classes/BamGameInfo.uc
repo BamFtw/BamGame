@@ -6,6 +6,11 @@ var BamActor_TeamManager PlayerTeam;
 /** Reference to neutral team */
 var BamActor_TeamManager NeutralTeam;
 
+/** Class of game intensity that should be used */
+var class<BamGameIntensity> GameIntensityClass;
+
+/** reference to game intensity object */
+var BamGameIntensity GameIntensity;
 
 /** Copy of default function with one extra check */
 function Killed(Controller Killer, Controller KilledPlayer, Pawn KilledPawn, class<DamageType> damageType)
@@ -26,12 +31,45 @@ function Killed(Controller Killer, Controller KilledPlayer, Pawn KilledPawn, cla
 	NotifyKilled(Killer, KilledPlayer, KilledPawn, damageType);
 }
 
+/**  */
+function Tick(float DeltaTime)
+{
+	super.Tick(DeltaTime);
 
-/** Caches references to player and neutral teams */
+	if( GameIntensity != none )
+	{
+		GameIntensity.Tick(DeltaTime);
+	}
+}
+
+
+/** Caches references to player and neutral teams and creates GameIntensity object */
 event PreBeginPlay()
 {
 	super.PreBeginPlay();
+	
+	CreateGameIntensity();
+
 	GetDefaultTeams();
+}
+
+function CreateGameIntensity()
+{
+	if( GameIntensityClass == none )
+	{
+		`trace("GameIntensity class is not set, spawning default", `yellow);
+		GameIntensity = new class'BamGameIntensity';
+		return;
+	}
+
+	GameIntensity = new GameIntensityClass;
+
+	if( GameIntensity == none )
+	{
+		`trace("Failed to spawn GameIntensity, spawning default", `yellow);
+		GameIntensity = new class'BamGameIntensity';
+		return;
+	}
 }
 
 /** Finds player and neutral team managers on the map, if not found creates them */
@@ -124,4 +162,5 @@ defaultproperties
 	HUDType=class'BamHUD'
 	DefaultPawnClass=class'BamPlayerPawn'
 	PlayerControllerClass=class'BamPlayerController'
+	GameIntensityClass=class'BamGameIntensity'
 }
