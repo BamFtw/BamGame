@@ -173,14 +173,34 @@ event PostBeginPlay()
 /** Changes taken damage depending on DamageTakenMultiplier, informs controller about taken damage */
 event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
 {
-	local int newDamage;
-	newDamage = DamageTakenMultiplier * Damage;
+	// modify damage by this pawns DamageTakenMultiplier
+	Damage *= DamageTakenMultiplier;
 
-	super.TakeDamage(newDamage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser);
+	// modify damage value by GameIntensity
+	if( GetALocalPlayerController().Pawn != self && BController != none )
+	{
+		// check if player team
+		if( BController.Team == Game.PlayerTeam )
+		{
+			Damage *= Game.GameIntensity.GetParamValue(BGIP_DamageTakenMultiplier_Friendly);
+		}
+		// check if hostile team
+		else if( Game.PlayerTeam.IsTeamHostile(BController.Team) )
+		{
+			Damage *= Game.GameIntensity.GetParamValue(BGIP_DamageTakenMultiplier_Hostile);
+		}
+		// not friendly nor friendly, must be neutral
+		else
+		{
+			Damage *= Game.GameIntensity.GetParamValue(BGIP_DamageTakenMultiplier_Neutral);
+		}
+	}
+	
+	super.TakeDamage(Damage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser);
 	
 	if( IsAliveAndWell() && BController != none )
 	{
-		BController.TakeDamage(newDamage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser);
+		BController.TakeDamage(Damage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser);
 	}
 }
 
