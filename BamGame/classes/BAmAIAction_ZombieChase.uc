@@ -16,14 +16,23 @@ function OnBegin()
 		return;
 	}
 
+
+
+	Manager.Controller.bUseDynamicActorAvoidance = false;
 	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
 }
 
 function Tick(float DeltaTime)
 {
-	if( !Manager.Controller.IsInCombat() || (Target == none && !FindGoodTarget()) )
+	if( !Manager.Controller.IsInCombat() || ((Target == none || !Target.IsAliveAndWell()) && !FindGoodTarget())  )
 	{
 		Finish();
+		return;
+	}
+
+	if( VSize(Target.Location - Manager.Controller.Pawn.Location) <= Manager.Controller.BPawn.MeleeProperties.Range * 0.75 )
+	{
+		Manager.Controller.ActionManager.PushFront(class'BAmAIAction_ZombieAttack'.static.Create_ZombieAttack(Target));
 		return;
 	}
 
@@ -34,6 +43,7 @@ function Tick(float DeltaTime)
 function OnEnd()
 {
 	Manager.Controller.Unsubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.bUseDynamicActorAvoidance = Manager.Controller.default.bUseDynamicActorAvoidance;
 }
 
 function OnBlocked()

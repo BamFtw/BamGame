@@ -9,6 +9,12 @@ function Tick(float DeltaTime)
 {
 	local Rotator rot;
 
+	if( Target == none || !Target.IsAliveAndWell() )
+	{
+		Finish();
+		return;
+	}
+
 	rot = Rotator(Target.Location - Manager.Controller.Pawn.Location);
 	rot.Roll = 0;
 	rot.Pitch = 0;
