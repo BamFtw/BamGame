@@ -25,15 +25,15 @@ function bool FindBestCover(optional float maxDistance = CoverData.MaxCoverSearc
 	}
 
 	// make sure controller has enemies
-	if( !Manager.Controller.HasEnemies() )
+	if( !Manager.Controller.HasRangedEnemies() )
 	{
-		`trace(Manager.Controller @ "has no enemies", `red);
+		// `trace(Manager.Controller @ "has no enemies", `red);
 		return false;
 	}
 
 	bestCover = none;
 	bestCoverDesirability = desirabilityBase;
-	EnemyLocations = Manager.Controller.GetEnemyLocations();
+	EnemyLocations = Manager.Controller.GetRangedEnemyLocations();
 	currentCoverDesirability = 0;
 
 	for(q = 0; q < EnemyLocations.Length; ++q)
