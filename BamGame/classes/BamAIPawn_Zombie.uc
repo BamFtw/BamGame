@@ -19,4 +19,7 @@ DefaultProperties
 	WalkingPct=1.0
 	AccelRate=512.0
 	PeripheralVision=0.7071
+
+	Health=400.0
+	HealthMax=400.0
 }
