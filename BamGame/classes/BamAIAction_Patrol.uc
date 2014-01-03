@@ -60,14 +60,21 @@ function OnBlocked()
 
 function OnUnblocked()
 {
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
-	Manager.Controller.Begin_Moving();
+	// Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	// Manager.Controller.Begin_Moving();
+	Manager.Controller.InitializeMove(Route[CurrentIndex].Location, Manager.Controller.Pawn.GetCollisionRadius() * 2.0, bRunWhilePatrolling, FinalDestinationReached);
 }
 
 
 function FinalDestinationReached(BamSubscriberParameters params)
 {
 	local float waitTime;
+
+	if( IsBlocked() )
+	{
+		return;
+	}
+
 	waitTime = FMax(0.01, Route[CurrentIndex].GetWaitTime());
 
 	Manager.Controller.Pawn.SetDesiredRotation(Route[CurrentIndex].Rotation, true);
