@@ -46,7 +46,9 @@ function array<BamAIactionLane> GetOccupiedLanes()
 
 	// if action does not block all available lanes return Lanes array
 	if( !bBlockAllLanes )
+	{
 		return Lanes;
+	}
 
 	// add all available lanes to result array
 	for(q = 0; q < Lane_MAX; ++q)
@@ -145,7 +147,9 @@ function float GetDuration()
 function float TimeLeft()
 {
 	if( Duration <= 0 )
+	{
 		return -1;
+	}
 
 	return (Duration - TimeElapsed);
 }
