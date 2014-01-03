@@ -42,7 +42,7 @@ function bool CanFireAtPlayer()
 /** Adds Pawn given as parameter to PawnsFiringAtPlayer list */
 function StartedFiringAtPlayer(Pawn pwn)
 {
-	if( pwn == none )
+	if( pwn == none || PawnsFiringAtPlayer.Find(pwn) != INDEX_NONE )
 	{
 		return;
 	}
