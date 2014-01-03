@@ -40,8 +40,26 @@ function Tick(float DeltaTime)
 			continue;
 		}
 	}
+}
 
+/** Returns whether pawn given as parameter is capable of dealing damage from distance */
+function bool IsEnemyRanged(Pawn pwn)
+{
+	local BamWeapon bWpn;
 
+	if( pwn == none )
+	{
+		return false;
+	}
+
+	bWpn = BamWeapon(pwn.Weapon);
+
+	if( bWpn == none )
+	{
+		return pwn.Weapon != none;
+	}
+
+	return !bWpn.bIsStrictlyMeleeWeapon;
 }
 
 /** Returns whether team is currently in combat */
@@ -56,6 +74,22 @@ function bool HasEnemies()
 	return EnemyData.Length > 0;
 }
 
+/** Returns whether team know about any enemy that is capable of dealing damge from distance */
+function bool HasRangedEnemies()
+{
+	local int q;
+
+	for(q = 0; q < EnemyData.Length; ++q)
+	{
+		if( IsEnemyRanged(EnemyData[q].Pawn) )
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 /** Returns whether pawn given as parameter is hostile to this team */
 function bool IsPawnHostile(Pawn pwn)
 {
@@ -65,7 +99,7 @@ function bool IsPawnHostile(Pawn pwn)
 	{
 		team = Game.PlayerTeam;
 	}
-	else if( BamAIPawn(pwn) == none || BamAIPAwn(pwn).BController.Team == none )
+	else if( BamAIPawn(pwn) == none || BamAIPAwn(pwn).BController == none || BamAIPAwn(pwn).BController.Team == none )
 	{
 		return false;
 	}
@@ -77,6 +111,12 @@ function bool IsPawnHostile(Pawn pwn)
 	return (team != none && Enemies.Find(team) != INDEX_NONE);
 }
 
+/** Returns whether team given as parameter is hostile toward this one */
+function bool IsTeamHostile(BamActor_TeamManager mgr)
+{
+	return Enemies.Find(mgr) != INDEX_NONE;
+}
+
 /** Returns list of vestors representing last known locations of all of the enemies */
 function array<Vector> GetEnemyLocations()
 {
@@ -85,6 +125,25 @@ function array<Vector> GetEnemyLocations()
 	
 	for(q = 0; q < EnemyData.Length; ++q)
 	{
+		locations.AddItem(EnemyData[q].LastSeenLocation);
+	}
+
+	return locations;
+}
+
+/** Returns list of vestors representing last known locations of all of the enemies that are capable of dealing damage from distance */
+function array<Vector> GetRangedEnemyLocations()
+{
+	local array<Vector> locations;
+	local int q;
+	
+	for(q = 0; q < EnemyData.Length; ++q)
+	{
+		if( !IsEnemyRanged(EnemyData[q].Pawn) )
+		{
+			continue;
+		}
+
 		locations.AddItem(EnemyData[q].LastSeenLocation);
 	}
 
