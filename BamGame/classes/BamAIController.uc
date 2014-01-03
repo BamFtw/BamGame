@@ -686,6 +686,11 @@ function bool HasEnemies()
 	return Team.HasEnemies();
 }
 
+function bool HasRangedEnemies()
+{
+	return Team.HasRangedEnemies();
+}
+
 /** Returns whether controller is in combat */
 event bool IsInCombat(optional bool bForceCheck)
 {
@@ -701,6 +706,12 @@ event bool IsInCombat(optional bool bForceCheck)
 function array<Vector> GetEnemyLocations()
 {
 	return Team.GetEnemyLocations();
+}
+
+/** Returns list of last known locations of all known enemies */
+function array<Vector> GetRangedEnemyLocations()
+{
+	return Team.GetRangedEnemyLocations();
 }
 
 /** 
