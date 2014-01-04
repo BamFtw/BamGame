@@ -714,6 +714,11 @@ function array<Vector> GetEnemyLocations()
 	return Team.GetEnemyLocations();
 }
 
+function Vector GetAverageEnemyLocation()
+{
+	return Team.GetAverageEnemyLocation();
+}
+
 /** Returns list of last known locations of all known enemies */
 function array<Vector> GetRangedEnemyLocations()
 {

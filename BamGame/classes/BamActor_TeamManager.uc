@@ -131,6 +131,20 @@ function array<Vector> GetEnemyLocations()
 	return locations;
 }
 
+/** Sums all of the LastSeenLocations and returns average of those */
+function Vector GetAverageEnemyLocation()
+{
+	local Vector sum;
+	local int q;
+
+	for(q = 0; q < EnemyData.Length; ++q)
+	{
+		sum += EnemyData[q].LastSeenLocation;
+	}
+
+	return sum / EnemyData.Length;
+}
+
 /** Returns list of vestors representing last known locations of all of the enemies that are capable of dealing damage from distance */
 function array<Vector> GetRangedEnemyLocations()
 {
@@ -184,7 +198,14 @@ function bool EnemySpotted(Pawn pwn)
 	{
 		if( EnemyData[q].Pawn == pwn )
 		{
-			EnemyData[q].LastSeenLocation = pwn.Location;
+			if( BamPawn(pwn) == none )
+			{
+				EnemyData[q].LastSeenLocation = pwn.Location;
+			}
+			else
+			{
+				EnemyData[q].LastSeenLocation = BamPawn(pwn).GetCenterLocation();
+			}
 			return false;
 		}
 	}
