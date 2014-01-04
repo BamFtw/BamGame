@@ -1,0 +1,1 @@
+class BamGIParam_DamageTakenMultiplier_Neutral extends BamGIParam;

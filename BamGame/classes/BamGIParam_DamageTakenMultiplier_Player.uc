@@ -1,0 +1,1 @@
+class BamGIParam_DamageTakenMultiplier_Player extends BamGIParam;

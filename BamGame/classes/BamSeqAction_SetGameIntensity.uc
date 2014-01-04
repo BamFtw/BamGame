@@ -1,13 +1,7 @@
 class BamSeqAction_SetGameIntensity extends BamSeqAction;
 
-struct BamGIParamValuePair
-{
-	var() BamGameIntensityParam Parameter;
-	var() float Value;
-};
-
 /** List of GI params that will be set when this SeqAction is activated */
-var() array<BamGIParamValuePair> Params;
+var() array<BamGIParamValue> Params;
 
 /** Sets GameIntensity parameters specified in Params list */
 event Activated()
@@ -25,7 +19,7 @@ event Activated()
 
 	for(q = 0; q < Params.Length; ++q)
 	{
-		bgi.GameIntensity.SetParam(Params[q].Parameter, Params[q].Value);
+		bgi.GameIntensity.SetParam(Params[q].Param, Params[q].Value);
 	}
 }
 

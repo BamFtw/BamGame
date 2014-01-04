@@ -1,0 +1,1 @@
+class BamGIParam_DamageTakenMultiplier_Hostile extends BamGIParam;

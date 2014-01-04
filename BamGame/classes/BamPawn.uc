@@ -269,7 +269,7 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 	local PlayerController PC;
 	local Controller Killer;
 
-	if( Game.GameIntensity.GetParamValue(BGIP_AllowFriendlyFire) == 0 && IsPawnFriendly(InstigatedBy.Pawn) )
+	if( Game.GameIntensity.GetParamValue(class'BamGIParam_AllowFriendlyFire') == 0 && IsPawnFriendly(InstigatedBy.Pawn) )
 	{
 		`trace("Friendly fire ignored", `cyan);
 		return;
@@ -278,7 +278,7 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 	// adjust damage for GI
 	if( GetALocalPlayerController().Pawn == self )
 	{
-		Damage *= Game.GameIntensity.GetParamValue(BGIP_DamageTakenMultiplier_Player);
+		Damage *= Game.GameIntensity.GetParamValue(class'BamGIParam_DamageTakenMultiplier_Player');
 	}
 
 	// check for headshot bones and adjust damage
@@ -499,6 +499,15 @@ simulated event PlayDying(class<DamageType> DamageType,  vector HitLoc)
 	}
 }
 
+function Vector GetCenterLocation()
+{
+	local vector loc;
+	local rotator rot;
+
+	CharacterMesh.GetSocketWorldLocationAndRotation('ChestSocket', loc, rot);
+
+	return loc;
+}
 
 simulated function SetPawnRBChannels(SkeletalMeshComponent meshComp, bool bRagdollMode)
 {

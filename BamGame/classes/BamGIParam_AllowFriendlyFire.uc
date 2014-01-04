@@ -1,0 +1,1 @@
+class BamGIParam_AllowFriendlyFire extends BamGIParam;

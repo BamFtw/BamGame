@@ -182,17 +182,17 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 		// check if player team
 		if( BController.Team == Game.PlayerTeam )
 		{
-			Damage *= Game.GameIntensity.GetParamValue(BGIP_DamageTakenMultiplier_Friendly);
+			Damage *= Game.GameIntensity.GetParamValue(class'BamGIParam_DamageTakenMultiplier_Friendly');
 		}
 		// check if hostile team
 		else if( Game.PlayerTeam.IsTeamHostile(BController.Team) )
 		{
-			Damage *= Game.GameIntensity.GetParamValue(BGIP_DamageTakenMultiplier_Hostile);
+			Damage *= Game.GameIntensity.GetParamValue(class'BamGIParam_DamageTakenMultiplier_Hostile');
 		}
 		// not friendly nor friendly, must be neutral
 		else
 		{
-			Damage *= Game.GameIntensity.GetParamValue(BGIP_DamageTakenMultiplier_Neutral);
+			Damage *= Game.GameIntensity.GetParamValue(class'BamGIParam_DamageTakenMultiplier_Neutral');
 		}
 	}
 	

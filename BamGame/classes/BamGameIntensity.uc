@@ -1,22 +1,16 @@
 class BamGameIntensity extends Object;
 
-enum BamGameIntensityParam
+struct BamGIParamValue
 {
-	BGIP_InvalidParam,
-	BGIP_DamageTakenMultiplier_Player,
-	BGIP_DamageTakenMultiplier_Friendly,
-	BGIP_DamageTakenMultiplier_Neutral,
-	BGIP_DamageTakenMultiplier_Hostile,
-	BGIP_MaxEnemiesFiringAtPlayer,
-	BGIP_AllowFriendlyFire,
-	BGIP_MAX
+	var() class<BamGIParam> Param;
+	var() float Value;
 };
 
-/** List that stores values of the parameters from BamGameIntensityParam enum */
-var() array<float> Params;
+/** List that stores values of the parameters */
+var() array<BamGIParamValue> Params;
 
-/** List of Pawns currently firing at player, if its length reaches 
- *	BGIP_MaxEnemiesFiringAtPlayer param value no more pawns should be able to fire at player */
+/** List of Pawns currently firing at player, if its length reaches MaxEnemiesFiringAtPlayer
+ *	param value no more pawns should be able to fire at player */
 var array<Pawn> PawnsFiringAtPlayer;
 
 function Tick(float DeltaTime)
@@ -36,7 +30,7 @@ function Tick(float DeltaTime)
 /** Returns whether it is possible to shoot at player at this time */
 function bool CanFireAtPlayer()
 {
-	return (PawnsFiringAtPlayer.Length < GetParamValue(BGIP_MaxEnemiesFiringAtPlayer));
+	return (PawnsFiringAtPlayer.Length < GetParamValue(class'BamGIParam_MaxEnemiesFiringAtPlayer'));
 }
 
 /** Adds Pawn given as parameter to PawnsFiringAtPlayer list */
@@ -75,39 +69,94 @@ function Reset()
  * @param param - parameter to set
  * @param value - value to assign to given param
  */
-function SetParam(BamGameIntensityParam param, float value)
+function SetParam(class<BamGIParam> param, float value)
 {
-	if( param <= BGIP_InvalidParam || param >= Params.Length )
+	local int idx;
+
+	if( param == none )
 	{
-		`trace("param out of bounds :" @ int(param), `red);
+		`trace("Wrong param", `red);
 		return;
 	}
 
-	Params[param] = value;
+	idx = GetParamIndex(param);
+
+	if( idx == INDEX_NONE )
+	{
+		Params.AddItem(CreateParamValue(param, value));
+	}
+	else
+	{
+		Params[idx].Value = value;
+	}
 }
+
 
 /** 
  * Returns value of param given as parameter
  * @param param - parameter which value should be returned
  * @return value of parameter or 0 if param is invalid
  */
-function float GetParamValue(BamGameIntensityParam param)
+function float GetParamValue(class<BamGIParam> param)
 {
-	if( param <= BGIP_InvalidParam || param >= Params.Length )
+	local int idx;
+
+	idx = GetParamIndex(param);
+
+	if( param == none || idx == INDEX_NONE )
 	{
-		`trace("param out of bounds :" @ int(param), `red);
+		`trace("Wrong param", `red);
 		return 0;
 	}
 
-	return Params[param];
+	return Params[idx].Value;
+}
+
+/**
+ * Returns index in the Params list of the param given as parameter
+ * @param param - 
+ * @return index of the param in the Params list, INDEX_NONE if not found
+ */
+function int GetParamIndex(class<BamGIParam> param)
+{
+	local int q;
+
+	if( param != none && Params.Length > 0 )
+	{
+		for(q = 0; q < Params.Length; ++q)
+		{
+			if( Params[q].Param == param )
+			{
+				return q;
+			}
+		}
+	}
+
+	return INDEX_NONE;
+}
+
+/**
+ * Creates and returns struct with specified values
+ * @param param -
+ * @param value - 
+ * @return struct filled with given data
+ */
+function BamGIParamValue CreateParamValue(class<BamGIParam> param, float value)
+{
+	local BamGIParamValue val;
+
+	val.Param = param;
+	val.Value = value;
+
+	return val;
 }
 
 DefaultProperties
 {
-	Params[BGIP_DamageTakenMultiplier_Player]=0.5
-	Params[BGIP_DamageTakenMultiplier_Friendly]=0.75
-	Params[BGIP_DamageTakenMultiplier_Neutral]=1.0
-	Params[BGIP_DamageTakenMultiplier_Hostile]=1.0
-	Params[BGIP_MaxEnemiesFiringAtPlayer]=2
-	Params[BGIP_AllowFriendlyFire]=0
+	Params.Add((Param=class'BamGIParam_DamageTakenMultiplier_Player',Value=1.0))
+	Params.Add((Param=class'BamGIParam_DamageTakenMultiplier_Friendly',Value=1.0))
+	Params.Add((Param=class'BamGIParam_DamageTakenMultiplier_Neutral',Value=1.0))
+	Params.Add((Param=class'BamGIParam_DamageTakenMultiplier_Hostile',Value=1.0))
+	Params.Add((Param=class'BamGIParam_MaxEnemiesFiringAtPlayer',Value=2.0))
+	Params.Add((Param=class'BamGIParam_AllowFriendlyFire',Value=0.0))
 }
