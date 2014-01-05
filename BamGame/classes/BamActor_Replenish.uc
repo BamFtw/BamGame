@@ -1,7 +1,7 @@
 class BamActor_Replenish extends BamActor
 	abstract;
 
-struct NeedReplenishmentRate
+struct BamNeedReplenishmentRate
 {
 	/** Class of the need */
 	var() class<BamNeed> NeedClass;
@@ -10,7 +10,7 @@ struct NeedReplenishmentRate
 };
 
 /** List of needs and rates at which they are replenished */
-var() array<NeedReplenishmentRate> NeedReplenishmentRates;
+var() array<BamNeedReplenishmentRate> NeedReplenishmentRates;
 
 /** List of animations that should be played while replenishing needs */
 var() array<name> ReplenishAnimationNames;
