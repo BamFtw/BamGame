@@ -71,11 +71,15 @@ function DrawPawnDebug()
 
 		DebugStr("Needs:", debugLine);
 		for(q = 0; q < PawnToDebug.BController.NeedManager.Needs.Length; ++q)
+		{
 			DebugStr((q + 1) $ "." @ PawnToDebug.BController.NeedManager.Needs[q] @ "=" @ PawnToDebug.BController.NeedManager.Needs[q].GetFuzzyLevel(), debugLine, 20);
+		}
 
 		DebugStr("Action stack:", debugLine);
 		for(q = 0; q < PawnToDebug.BController.ActionManager.Actions.Length; ++q)
-			DebugStr((q + 1) $ "." @ PawnToDebug.BController.ActionManager.Actions[q], debugLine, 20);
+		{
+			DebugStr((q + 1) $ "." @ PawnToDebug.BController.ActionManager.Actions[q] @ PawnToDebug.BController.ActionManager.Actions[q].IsBlocked() ? "  [blocked]" : "", debugLine, 20);
+		}
 	}
 }
 
