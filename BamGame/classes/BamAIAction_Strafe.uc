@@ -28,6 +28,7 @@ function OnBegin()
 function OnEnd()
 {
 	Manager.Controller.BPawn.SetGroundSpeedPct(StartingGroundSpeedPct);
+	Manager.Controller.UnSubscribe(BSE_FinalDestinationreached, FinalDestinationReached);
 }
 
 function OnBlocked()
@@ -59,6 +60,12 @@ function bool GetStrafeLocation(BamStrafeDirection dir, out Vector StrafeLocatio
 {
 	local array<Vector> viableLocations;
 	local Vector tempLocation;
+
+	if( !Manager.Controller.IsInCombat() )
+	{
+		Finish();
+		return false;
+	}
 
 	// make sure direction is correct
 	if( dir <= 0 || dir > BSD_MAX )
@@ -122,15 +129,23 @@ function bool GetStrafeLocation(BamStrafeDirection dir, out Vector StrafeLocatio
 
 function bool TraceStrafe(float distance, Rotator dir, out Vector out_Location)
 {
-	local Rotator pwnRotation;
-	local Vector traceDir, HitLocation, HitNormal;
+	// local Rotator pwnRotation;
+	local Vector traceDir, HitLocation, HitNormal, pwnRot;
 	local Actor HitActor;
 
-	pwnRotation = Manager.Controller.Pawn.Rotation;
-	pwnRotation.Pitch = 0;
-	pwnRotation.Roll = 0;
+	if( !Manager.Controller.IsInCombat() )
+	{
+		return false;
+	}
 
-	traceDir = (Vector(pwnRotation) << dir);
+	pwnRot = Manager.Controller.GetAverageEnemyLocation() - Manager.Controller.Pawn.Location;
+
+	// pwnRotation = Manager.Controller.Pawn.Rotation;
+	// pwnRotation.Pitch = 0;
+	// pwnRotation.Roll = 0;
+	// traceDir = (Vector(pwnRotation) << dir);
+	
+	traceDir = (pwnRot << dir);
 
 	out_Location = Manager.Controller.Pawn.Location + traceDir * distance;
 
