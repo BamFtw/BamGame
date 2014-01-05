@@ -31,7 +31,6 @@ event Activated()
 		return;
 	}
 
-
 	spawnLocationActor = Actor(LocationActor);
 
 	// check if spawn loaction actor is set
@@ -72,15 +71,21 @@ event Activated()
 
 	// spawn pawns controller
 	if( spawnedPawn.Controller == none )
+	{
 		spawnedPawn.SpawnDefaultController();
+	}
 
 	// set the team
-	if( BamAIController(spawnedPawn.Controller) != none )
+	if( BamAIController(spawnedPawn.Controller) != none && TeamManager != none )
+	{
 		BamAIController(spawnedPawn.Controller).SetTeamManager(TeamManager);
+	}
 
 	// push action
 	if( aiAction != none )
+	{
 		spawnedPawn.BController.ActionManager.PushFront(aiAction);
+	}
 
 
 	// output spawned pawn
