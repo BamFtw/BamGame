@@ -278,7 +278,13 @@ function int SelectFuzzyLevelIndex(array<float> MembershipLevels)
 /** Increases CurrentValue by Amount passed as parameter */
 function Replenish(float Amount)
 {
-	CurrentValue = Max(MaxValue, CurrentValue + Amount);
+	CurrentValue += Amount;
+	
+	if( CurrentValue >= MaxValue )
+	{
+		CurrentValue = MaxValue;
+	}
+
 	bRequiresUpdate = true;
 }
 
