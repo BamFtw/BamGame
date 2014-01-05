@@ -34,7 +34,10 @@ event Tick(float DeltaTime)
 
 	if( BController != none && BController.Team != none )
 	{
-		DrawDebugCylinder(Location + vect(0, 0, 1) * GetCollisionHeight(), Location + vect(0, 0, 6) * GetCollisionHeight(), 4, 12, BController.Team.EditorIconColor.R, BController.Team.EditorIconColor.G, BController.Team.EditorIconColor.B, false);
+		FilterEditorOnly
+		{
+			DrawDebugCylinder(Location + vect(0, 0, 1) * GetCollisionHeight(), Location + vect(0, 0, 6) * GetCollisionHeight(), 4, 12, BController.Team.EditorIconColor.R, BController.Team.EditorIconColor.G, BController.Team.EditorIconColor.B, false);
+		}
 	}
 }
 
