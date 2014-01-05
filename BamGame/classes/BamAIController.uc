@@ -1011,7 +1011,7 @@ defaultproperties
 	PathfindingFrontCollisionRadiusMultiplier=2.5
 	bUseDynamicActorAvoidance=true
 
-	NeedManagerClass=class'BamNeedManager_Example'
+	NeedManagerClass=class'BamNeedManager'
 	ActionManagerClass=class'BamAIActionManager'
 
 	DefaultAction=(class=class'BamAIAction_Idle',Archetype=none)
