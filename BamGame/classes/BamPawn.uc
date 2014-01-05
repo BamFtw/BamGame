@@ -69,6 +69,17 @@ var array<string> HeadBoneNames;
 
 var float HeadshotDamageMultiplier;
 
+
+/** Amount of spread that will be added to weapon */
+var(Stats) float WeaponSpread;
+/** Affects reaction time, peripheral vision and such */
+var(Stats) float Awareness;
+/** Multiplier of damage taken by pawn */
+var(Stats) float DamageTakenMultiplier;
+
+/** Actor responsible for informing controller about projectiles passing by */
+var BamActor_ProjectileCatcher ProjectileCatcher;
+
 /** Whether DesiredLocation is currently in use */
 var bool bUseDesiredLocation;
 /** Location to which pawn should be moved to with its GroundSpeed without using Velocity */
@@ -101,6 +112,17 @@ event PostBeginPlay()
 
 	AttachHat();
 	SpawnDefaultInventory();
+	SpawnProjectileCatcher();
+}
+
+function SpawnProjectileCatcher()
+{
+	ProjectileCatcher = Spawn(class'BamActor_ProjectileCatcher', self, , Location, Rotation, , true);
+	
+	if( ProjectileCatcher != none )
+	{
+		Attach(ProjectileCatcher);
+	}
 }
 
 /** Sets correct mesh for hts Mesh comp and attaches it to character mesh */
@@ -158,9 +180,19 @@ event Tick(float DeltaTime)
 		ArmsMesh.SetTranslation((GetPawnViewLocation() - Location) + Vector(GetViewRotation()) * ArmsForwardOffset);
 	}
 
+	AdjustPeripheralVision();
 	
 	AdjustAimOffset();
 }
+
+/** Sets PeripheralVision depending on Awareness */
+function AdjustPeripheralVision()
+{
+	local float originalPeripheralVision;
+	originalPeripheralVision = BamAIPawn(ObjectArchetype) == none ? default.PeripheralVision : BamAIPawn(ObjectArchetype).PeripheralVision;
+	PeripheralVision = FClamp(1 - ((1 - originalPeripheralVision) * Awareness), 0, 1);	
+}
+
 
 function float GetViewPitch()
 {
@@ -269,6 +301,9 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 	local PlayerController PC;
 	local Controller Killer;
 
+	// modify damage by this pawns DamageTakenMultiplier
+	Damage *= DamageTakenMultiplier;
+
 	if( Game.GameIntensity.GetParamValue(class'BamGIParam_AllowFriendlyFire') == 0 && IsPawnFriendly(InstigatedBy.Pawn) )
 	{
 		`trace("Friendly fire ignored", `cyan);
@@ -360,6 +395,7 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 	}
 	PlayHit(actualDamage,InstigatedBy, hitLocation, damageType, Momentum, HitInfo);
 }
+
 
 /** Kills pawn */
 simulated event TornOff()
@@ -688,4 +724,8 @@ defaultproperties
 
 	HeadBoneNames=("Bip001-Head")
 	HeadshotDamageMultiplier=2.0
+
+	WeaponSpread=0.0
+	Awareness=1.0
+	DamageTakenMultiplier=1.0
 }
