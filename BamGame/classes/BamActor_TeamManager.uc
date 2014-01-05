@@ -6,9 +6,6 @@ class BamActor_TeamManager extends BamActor
 /** Name of the team */
 var() string TeamName;
 
-/** Certain debug information use this for easy identifiaction */
-var() Color TeamColor;
-
 /** Whether this is the team player belongs to */
 var() bool bIsPlayerTeam<EditCondition=!bIsNeutralTeam>;
 
