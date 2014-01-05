@@ -126,7 +126,7 @@ static function BamAIAction_ZombieWander Create_ZombieWander(optional float inMa
 DefaultProperties
 {
 	bIsBlocking=true;
-	Lanes=(Lane_Moving)
+	Lanes=(class'BamAIActionLane_Moving')
 
 	MaxRadius=0
 	MinRadius=0

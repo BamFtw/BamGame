@@ -69,5 +69,5 @@ static function BamAIAction_Investigate Create_Investigate(Vector inSuspiciousLo
 DefaultProperties
 {
 	bIsBlocking=true
-	Lanes=(Lane_Moving)
+	Lanes=(class'BamAIActionLane_Moving')
 }

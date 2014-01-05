@@ -229,6 +229,6 @@ static function BamAIAction_CoverPopOut Create_CoverPopOut(BamCoverActionData Co
 
 DefaultProperties
 {
-	Lanes=(Lane_Moving,Lane_Covering)
+	Lanes=(class'BamAIActionLane_Moving',class'BamAIActionLane_Covering')
 	bIsBlocking=true
 }

@@ -1,0 +1,1 @@
+class BamAIActionLane_Moving extends BamAIActionLane;

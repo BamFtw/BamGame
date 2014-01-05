@@ -1,0 +1,1 @@
+class BamAIActionLane_Firing extends BamAIActionLane;

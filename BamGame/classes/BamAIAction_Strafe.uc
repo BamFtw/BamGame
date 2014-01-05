@@ -169,7 +169,7 @@ DefaultProperties
 {
 	bIsBlocking=true
 	bBlockAllLanes=false
-	Lanes=(Lane_Moving)
+	Lanes=(class'BamAIActionLane_Moving')
 
 	StartingGroundSpeedPct=1.0
 

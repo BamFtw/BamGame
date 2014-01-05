@@ -64,5 +64,5 @@ static function BamAIAction_CoverMoveTo Create_CoverMoveTo(BamCoverActionData Co
 DefaultProperties
 {
 	bIsBlocking=true
-	Lanes=(Lane_Covering,Lane_Moving)
+	Lanes=(class'BamAIActionLane_Covering',class'BamAIActionLane_Moving')
 }

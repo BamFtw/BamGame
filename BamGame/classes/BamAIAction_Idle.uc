@@ -22,7 +22,7 @@ function OnEnd()
 	}
 }
 
-static function BamAIAction_Idle Create_Idle(float inDuration, optional array<BamAIActionLane> inLanes, optional bool bSetLanes = false, optional bool stopMovement = false, optional bool wasMoving = false)
+static function BamAIAction_Idle Create_Idle(float inDuration, optional array<class<BamAIActionLane> > inLanes, optional bool bSetLanes = false, optional bool stopMovement = false, optional bool wasMoving = false)
 {
 	local BamAIAction_Idle act;
 
@@ -46,6 +46,6 @@ DefaultProperties
 	bBlockAllLanes=false
 	bStopMovement=false
 	bWasMoving=false
-	Lanes=(Lane_Moving)
+	Lanes=(class'BamAIActionLane_Moving')
 	Duration=0
 }

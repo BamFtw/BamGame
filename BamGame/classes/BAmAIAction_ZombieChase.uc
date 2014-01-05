@@ -103,5 +103,5 @@ static function BAmAIAction_ZombieChase Create_ZombieChase(optional Pawn inTarge
 DefaultProperties
 {
 	bIsBlocking=true
-	Lanes=(Lane_Moving)
+	Lanes=(class'BamAIActionLane_Moving')
 }

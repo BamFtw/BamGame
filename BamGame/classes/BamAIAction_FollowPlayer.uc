@@ -82,7 +82,7 @@ DefaultProperties
 {
 	bIsBlocking=true
 	bIsFinished=false
-	Lanes=(Lane_Moving)
+	Lanes=(class'BamAIActionLane_Moving')
 
 
 	StartRunDistance=256.0

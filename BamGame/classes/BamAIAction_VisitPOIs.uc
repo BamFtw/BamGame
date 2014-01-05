@@ -160,7 +160,7 @@ DefaultProperties
 {
 	bBlockAllLanes=false
 	bIsBlocking=true
-	Lanes=(Lane_Moving)
+	Lanes=(class'BamAIActionLane_Moving')
 
 	POIClass=class'BamActor_POI'
 }

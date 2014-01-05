@@ -112,7 +112,7 @@ static function BamAIAction_Fire Create_Fire(optional float inDuration = -1, opt
 DefaultProperties
 {
 	bIsBlocking=true
-	Lanes=(Lane_Firing)
+	Lanes=(class'BamAIActionLane_Firing')
 
 	WeaponFireMode=0
 

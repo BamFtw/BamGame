@@ -3,14 +3,6 @@ class BamAIAction extends Object
 	abstract
 	hidecategories(Object);
 
-enum BamAIActionLane
-{
-	Lane_Moving,
-	Lane_Firing,
-	Lane_Covering,
-	Lane_Needs
-};
-
 /** Reference to ActionManager this action belongs to */
 var BamAIActionManager Manager;
 
@@ -18,7 +10,7 @@ var BamAIActionManager Manager;
 var private bool bIsBlocking;
 
 /** Lanes this action occupies */
-var() private array<BamAIActionLane> Lanes;
+var() private array<class<BamAIActionLane> > Lanes;
 
 /** If true there is no need to to set Lanes array, GetOccupiedLanes will return array of all available lanes */
 var() private bool bBlockAllLanes;
@@ -39,10 +31,9 @@ var bool bIsBlocked;
 var float TickBreakTime;
 
 /** Returns lanes this action is running on */
-function array<BamAIactionLane> GetOccupiedLanes()
+function array<class<BamAIActionLane> > GetOccupiedLanes()
 {
-	local array<BamAIactionLane> result;
-	local int q;
+	local array<class<BamAIActionLane> > result;
 
 	// if action does not block all available lanes return Lanes array
 	if( !bBlockAllLanes )
@@ -50,10 +41,7 @@ function array<BamAIactionLane> GetOccupiedLanes()
 		return Lanes;
 	}
 
-	// add all available lanes to result array
-	for(q = 0; q < Lane_MAX; ++q)
-		result.AddItem(BamAIActionLane(q));
-
+	result.AddItem(class'BamAIActionLane_AllLanes');
 	return result;
 }
 
@@ -158,7 +146,7 @@ function float TimeLeft()
  * Sets the lanes this action is runing on
  * @param inLanes - lanes this action occupies
  */
-function SetLanes(array<BamAIActionLane> inLanes)
+function SetLanes(array<class<BamAIActionLane> > inLanes)
 {
 	Lanes = inLanes;
 }

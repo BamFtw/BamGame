@@ -142,7 +142,7 @@ static function BamAIAction_AdvanceOnEnemies Create_AdvanceOnEnemies(optional fl
 DefaultProperties
 {
 	bIsBlocking=true
-	Lanes=(Lane_Moving)
+	Lanes=(class'BamAIActionLane_Moving')
 
 	bRun=false
 	bFireDuringWalk=true

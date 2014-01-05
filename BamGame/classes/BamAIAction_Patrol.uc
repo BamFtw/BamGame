@@ -165,7 +165,7 @@ static function BamAIAction_Patrol Create_Patrol(array<BamActor_PatrolPoint> inR
 DefaultProperties
 {
 	bIsBlocking=true
-	Lanes=(Lane_Moving)
+	Lanes=(class'BamAIActionLane_Moving')
 
 	bRunWhilePatrolling=false
 	StartIndex=0

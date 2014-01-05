@@ -56,7 +56,7 @@ function Initialize();
 function Tick(float DeltaTime)
 {
 	local int q, w;
-	local array<BamAIActionLane> blockedLanes, currentActionLanes;
+	local array<class<BamAIActionLane> > blockedLanes, currentActionLanes;
 	local array<BamAIAction> tempActions;
 
 	if( Controller == none || Controller.Pawn == none || !Controller.Pawn.IsAliveAndWell() )
@@ -174,13 +174,18 @@ function BamAIAction Back()
 }
 
 /** Retruns whether any of the elements in a1 exists in a2 */
-function bool LaneOverlap(array<BamAIActionLane> a1, array<BamAIActionLane> a2)
+function bool LaneOverlap(array<class<BamAIActionLane> > a1, array<class<BamAIActionLane> > a2)
 {
 	local int q;
 
 	if( a1.Length == 0 || a2.Length == 0 )
 	{
 		return false;
+	}
+
+	if( a1.Find(class'BamAIActionLane_AllLanes') != INDEX_NONE || a1.Find(class'BamAIActionLane_AllLanes') != INDEX_NONE )
+	{
+		return true;
 	}
 
 	for(q = 0; q < a1.Length; ++q)
