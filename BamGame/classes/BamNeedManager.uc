@@ -2,9 +2,13 @@ class BamNeedManager extends Object;
 
 struct BamNeedContainer
 {
+	/** Needs class */
 	var() class<BamNeed> Class;
+	/** Needs archetype */
 	var() BamNeed Archetype;
 };
+
+
 
 /** Controller that uses this manager */
 var BamAIController Controller;
@@ -28,7 +32,9 @@ function Initialize(BamAIController inController)
 	for(q = 0; q < DefaultNeeds.Length; ++q)
 	{
 		if( DefaultNeeds[q].Archetype == none && DefaultNeeds[q].class == none )
+		{
 			DefaultNeeds.Remove(q--, 1);
+		}
 
 		for(w = q + 1; w < DefaultNeeds.Length; w++)
 		{
@@ -98,22 +104,28 @@ function Tick(float DeltaTime);
  */
 function UpdatePawn(BamAIPawn pwn)
 {
-	local array<float> Values;
+	local array<StatValueContainer> Values;
 	local int q;
 
-	if( pwn == none )
+	if( pwn == none || Needs.Length == 0 )
 	{
 		return;
 	}
-		
-	Values.Length = BPS_MAX;
 
+	// gather stat values
 	for(q = 0; q < Needs.Length; ++q)
 	{
 		Needs[q].GetStatMods(Values);
 	}
 
-	pwn.UpdateStats(Values);
+	// apply collected values to the pawn
+	for(q = 0; q < Values.Length; ++q)
+	{
+		if( Values[q].Stat != none )
+		{
+			Values[q].Stat.static.SetStat(pwn, Values[q].Value);
+		}
+	}
 }
 
 /**

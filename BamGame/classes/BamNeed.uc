@@ -18,11 +18,23 @@ enum BamFuzzyLevels
 struct BamNeedPawnStatMod
 {
 	/** Type of affected stat */
-	var() BamPawnStat Stat;
+	var() class<BamPawnStat> Stat;
 	/** value that will be added to this stat */
 	var() float Value;
+	/** Whether value is percent of default stat value */
+	var() bool bPctOfDefault;
+
+	StructDefaultProperties
+	{
+		bPctOfDefault=false
+	}
 };
 
+struct StatValueContainer
+{
+	var class<BamPawnStat> Stat;
+	var float Value;
+};
 
 struct BamNeedPawnStatModContainer
 {
@@ -108,8 +120,13 @@ function Initialize();
 /** Updates value of the need and calls Tick */
 final function MasterTick(float DeltaTime)
 {
+	local float oldValue;
+
+	oldValue = CurrentValue;
+
 	CurrentValue = FMax(0, CurrentValue - DecayRate * DeltaTime);
-	bRequiresUpdate = true;
+	
+	bRequiresUpdate = (oldValue != CurrentValue);
 
 	Tick(DeltaTime);
 }
@@ -117,14 +134,10 @@ final function MasterTick(float DeltaTime)
 function Tick(float DeltaTime);
 
 /** Updates Values of stat mods based on current level of this need */
-function GetStatMods(out array<float> Values)
+function GetStatMods(out array<StatValueContainer> Values)
 {
-	local int w, currentLevel;
-
-	while( Values.Length < BPS_MAX )
-	{
-		Values.AddItem(0);
-	}
+	local int q, currentLevel, foundIndex;
+	local StatValueContainer container;
 
 	if( bRequiresUpdate )
 	{
@@ -133,11 +146,58 @@ function GetStatMods(out array<float> Values)
 
 	currentLevel = CachedLevel;
 
-	for(w = 0; w < StatMods[currentLevel].Mods.Length; w++)
+	for(q = 0; q < StatMods[currentLevel].Mods.Length; ++q)
 	{
-		if( StatMods[currentLevel].Mods[w].Stat < BPS_MAX && StatMods[currentLevel].Mods[w].Stat >= 0 )
-			Values[StatMods[currentLevel].Mods[w].Stat] += StatMods[currentLevel].Mods[w].Value;
+		if( StatMods[currentLevel].Mods[q].Stat == none )
+		{
+			continue;
+		}
+
+		foundIndex = FindStatIndex(Values, StatMods[currentLevel].Mods[q].Stat);
+ 
+		if( foundIndex == INDEX_NONE )
+		{
+			container.Stat = StatMods[currentLevel].Mods[q].Stat;
+			if( StatMods[currentLevel].Mods[q].bPctOfDefault )
+			{
+				container.Value = StatMods[currentLevel].Mods[q].Stat.static.GetDefaultValue(Manager.Controller.BPawn) * StatMods[currentLevel].Mods[q].Value;
+			}
+			else
+			{
+				container.Value = StatMods[currentLevel].Mods[q].Value;
+			}
+
+			Values.AddItem(container);
+		}
+		else
+		{
+			if( StatMods[currentLevel].Mods[q].bPctOfDefault )
+			{
+				Values[foundIndex].Value += StatMods[currentLevel].Mods[q].Stat.static.GetDefaultValue(Manager.Controller.BPawn) * StatMods[currentLevel].Mods[q].Value;
+			}
+			else
+			{
+				Values[foundIndex].Value += StatMods[currentLevel].Mods[q].Value;
+			}
+			
+		}
+		
 	}
+}
+
+function int FindStatIndex(out array<StatValueContainer> Values, class<BamPawnStat> stat)
+{
+	local int q;
+
+	for(q = 0; q < Values.Length; ++q)
+	{
+		if( Values[q].stat == stat )
+		{
+			return q;
+		}
+	}
+
+	return INDEX_NONE;
 }
 
 /** Returns current value of this need */
@@ -238,14 +298,14 @@ defaultproperties
 	StatMods[BFL_VeryHigh]=(Level=BFL_VeryHigh)
 
 	bRandomLimit=false
-	MinLimit=90
-	MaxLimit=110
+	MinLimit=100
+	MaxLimit=100
 	bRandomStartValue=false
-	MinStartValue=40
-	MaxStartValue=110
+	MinStartValue=100
+	MaxStartValue=100
 	bRandomDecayRate=false
-	MinDecayRate=0.75
-	MaxDecayRate=1.25
+	MinDecayRate=1.0
+	MaxDecayRate=1.0
 
 	
 	Begin Object class=BamFuzzyMembershipFunction_Trapezoidal name=MemFunc_VeryLow
