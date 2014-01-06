@@ -136,7 +136,7 @@ function Tick(float DeltaTime);
 /** Updates Values of stat mods based on current level of this need */
 function GetStatMods(out array<StatValueContainer> Values)
 {
-	local int q, currentLevel, foundIndex;
+	local int q, currentLevel, idx;
 	local StatValueContainer container;
 
 	if( bRequiresUpdate )
@@ -153,11 +153,13 @@ function GetStatMods(out array<StatValueContainer> Values)
 			continue;
 		}
 
-		foundIndex = FindStatIndex(Values, StatMods[currentLevel].Mods[q].Stat);
+		idx = FindStatIndex(Values, StatMods[currentLevel].Mods[q].Stat);
  
-		if( foundIndex == INDEX_NONE )
+ 		// stat is not in array add it
+		if( idx == INDEX_NONE )
 		{
 			container.Stat = StatMods[currentLevel].Mods[q].Stat;
+			
 			if( StatMods[currentLevel].Mods[q].bPctOfDefault )
 			{
 				container.Value = StatMods[currentLevel].Mods[q].Stat.static.GetDefaultValue(Manager.Controller.BPawn) * StatMods[currentLevel].Mods[q].Value;
@@ -169,25 +171,35 @@ function GetStatMods(out array<StatValueContainer> Values)
 
 			Values.AddItem(container);
 		}
+		// if it is update its value
 		else
 		{
 			if( StatMods[currentLevel].Mods[q].bPctOfDefault )
 			{
-				Values[foundIndex].Value += StatMods[currentLevel].Mods[q].Stat.static.GetDefaultValue(Manager.Controller.BPawn) * StatMods[currentLevel].Mods[q].Value;
+				Values[idx].Value += StatMods[currentLevel].Mods[q].Stat.static.GetDefaultValue(Manager.Controller.BPawn) * StatMods[currentLevel].Mods[q].Value;
 			}
 			else
 			{
-				Values[foundIndex].Value += StatMods[currentLevel].Mods[q].Value;
+				Values[idx].Value += StatMods[currentLevel].Mods[q].Value;
 			}
-			
 		}
-		
 	}
 }
 
+/** 
+ * Returns index of the stat in given array
+ * @param Values - array that will be searched
+ * @param stat - index of this stat will be returned
+ * @return index of the stat in Values array
+ */
 function int FindStatIndex(out array<StatValueContainer> Values, class<BamPawnStat> stat)
 {
 	local int q;
+
+	if( stat == none )
+	{
+		return INDEX_NONE;
+	}
 
 	for(q = 0; q < Values.Length; ++q)
 	{
@@ -317,32 +329,31 @@ defaultproperties
 	Begin Object class=BamFuzzyMembershipFunction_Trapezoidal name=MemFunc_VeryLow
 		A=-100
 		B=-100
-		C=0
-		D=20
+		C=10
+		D=30
 	End Object
 	
 	Begin Object class=BamFuzzyMembershipFunction_Triangular name=MemFunc_Low
-		A=10
+		A=20
 		B=30
-		C=50
+		C=40
 	End Object
 
-	Begin Object class=BamFuzzyMembershipFunction_Trapezoidal name=MemFunc_Medium
-		A=20
-		B=40
-		C=70
-		D=90
+	Begin Object class=BamFuzzyMembershipFunction_Triangular name=MemFunc_Medium
+		A=40
+		B=50
+		C=80
 	End Object
 
 	Begin Object class=BamFuzzyMembershipFunction_Triangular name=MemFunc_High
-		A=80
-		B=90
+		A=60
+		B=70
 		C=100
 	End Object
 
 	Begin Object class=BamFuzzyMembershipFunction_Trapezoidal name=MemFunc_VeryHigh
-		A=90
-		B=100
+		A=80
+		B=90
 		C=1000
 		D=1000
 	End Object
