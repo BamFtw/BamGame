@@ -249,7 +249,7 @@ function BamFuzzyLevels GetFuzzyLevel()
 
 	idx = SelectFuzzyLevelIndex(MembershipLevels);
 
-	if( idx == INDEX_NONE || idx < 0 )
+	if( idx < 0 )
 	{
 		`trace("Fuzzy level out of bounds", `red);
 		return BFL_MAX;
@@ -273,7 +273,7 @@ function int SelectFuzzyLevelIndex(array<float> MembershipLevels)
 	}
 
 	idx = INDEX_NONE;
-	highest = 0;
+	highest = -1;
 
 	for(q = 0; q < MembershipLevels.Length; ++q)
 	{
