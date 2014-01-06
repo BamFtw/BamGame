@@ -5,7 +5,6 @@ struct BamHostilePawnDetectionData
 {
 	/** Enemy Pawn */
 	var Pawn Pawn;
-
 	/** How long this pawn is in view */
 	var float SeenFor;
 };
@@ -14,10 +13,8 @@ struct BamHostilePawnData
 {
 	/** Enemy Pawn */
 	var Pawn Pawn;
-
 	/** Location where Pawn was last spotted */
 	var Vector LastSeenLocation;
-
 	/** Time at which Pawn was last spotted */
 	var float LastSeenTime;
 };
@@ -26,7 +23,6 @@ struct BamAIActionContainer
 {
 	/** Actions class */
 	var() class<BamAIAction> Class;
-
 	/** Actions archetype */
 	var() editinline BamAIAction Archetype;
 };
@@ -50,24 +46,25 @@ var float ViewPitchRotationRate;
 
 
 /** List of all event subscribers */
-var array<BamSubscribersList> SubscribersLists;
+var(Subscribers) array<BamSubscribersList> SubscribersLists;
+
 
 /** Data of enemies that are in view but aren't detected yet */
 var array<BamHostilePawnDetectionData> EnemyDetectionData;
 
 /** for how long pawn must stay in this controllers view to be detected */
-var float EnemyDetectionDelay;
+var(Detection) float EnemyDetectionDelay;
 
 /** From this distance to EnemyDetectionOuterRadius pawn suffers no detection penalties related to distance,
  *	below it gains up to double detection speed
  */
-var float EnemyDetectionInnerRadius;
+var(Detection) float EnemyDetectionInnerRadius;
 
 /** Up to this distance from enemy pawn suffers no detection penalties related to distance */
-var float EnemyDetectionOuterRadius;
+var(Detection) float EnemyDetectionOuterRadius;
 
 /** If distance between pawn and enemy is greater than this, detection cappabilites are halved */
-var float EnemyDetectionMaxRadius;
+var(Detection) float EnemyDetectionMaxRadius;
 
 
 
@@ -106,25 +103,25 @@ var protectedwrite Vector FinalDestination;
 var protectedwrite float FinalDestinationDistanceOffset;
 
 /** Pawns collision radius will be multipleied by this value while checking whether pawn reached its goal */
-var() float FinalDestCollisionRadiusMod;
+var(Pathfinding) float FinalDestCollisionRadiusMod;
 
 
 /** Flag that is used for switching between default and combat actions */
 var bool bIsInCombat;
 
 /** Action that is used while unit is out of combat */
-var() BamAIActionContainer DefaultAction;
+var(AIAction) BamAIActionContainer DefaultAction;
 /** Action that is used while unit is in combat */
-var() BamAIActionContainer CombatAction;
+var(AIAction) BamAIActionContainer CombatAction;
 
 
 /** Class of the action manager that this controller will use */
-var() class<BamAIActionManager> ActionManagerClass;
+var(AIAction) class<BamAIActionManager> ActionManagerClass;
 /** Reference to action manager that this controller uses */
 var BamAIActionManager ActionManager;
 
 /** Class of the need manager that this controller will use */
-var() class<BamNeedManager> NeedManagerClass;
+var(Needs) class<BamNeedManager> NeedManagerClass;
 /** Reference to need manager that this controller uses */
 var BamNeedManager NeedManager;
 
@@ -133,7 +130,10 @@ var BamNeedManager NeedManager;
 var BamActor_MoveFocus MoveFocusActor;
 var bool bUseMoveFocusActor;
 
-/** Currently claimed cover */
+/**
+ * !!! Needs to be removed with all Cover related functions
+ * Currently claimed cover
+ */
 var BamActor_Cover Cover;
 
 
@@ -141,7 +141,7 @@ var BamActor_Cover Cover;
 
 /** 
  * Delegate used for subscribing to certain events specified in BamSubscribableEvents enum
- * @param params - events parameters
+ * @param params - event parameters
  */
 delegate BamSubscriber(BamSubscriberParameters params);
 
@@ -151,9 +151,19 @@ delegate BamSubscriber(BamSubscriberParameters params);
 event Destroyed()
 {
 	`trace("Controller Destroyed", `green);
+
+	if( Team != none )
+	{
+		Team.Quit(self);
+		Team = none;
+	}
+
+	SubscribersLists.Length = 0;
+	EnemyDetectionData.Length = 0;
+
+	Game = none;
 	BPawn = none;
 	Pawn = none;
-	Team = none;
 	Cover = none;
 
 	DefaultAction.Archetype = none;
@@ -161,6 +171,8 @@ event Destroyed()
 
 	ActionManager.Destroyed();
 	ActionManager = none;
+
+	NeedManager = none;
 
 	MoveFocusActor.Destroy();
 
@@ -207,7 +219,10 @@ event Possess(Pawn inPawn, bool bVehicleTransition)
 	SpawnNeedManager();
 }
 
-/** Creates action manager and sets its contoller reference */
+/**
+ * Creates action manager and sets its contoller reference
+ * @return whether manager was successfuly spawned
+ */
 function bool SpawnNeedManager()
 {
 	if( NeedManagerClass != none )
@@ -230,7 +245,10 @@ function bool SpawnNeedManager()
 	return true;
 }
 
-/** Creates action manager and sets its contoller reference */
+/** 
+ * Creates action manager and sets its contoller reference
+ * @return whether manager was successfuly spawned
+ */
 function bool SpawnActionManager()
 {
 	if( ActionManagerClass != none )
@@ -270,23 +288,9 @@ function BamAIAction SpawnDefaultAIAction()
 
 event Tick(float DeltaTime)
 {
-	local float deltaPitch;
-
 	super.Tick(DeltaTime);
 
-	if( ViewPitch != DesiredViewPitch )
-	{
-		deltaPitch = Abs(DeltaTime * ViewPitchRotationRate);
-		if( Abs(DesiredViewPitch - ViewPitch) <= deltaPitch )
-		{
-			ViewPitch = DesiredViewPitch;
-		}
-		else
-		{
-			ViewPitch += ((DesiredViewPitch - ViewPitch) < 0 ? -1.0 : 1.0) * deltaPitch;
-		}
-	}	
-
+	HandleViewPitch(DeltaTime);
 
 	UpdateDetectionData(DeltaTime);
 	
@@ -366,10 +370,6 @@ function UpdateDetectionData(float DeltaTime)
 			{
 				seenFor *= 2.0 - (distanceToEnemy / EnemyDetectionInnerRadius);
 			}
-			// else if( distanceToEnemy >= EnemyDetectionInnerRadius && distanceToEnemy <= EnemyDetectionOuterRadius )
-			// {
-			// 	seenFor *= 1.0;
-			// }
 			else if( distanceToEnemy > EnemyDetectionOuterRadius && distanceToEnemy < EnemyDetectionMaxRadius )
 			{
 				seenFor *= 1.0 - 0.5 * ((distanceToEnemy - EnemyDetectionOuterRadius) / (EnemyDetectionMaxRadius - EnemyDetectionOuterRadius));
@@ -401,6 +401,26 @@ function UpdateDetectionData(float DeltaTime)
 	}
 }
 
+/** Smoothly transitions ViewPitch to DesiredViewPitch */
+function HandleViewPitch(float DeltaTime)
+{
+	local float deltaPitch;
+
+	if( ViewPitch != DesiredViewPitch )
+	{
+		deltaPitch = Abs(DeltaTime * ViewPitchRotationRate);
+		
+		if( Abs(DesiredViewPitch - ViewPitch) <= deltaPitch )
+		{
+			ViewPitch = DesiredViewPitch;
+		}
+		else
+		{
+			ViewPitch += ((DesiredViewPitch - ViewPitch) < 0 ? -1.0 : 1.0) * deltaPitch;
+		}
+	}	
+}
+
 /** Sets ViewPitch */
 function SetViewRotation(Rotator rot)
 {
@@ -421,7 +441,7 @@ function Rotator GetViewRotation()
 }
 
 /**
- * Called by ProjectileCatcher when
+ * Called by ProjectileCatcher when hostile Projectile enters it
  * @param pj - projectile that was caught
  * @param PjOwner - owner of caught projectile
  */
@@ -440,13 +460,16 @@ event HearNoise(float Loudness, Actor NoiseMaker, optional Name NoiseType)
 	local Pawn heardPawn;
 
 	super.HearNoise(Loudness, NoiseMaker, NoiseType);
-	CallSubscribers(class'BamSubscribableEvent_HearNoise', class'BamSubscriberParameters_HearNoise'.static.Create(self, BPawn, Loudness, NoiseMaker, NoiseType));
 	
+	// ignore if in combat or heard self
 	if( IsInCombat() || NoiseMaker == Pawn || NoiseMaker == Pawn.Weapon )
 	{
 		return;
 	}
 
+	CallSubscribers(class'BamSubscribableEvent_HearNoise', class'BamSubscriberParameters_HearNoise'.static.Create(self, BPawn, Loudness, NoiseMaker, NoiseType));
+
+	// try to get Pawn that mede noise
 	if( Pawn(NoiseMaker) != none )
 	{
 		heardPawn = Pawn(NoiseMaker);
@@ -480,7 +503,10 @@ event SeePlayer(Pawn Seen)
 	SeePawn(Seen);
 }
 
-/** Called by SeeMonster and SeePlayer, checks if Seen is hostile and adds it to enemies list if needed */
+/** 
+ * Called by SeeMonster and SeePlayer, checks if Seen is hostile and adds it to enemies list if needed
+ * @param Seen - Pawn that was noticed
+ */
 function SeePawn(Pawn Seen)
 {
 	local int q;
@@ -552,7 +578,13 @@ function EnemySpotted(Pawn pwn)
 	}
 }
 
-/** Returns whether distance between vectors given as parameter (v1 and v2) is smaller or equal to maxDistance */
+/**
+ * Returns whether distance between vectors is smaller or equal to maxDistance
+ * @param v1 - first vector to test
+ * @param v2 - second vector to test
+ * @param maxDistance - maximum distance between v1 and v2 that allow for returning true
+ * @return whether distance between vectors is smaller or equal to maxDistance
+ */
 static function bool CompareVectors2D(Vector v1, Vector v2, optional float maxDistance = 0)
 {
 	return (Vsize2D(v1 - v2) <= maxDistance);
@@ -858,18 +890,9 @@ function StopMovement()
 
 
 
-// struct BamSubscribersList
-// {
-// 	var class<BamSubscribableEvent> Event;
-// 	var array<delegate<BamSubscriber> > List;
-// };
-// var array<BamSubscribersList> SubscribersLists;
-// delegate BamSubscriber(BamSubscriberParameters params);
-
-
 /** 
  * Subscribes delegate to an event
- * @param evnt - event that sub will be subscribed for
+ * @param evnt - event that sub will be subscribed to
  * @param sub - delegate to call when event is triggered
  */
 function Subscribe(class<BamSubscribableEvent> evnt, delegate<BamSubscriber> sub)
@@ -895,7 +918,7 @@ function Subscribe(class<BamSubscribableEvent> evnt, delegate<BamSubscriber> sub
 
 /** 
  * Removes subscribed delegate from the list for specified event
- * @param evnt - event that sub is subscribed for
+ * @param evnt - event that sub is subscribed to
  * @param sub - delegate to remove
  */
 function UnSubscribe(class<BamSubscribableEvent> evnt, delegate<BamSubscriber> sub)
@@ -905,7 +928,7 @@ function UnSubscribe(class<BamSubscribableEvent> evnt, delegate<BamSubscriber> s
 	idx = GetSubscribableEventIndex(evnt);
 
 	// check if event is correct and delegate is not none
-	if( idx == INDEX_NONE )
+	if( idx == INDEX_NONE || sub == none )
 	{
 		return;
 	}
@@ -916,7 +939,7 @@ function UnSubscribe(class<BamSubscribableEvent> evnt, delegate<BamSubscriber> s
 /** 
  * Calls all subscribers of the event given as parameter and passes params object to them.
  * Clears subscribers list for event given as parameter.
- * @param evnt - index of an event that was triggered
+ * @param evnt - class of subscriabable event that was triggered
  * @param params - (optional) parameters that will passed to all subscribers
  */
 function CallSubscribers(class<BamSubscribableEvent> evnt, optional BamSubscriberParameters params)
@@ -945,8 +968,9 @@ function CallSubscribers(class<BamSubscribableEvent> evnt, optional BamSubscribe
 }
 
 /**
- * Returns index
- * @return
+ * Returns index of the event in SubscribersLists, if not found creates and adds it to the list
+ * @param evnt - class of the subscribable event
+ * @return index of the delegates list for the event given as parameter
  */
 function int GetSubscribableEventIndex(class<BamSubscribableEvent> evnt)
 {
@@ -966,6 +990,7 @@ function int GetSubscribableEventIndex(class<BamSubscribableEvent> evnt)
 		}
 	}
 
+	// event not found, create and add it to the list
 	list.Event = evnt;
 	SubscribersLists.AddItem(list);
 
