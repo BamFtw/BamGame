@@ -55,12 +55,12 @@ function OnUnblocked()
 
 function OnEnd()
 {
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function OnBlocked()
 {
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 

@@ -1,0 +1,1 @@
+class BamSubscribableEvent_FinalDestinationReached extends BamSubscribableEvent;

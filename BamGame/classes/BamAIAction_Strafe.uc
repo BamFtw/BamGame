@@ -28,7 +28,7 @@ function OnBegin()
 function OnEnd()
 {
 	Manager.Controller.BPawn.SetGroundSpeedPct(StartingGroundSpeedPct);
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationreached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function OnBlocked()

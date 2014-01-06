@@ -90,7 +90,7 @@ function bool FindShelter()
 
 	Shelter.OccupiedBy = Manager.Controller.Pawn;
 
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.Subscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 	Manager.Controller.SetFinalDestination(Shelter.Location);
 	Manager.Controller.Pawn.SetWalking(true);
 	Manager.Controller.Begin_Moving();

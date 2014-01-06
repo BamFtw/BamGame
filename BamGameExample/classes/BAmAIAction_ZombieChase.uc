@@ -19,7 +19,7 @@ function OnBegin()
 
 
 	Manager.Controller.bUseDynamicActorAvoidance = false;
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.Subscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function Tick(float DeltaTime)
@@ -42,18 +42,18 @@ function Tick(float DeltaTime)
 
 function OnEnd()
 {
-	Manager.Controller.Unsubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.Unsubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 	Manager.Controller.bUseDynamicActorAvoidance = Manager.Controller.default.bUseDynamicActorAvoidance;
 }
 
 function OnBlocked()
 {
-	Manager.Controller.Unsubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.Unsubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function OnUnblocked()
 {
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.Subscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function FinalDestinationReached(BamSubscriberParameters params)

@@ -1,14 +1,5 @@
 class BamAIController extends GameAIController;
 
-/** Events that can be subscribed to with Subscribe function */
-enum BamSubscribableEvents
-{
-	BSE_None,
-	BSE_FinalDestinationReached,
-	BSE_TakeDamage,
-	BSE_DetectEnemy,
-	BSE_HearNoise
-};
 
 struct BamHostilePawnDetectionData
 {
@@ -45,6 +36,7 @@ struct BamAIActionContainer
 /** unrealscript can't store arrays of arrays so this one needs to be in the struct */
 struct BamSubscribersList
 {
+	var class<BamSubscribableEvent> Event;
 	var array<delegate<BamSubscriber> > List;
 };
 
@@ -57,10 +49,10 @@ var float DesiredViewPitch;
 var float ViewPitchRotationRate;
 
 
-/** List of all event subscribers, indexes of this array are the same as enums in BamSubscribableEvents */
+/** List of all event subscribers */
 var array<BamSubscribersList> SubscribersLists;
 
-/**  */
+/** Data of enemies that are in view but aren't detected yet */
 var array<BamHostilePawnDetectionData> EnemyDetectionData;
 
 /** for how long pawn must stay in this controllers view to be detected */
@@ -182,8 +174,6 @@ event PreBeginPlay()
 	
 	class'Engine'.static.GetEngine().bDisableAILogging = false;
 	bAILogging = true;
-
-	SubscribersLists.Length = BSE_MAX;
 
 	MoveFocusActor = Spawn(class'BamActor_MoveFocus', self, , , , , true);
 }
@@ -450,7 +440,7 @@ event HearNoise(float Loudness, Actor NoiseMaker, optional Name NoiseType)
 	local Pawn heardPawn;
 
 	super.HearNoise(Loudness, NoiseMaker, NoiseType);
-	CallSubscribers(BSE_HearNoise, class'BamSubscriberParameters_HearNoise'.static.Create(self, BPawn, Loudness, NoiseMaker, NoiseType));
+	CallSubscribers(class'BamSubscribableEvent_HearNoise', class'BamSubscriberParameters_HearNoise'.static.Create(self, BPawn, Loudness, NoiseMaker, NoiseType));
 	
 	if( IsInCombat() || NoiseMaker == Pawn || NoiseMaker == Pawn.Weapon )
 	{
@@ -536,7 +526,7 @@ function SeePawn(Pawn Seen)
 /** Pawns TakeDamage event calls this one, used for notifying subscribers */
 event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector Momentum, class<DamageType> DamageType, optional TraceHitInfo HitInfo, optional Actor DamageCauser)
 {
-	CallSubscribers(BSE_TakeDamage, class'BamSubscriberParameters_TakeDamage'.static.Create(self, BPawn, Damage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser));
+	CallSubscribers(class'BamSubscribableEvent_TakeDamage', class'BamSubscriberParameters_TakeDamage'.static.Create(self, BPawn, Damage, InstigatedBy, HitLocation, Momentum, DamageType, HitInfo, DamageCauser));
 }
 
 /** Returns whether pawn given as parameter is hostile */
@@ -558,7 +548,7 @@ function EnemySpotted(Pawn pwn)
 {
 	if( Team.EnemySpotted(pwn) )
 	{
-		CallSubscribers(BSE_DetectEnemy, class'BamSubscriberParameters_DetectEnemy'.static.Create(self, BPawn, pwn));
+		CallSubscribers(class'BamSubscribableEvent_DetectEnemy', class'BamSubscriberParameters_DetectEnemy'.static.Create(self, BPawn, pwn));
 	}
 }
 
@@ -823,7 +813,7 @@ function InitializeMove(Vector newFinalDest, optional float MaxDistanceOffset = 
 {
 	if( FDRSub != none )
 	{
-		Subscribe(BSE_FinalDestinationReached, FDRSub);
+		Subscribe(class'BamSubscribableEvent_FinalDestinationReached', FDRSub);
 	}
 
 	BPawn.SetWalking(bRun);
@@ -851,7 +841,7 @@ function SetFinalDestinationDistanceOffset(float newOffset)
 /** Called by 'Moving' state when Pawn gets within CollisionRadius range with FinalDestination, informs active Action about it */
 function FinalDestinationReached()
 {
-	CallSubscribers(BSE_FinalDestinationReached, class'BamSubscriberParameters_FinalDestinationReached'.static.Create(self, BPawn, FinalDestination));
+	CallSubscribers(class'BamSubscribableEvent_FinalDestinationReached', class'BamSubscriberParameters_FinalDestinationReached'.static.Create(self, BPawn, FinalDestination));
 }
 
 /** Stops latent functions and zeroes Pawn movment variables */
@@ -866,26 +856,41 @@ function StopMovement()
 }
 
 
+
+
+// struct BamSubscribersList
+// {
+// 	var class<BamSubscribableEvent> Event;
+// 	var array<delegate<BamSubscriber> > List;
+// };
+// var array<BamSubscribersList> SubscribersLists;
+// delegate BamSubscriber(BamSubscriberParameters params);
+
+
 /** 
  * Subscribes delegate to an event
  * @param evnt - event that sub will be subscribed for
  * @param sub - delegate to call when event is triggered
  */
-function Subscribe(BamSubscribableEvents evnt, delegate<BamSubscriber> sub)
+function Subscribe(class<BamSubscribableEvent> evnt, delegate<BamSubscriber> sub)
 {
+	local int idx;
+
 	// check if event is correct and delegate is not none
-	if( evnt <= BSE_None || evnt >= BSE_MAX || sub == none )
+	if( evnt == none || sub == none )
 	{
 		return;
 	}
 
+	idx = GetSubscribableEventIndex(evnt);
+	
 	// do not allow duplicates
-	if( SubscribersLists[evnt].List.Find(sub) != INDEX_NONE )
+	if( SubscribersLists[idx].List.Find(sub) != INDEX_NONE )
 	{
 		return;
 	}
 
-	SubscribersLists[evnt].List.AddItem(sub);
+	SubscribersLists[idx].List.AddItem(sub);
 }
 
 /** 
@@ -893,15 +898,19 @@ function Subscribe(BamSubscribableEvents evnt, delegate<BamSubscriber> sub)
  * @param evnt - event that sub is subscribed for
  * @param sub - delegate to remove
  */
-function UnSubscribe(BamSubscribableEvents evnt, delegate<BamSubscriber> sub)
+function UnSubscribe(class<BamSubscribableEvent> evnt, delegate<BamSubscriber> sub)
 {
+	local int idx;
+
+	idx = GetSubscribableEventIndex(evnt);
+
 	// check if event is correct and delegate is not none
-	if( evnt <= BSE_None || evnt >= BSE_MAX || sub == none )
+	if( idx == INDEX_NONE )
 	{
 		return;
 	}
 
-	SubscribersLists[evnt].List.RemoveItem(sub);
+	SubscribersLists[idx].List.RemoveItem(sub);
 }
 
 /** 
@@ -910,36 +919,58 @@ function UnSubscribe(BamSubscribableEvents evnt, delegate<BamSubscriber> sub)
  * @param evnt - index of an event that was triggered
  * @param params - (optional) parameters that will passed to all subscribers
  */
-function CallSubscribers(BamSubscribableEvents evnt, optional BamSubscriberParameters params)
+function CallSubscribers(class<BamSubscribableEvent> evnt, optional BamSubscriberParameters params)
 {
-	local int q;
+	local int q, idx;
 	local array<delegate<BamSubscriber> > subsList;
 	local delegate<BamSubscriber> deleg;
 
+	idx = GetSubscribableEventIndex(evnt);
+
 	// check if event is correct
-	if( evnt <= BSE_None || evnt > BSE_MAX )
+	if( idx == INDEX_NONE )
 	{
-		`trace("Wrong event given as parameter (" $ evnt $ ")" , `red);
+		`trace("Wrong event given as parameter" , `red);
 		return;
 	}
 
-	// check if size of SubscribersLists is correct
-	if( SubscribersLists.Length <= evnt )
-	{
-		SubscribersLists.Length = BSE_MAX;
-	}
-
-	subsList = SubscribersLists[evnt].List;
+	subsList = SubscribersLists[idx].List;
 
 	for(q = 0; q < subsList.Length; ++q)
 	{
 		deleg = subsList[q];
-		SubscribersLists[evnt].List.RemoveItem(deleg);
+		SubscribersLists[idx].List.RemoveItem(deleg);
 		deleg(params);
 	}
 }
 
+/**
+ * Returns index
+ * @return
+ */
+function int GetSubscribableEventIndex(class<BamSubscribableEvent> evnt)
+{
+	local BamSubscribersList list;
+	local int q;
 
+	if( evnt == none )
+	{
+		return INDEX_NONE;
+	}
+
+	for(q = 0; q < SubscribersLists.Length; ++q)
+	{
+		if( SubscribersLists[q].Event == evnt )
+		{
+			return q;
+		}
+	}
+
+	list.Event = evnt;
+	SubscribersLists.AddItem(list);
+
+	return (SubscribersLists.Length - 1);
+}
 
 
 

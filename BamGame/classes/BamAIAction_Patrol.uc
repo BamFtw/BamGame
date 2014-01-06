@@ -49,18 +49,18 @@ function OnBegin()
 function OnEnd()
 {
 	Manager.Controller.Pawn.LockDesiredRotation(false);
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function OnBlocked()
 {
 	Manager.Controller.Pawn.LockDesiredRotation(false);
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function OnUnblocked()
 {
-	// Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	// Manager.Controller.Subscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 	// Manager.Controller.Begin_Moving();
 	Manager.Controller.InitializeMove(Route[CurrentIndex].Location, Manager.Controller.Pawn.GetCollisionRadius() * 2.0, bRunWhilePatrolling, FinalDestinationReached);
 }

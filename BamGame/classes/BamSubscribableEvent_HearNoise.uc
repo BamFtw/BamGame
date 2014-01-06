@@ -1,0 +1,1 @@
+class BamSubscribableEvent_HearNoise extends BamSubscribableEvent;

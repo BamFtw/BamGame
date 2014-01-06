@@ -24,17 +24,17 @@ function OnBegin()
 
 function OnEnd()
 {
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function OnUnBlocked()
 {
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.Subscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function OnBlocked()
 {
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function FinalDestinationReached(BamSubscriberParameters params)

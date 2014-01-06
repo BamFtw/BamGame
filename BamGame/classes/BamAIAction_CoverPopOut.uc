@@ -41,7 +41,7 @@ function OnBegin()
 
 function OnEnd()
 {
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 
 	if( !bIsBlocked )
 	{
@@ -56,12 +56,12 @@ function OnEnd()
 
 function OnUnBlocked()
 {
-	Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.Subscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function OnBlocked()
 {
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 
@@ -82,7 +82,7 @@ function bool FindGoodSpot()
 	{
 		if( IsPopLocationViable(CoverData.Cover.Location, EnemyLocations) )
 		{
-			Manager.Controller.Subscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+			Manager.Controller.Subscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 			Manager.Controller.FinalDestinationReached();
 
 			// if cover location is valid select it and ignore the sides
@@ -208,7 +208,7 @@ function FinalDestinationReached(BamSubscriberParameters params)
 	if( bIsBlocked )
 		return;
 
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 	Manager.Controller.Begin_Idle();
 }
 

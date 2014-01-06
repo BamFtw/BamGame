@@ -1,0 +1,1 @@
+class BamSubscribableEvent_TakeDamage extends BamSubscribableEvent;

@@ -77,7 +77,7 @@ function OnBegin()
 function OnBlocked()
 {
 	Finish();
-	Manager.Controller.UnSubscribe(BSE_FinalDestinationReached, FinalDestinationReached);
+	Manager.Controller.UnSubscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 }
 
 function OnEnd()

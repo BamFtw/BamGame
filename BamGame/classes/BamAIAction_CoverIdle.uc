@@ -22,7 +22,7 @@ function OnBegin()
 
 	Manager.Controller.BPawn.CharacterCoverState.SetState(SelectCoverState());
 
-	Manager.Controller.Subscribe(BSE_TakeDamage, TakeDamage);
+	Manager.Controller.Subscribe(class'BamSubscribableEvent_TakeDamage', TakeDamage);
 }
 
 function OnEnd()
