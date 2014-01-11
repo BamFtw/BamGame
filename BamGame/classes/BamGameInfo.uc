@@ -160,7 +160,7 @@ exec function BamKillPawns()
 defaultproperties
 {
 	HUDType=class'BamHUD'
-	DefaultPawnClass=class'BamPlayerPawn'
+	DefaultPawnClass=class'BamAIPawn'
 	PlayerControllerClass=class'BamPlayerController'
 	GameIntensityClass=class'BamGameIntensity'
 }

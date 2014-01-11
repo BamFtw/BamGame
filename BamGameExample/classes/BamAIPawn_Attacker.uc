@@ -1,4 +1,4 @@
-class BamAIPawn_Attacker extends BamAIPawn;
+class BamAIPawn_Attacker extends BamAIPawn_Example;
 
 DefaultProperties
 {
@@ -9,6 +9,4 @@ DefaultProperties
 	End Object
 
 	DefaultInventory[0]=class'BamWeapon_Rifle'
-	
-	HatSkelMesh=none
 }

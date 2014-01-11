@@ -21,7 +21,12 @@ simulated function Rotator GetAdjustedAimFor(Weapon W, vector StartFireLoc)
 /** Returns controllers ViewPitch */
 function float GetViewPitch()
 {
-	return BController.ViewPitch;
+	if( BController != none )
+	{
+		return BController.ViewPitch;
+	}
+	
+	return Controller.Rotation.Pitch;
 }
 
 /**  */

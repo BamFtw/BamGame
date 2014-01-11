@@ -42,10 +42,7 @@ var BamAnimNode_Covering CharacterCoverState;
 var() UDKSkeletalMeshComponent CharacterMesh;
 /** Mesh of the first person arms */
 var() UDKSkeletalMeshComponent ArmsMesh;
-/** Mesh component of the hat this pawn is wearing */
-var() UDKSkeletalMeshComponent HatMesh;
-/** SkeletalMesh that will be asigned to SkeletalMesh of HatMesh component */
-var() SkeletalMesh HatSkelMesh;
+
 
 /** Pitch of the aim offset that should be set in AimOffset node */
 var Repnotify float CharacterAimOffsetPitch;
@@ -92,7 +89,7 @@ var Vector DesiredLocation;
 var() BamMeleeAttackProperties MeleeProperties;
 
 /** List of Inventory clases that should be added to pawns inventory after its spawned */
-var array<class<Inventory> > DefaultInventory;
+var() array<class<Inventory> > DefaultInventory;
 
 
 
@@ -105,12 +102,11 @@ simulated event PreBeginPlay()
 	Game = BamGameInfo(class'WorldInfo'.static.GetWorldInfo().Game);
 }
 
-/** Initialization of hat and inventory */
+/** Initialization */
 event PostBeginPlay()
 {
 	super.PostBeginPlay();
 
-	AttachHat();
 	SpawnDefaultInventory();
 	SpawnProjectileCatcher();
 }
@@ -125,12 +121,7 @@ function SpawnProjectileCatcher()
 	}
 }
 
-/** Sets correct mesh for hts Mesh comp and attaches it to character mesh */
-function AttachHat()
-{
-	HatMesh.SetSkeletalMesh(HatSkelMesh);
-	CharacterMesh.AttachComponentToSocket(HatMesh, 'HatSocket');
-}
+
 
 /** Spawns default inventory from DefaultInventory list */
 function SpawnDefaultInventory()
@@ -648,42 +639,9 @@ defaultproperties
 	Components.Add(FirstPersonArms);
 	ArmsMesh=FirstPersonArms
 
-	HatSkelMesh=none
-
-	begin object class=UDKSkeletalMeshComponent name=Hat
-		PhysicsAsset=PhysicsAsset'bam_ch_hats.Physics.tophat_Physics'
-		SkeletalMesh=none
-		bOwnerNoSee=true
-		LightEnvironment=MyLightEnvironment
-		ShadowParent=CharMesh
-		RBChannel=RBCC_Untitled3
-		ScriptRigidBodyCollisionThreshold=1.0
-		AlwaysLoadOnClient=true
-		AlwaysLoadOnServer=true
-		CastShadow=true
-		BlockRigidBody=true
-		bUpdateSkelWhenNotRendered=false
-		bIgnoreControllersWhenNotRendered=true
-		bUpdateKinematicBonesFromAnimation=true
-		bCastDynamicShadow=true
-		bHasPhysicsAssetInstance=false
-		TickGroup=TG_PreAsyncWork
-		// MinDistFactorForKinematicUpdate=0.2
-		bChartDistanceFactor=true
-		RBDominanceGroup=20
-		bAllowAmbientOcclusion=false
-		bUseOnePassLightingOnTranslucency=true
-		bPerBoneMotionBlur=true
-	end object
-	Components.Add(Hat);
-	HatMesh=Hat
-
-
 	ArmsForwardOffset=5.0
 
-
 	InventoryManagerClass=class'BamInventoryManager'
-
 
 	RotationRate=(Yaw=32000)
 
@@ -703,8 +661,6 @@ defaultproperties
 	PeripheralVision=0.17 // ~80
 	//PeripheralVision=0.7071 // ~45 deg
 	//PeripheralVision=0.866 // ~30 deg
-
-	DefaultInventory.Add(class'BamWeapon_Rifle')
 
 	bCanCrouch=true
 	UncrouchTime=1.5

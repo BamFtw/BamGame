@@ -736,6 +736,7 @@ function array<Vector> GetEnemyLocations()
 	return Team.GetEnemyLocations();
 }
 
+/** Sums all of the enemy LastSeenLocations and returns average of those */
 function Vector GetAverageEnemyLocation()
 {
 	return Team.GetAverageEnemyLocation();

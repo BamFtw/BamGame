@@ -1,4 +1,4 @@
-class BamAIPawn_Zombie extends BamAIPawn;
+class BamAIPawn_Zombie extends BamAIPawn_Example;
 
 DefaultProperties
 {
@@ -12,8 +12,6 @@ DefaultProperties
 	End Object
 
 	DefaultInventory.Empty
-
-	HatSkelMesh=none
 
 	GroundSpeed=55.0
 	WalkingPct=1.0

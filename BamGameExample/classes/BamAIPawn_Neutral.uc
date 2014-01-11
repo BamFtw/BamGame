@@ -1,4 +1,9 @@
-class BamAIPawn_Neutral extends BamAIPawn;
+class BamAIPawn_Neutral extends BamAIPawn_Example;
+
+
+
+
+
 
 DefaultProperties
 {
@@ -9,7 +14,9 @@ DefaultProperties
 		Materials[0]=MaterialInstanceConstant'bam_ch_default.Materials.character_casual1_Mat_INST'
 	End Object
 
-	DefaultInventory.Empty
+	begin object name=Hat
+		SkeletalMesh=SkeletalMesh'bam_ch_hats.SkeletalMeshes.Cap'
+	End Object
 
-	HatSkelMesh=SkeletalMesh'bam_ch_hats.SkeletalMeshes.Cap'
+	DefaultInventory.Empty
 }

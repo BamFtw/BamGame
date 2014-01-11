@@ -92,7 +92,12 @@ function bool IsPawnHostile(Pawn pwn)
 {
 	local BamActor_TeamManager team;
 
-	if( BamPlayerPawn(pwn) != none )
+	if( pwn == none )
+	{
+		return false;
+	}
+
+	if( pwn == GetALocalPlayerController().Pawn )
 	{
 		team = Game.PlayerTeam;
 	}
@@ -133,6 +138,11 @@ function Vector GetAverageEnemyLocation()
 {
 	local Vector sum;
 	local int q;
+
+	if( EnemyData.Length == 0 )
+	{
+		return vect(0, 0, 0);
+	}
 
 	for(q = 0; q < EnemyData.Length; ++q)
 	{
