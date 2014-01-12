@@ -3,6 +3,8 @@ class BamAIAction_CoverPopOut extends BamAIAction_Cover
 
 var BamAIAction_FireAtTarget FiringAction;
 
+var bool bUnclaimImmediately;
+
 function OnBegin()
 {
 	super.OnBegin();
@@ -21,7 +23,11 @@ function OnBegin()
 		CoverData.SucceededPopOut();
 
 		CoverData.UnclaimedCover();
-		Manager.Controller.UnClaimCover();
+		
+		if( bUnclaimImmediately )
+		{
+			UnclaimCover();
+		}
 	}
 	else
 	{
@@ -45,6 +51,11 @@ function OnEnd()
 
 	if( !bIsBlocked )
 	{
+		if( !bUnclaimImmediately )
+		{
+			UnclaimCover();
+		}
+
 		Manager.PushFront(class'BamAIAction_CoverInit'.static.Create_CoverInit(CoverData));
 	}
 
@@ -65,6 +76,14 @@ function OnBlocked()
 }
 
 
+function UnclaimCover()
+{
+	if( CoverData.Cover != none ) 
+	{
+		CoverData.Cover.UnClaim();
+	}
+}
+
 function bool FindGoodSpot()
 {
 	local Vector CoverDir, CoverLeft, CoverRight, /**CoverUp,*/ Extent, Offset, SelectedLocation;
@@ -84,11 +103,13 @@ function bool FindGoodSpot()
 		{
 			Manager.Controller.Subscribe(class'BamSubscribableEvent_FinalDestinationReached', FinalDestinationReached);
 			Manager.Controller.FinalDestinationReached();
-
+			bUnclaimImmediately = false;
 			// if cover location is valid select it and ignore the sides
 			return true;
 		}
 	}
+
+	bUnclaimImmediately = true;
 
 	CoverDir = Vector(CoverData.Cover.Rotation);
 	Extent = Manager.Controller.Pawn.GetCollisionExtent() * 0.75;

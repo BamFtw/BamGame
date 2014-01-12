@@ -130,12 +130,6 @@ var BamNeedManager NeedManager;
 var BamActor_MoveFocus MoveFocusActor;
 var bool bUseMoveFocusActor;
 
-/**
- * !!! Needs to be removed with all Cover related functions
- * Currently claimed cover
- */
-var BamActor_Cover Cover;
-
 
 
 
@@ -164,7 +158,6 @@ event Destroyed()
 	Game = none;
 	BPawn = none;
 	Pawn = none;
-	Cover = none;
 
 	DefaultAction.Archetype = none;
 	CombatAction.Archetype = none;
@@ -758,38 +751,6 @@ function bool GetEnemyData(Pawn enemyPwn, out BamHostilePawnData data)
 {
 	return Team.GetEnemyData(enemyPwn, data);
 }
-
-/** 
- * Sets reference to currently occupied cover, unclaims previously claimed one
- * @param cov - cover actor to claim
- */
-function ClaimCover(BamActor_Cover cov)
-{
-	if( cov == none )
-	{
-		return;
-	}
-
-	UnClaimCover();
-
-	if( cov.Claim(self) )
-	{
-		Cover = cov;
-	}
-}
-
-/** Unclaims current cover and removes reference to it */
-function UnClaimCover()
-{
-	if( Cover == none )
-	{
-		return;
-	}
-	
-	Cover.UnClaim();
-	Cover = none;
-}
-
 
 /**
  * Changes state to the on given as parameter

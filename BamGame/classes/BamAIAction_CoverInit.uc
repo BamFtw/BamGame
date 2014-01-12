@@ -62,7 +62,7 @@ function OnBegin()
 		return;
 	}
 	
-	Manager.Controller.ClaimCover(CoverData.Cover);
+	CoverData.Cover.Claim(Manager.Controller);
 
 	Manager.PushFront(class'BamAIAction_CoverMoveTo'.static.Create_CoverMoveTo(CoverData));
 	Finish();

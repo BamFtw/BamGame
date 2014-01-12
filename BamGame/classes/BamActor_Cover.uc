@@ -41,7 +41,7 @@ function UnClaim()
 /** Return whether this cover is currently claimed by someone */
 function bool IsClaimed()
 {
-	return ClaimedBy != none && ClaimedBy.Cover == self && ClaimedBy.BPawn != none && ClaimedBy.BPawn.IsAliveAndWell();
+	return ClaimedBy != none && ClaimedBy.BPawn != none && ClaimedBy.BPawn.IsAliveAndWell();
 }
 
 
