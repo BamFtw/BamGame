@@ -28,13 +28,17 @@ struct BamAIActionContainer
 };
 
 
-
-/** unrealscript can't store arrays of arrays so this one needs to be in the struct */
 struct BamSubscribersList
 {
+	/** class of the event that has to be given to CallSubscribers function */
 	var class<BamSubscribableEvent> Event;
+	/** List of delegates that will be alled when CallSubscribers is called with correct event class */
 	var array<delegate<BamSubscriber> > List;
 };
+
+/** List of all event subscribers */
+var array<BamSubscribersList> SubscribersLists;
+
 
 /** Becouse pitch in Rotation variable is set to 0 each tick this one is storing it
  *  and should be used for Aim offset and such things */
@@ -44,9 +48,6 @@ var float DesiredViewPitch;
 /** How fast can ViewPitch change */
 var float ViewPitchRotationRate;
 
-
-/** List of all event subscribers */
-var(Subscribers) array<BamSubscribersList> SubscribersLists;
 
 
 /** Data of enemies that are in view but aren't detected yet */
@@ -318,7 +319,7 @@ event Tick(float DeltaTime)
 	// tick action manager
 	if( ActionManager != none )
 	{
-		ActionManager.Tick(DeltaTime);
+		ActionManager.MasterTick(DeltaTime);
 	}
 }
 

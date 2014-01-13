@@ -53,7 +53,7 @@ function Initialize();
 
 
 /** Manages Actions and LockedActionClasses lists */
-function Tick(float DeltaTime)
+final function MasterTick(float DeltaTime)
 {
 	local int q, w;
 	local array<class<BamAIActionLane> > blockedLanes, currentActionLanes;
@@ -145,7 +145,11 @@ function Tick(float DeltaTime)
 			}
 		}
 	}
+
+	Tick(DeltaTime);
 }
+
+function Tick(float DeltaTime);
 
 /** Removes references to Controller and actions */
 function Destroyed()
