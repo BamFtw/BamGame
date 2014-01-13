@@ -2,6 +2,7 @@ class BamAIAction_Fire extends BamAIAction;
 
 /** Time at which firing break should end */
 var float FiringBreakEndTime;
+
 /** Time at which firing should end */
 var float FiringEndTime;
 
@@ -25,12 +26,6 @@ var(Firing) float MaxFireDuration;
 function OnBegin()
 {
 	StopFiring(false);
-}
-
-function OnBlocked()
-{
-	// blocking action should stop firing in its OnBegin if needed
-	// StopFiring(false);
 }
 
 function OnEnd()
@@ -87,6 +82,7 @@ function bool StopFiring(optional bool bSetTimer = false)
 	return true;
 }
 
+/** Returns whether firing can begin */
 function bool CanStartFiring()
 {
 	return true;

@@ -1,6 +1,7 @@
 class BamAIAction_Debug_AimAtPlayer extends BamAIAction
 	editinlinenew;
 
+/** Updates rotation of the AIPawn so it would aim at players Pawn */
 event Tick(float DeltaTime)
 {
 	local Rotator rot;
@@ -14,7 +15,6 @@ event Tick(float DeltaTime)
 
 	Manager.Controller.Pawn.SetDesiredRotation(rot);
 	Manager.Controller.SetDesiredViewRotation(rot);
-
 }
 
 DefaultProperties

@@ -1,6 +1,5 @@
 class BamAIAction_Idle extends BamAIAction;
 
-
 var() bool bStopMovement;
 
 var() bool bWasMoving;
@@ -22,21 +21,20 @@ function OnEnd()
 	}
 }
 
+
+
+
 static function BamAIAction_Idle Create_Idle(float inDuration, optional array<class<BamAIActionLane> > inLanes, optional bool bSetLanes = false, optional bool stopMovement = false, optional bool wasMoving = false)
 {
 	local BamAIAction_Idle act;
-
 	act = new class'BamAIAction_Idle';
-
 	act.bStopMovement = stopMovement;
 	act.bWasMoving = wasMoving;
 	act.SetDuration(inDuration);
-	
 	if( bSetLanes )
 	{
 		act.SetLanes(inLanes);
 	}
-
 	return act;
 }
 

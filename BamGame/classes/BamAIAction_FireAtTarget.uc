@@ -10,6 +10,7 @@ var(Firing) float MinDotToTarget;
 /** Flag that tells whether Pawn is facing enemy and can fire */
 var bool bCanFire;
 
+/** Whether target is player pawn */
 var bool bFiringAtPlayer;
 
 function Tick(float DeltaTime)
@@ -75,6 +76,7 @@ function Tick(float DeltaTime)
 	super.Tick(DeltaTime);
 }
 
+/** Starts firing */
 function bool StartFiring(optional bool bSetTimer = false)
 {
 	if( !super.StartFiring(bSetTimer) )
@@ -91,6 +93,7 @@ function bool StartFiring(optional bool bSetTimer = false)
 	return true;
 }
 
+/** Stops firing */
 function bool StopFiring(optional bool bSetTimer = false)
 {
 	super.StopFiring(bSetTimer);
@@ -104,12 +107,14 @@ function bool StopFiring(optional bool bSetTimer = false)
 	return true;
 }
 
+/** Stops firing and resets controllers view pitch */
 function OnEnd()
 {
-	super.OnEnd();
+	StopFiring();
 	Manager.Controller.SetDesiredViewRotation(MakeRotator(0, 0, 0));
 }
 
+/** Returns whether firing can begin */
 function bool CanStartFiring()
 {
 	return bCanFire;
@@ -151,6 +156,7 @@ function bool FindGoodTarget()
 	return false;
 }
 
+/** Returns whether pawn given as parameter is viable target to shoot at */
 function bool IsPawnViableTarget(Pawn pwn)
 {
 	// check if pawn belongs to player and GI allows shooting at him
@@ -166,6 +172,7 @@ function bool IsPawnViableTarget(Pawn pwn)
  * Returns whether Pawn has clear line of sight to enemy at the specified location
  * @param enemyLoc - actual Enemy Pawn location is not taken into account instead this one is used
  * @param enemy - enemy pawn used for calculating eye height
+ * @return whether Pawn has clear line of sight to enemy at the specified location
  */
 function bool HasClearLOS(Vector enemyLoc, Pawn enemy)
 {
@@ -183,19 +190,17 @@ function bool HasClearLOS(Vector enemyLoc, Pawn enemy)
 }
 
 
-static function BamAIAction_FireAtTarget Create_FireAtTarget(optional Actor inTarget = none, optional float inDuration = -1, optional int inFireMode = 0)
+
+
+
+
+static function BamAIAction_FireAtTarget Create_FireAtTarget(optional Actor inTarget = none, optional float inDuration = 0, optional int inFireMode = default.WeaponFireMode)
 {
 	local BamAIAction_FireAtTarget action;
-
 	action = new class'BamAIAction_FireAtTarget';
 	action.Target = inTarget;
 	action.WeaponFireMode = inFireMode;
-
-	if( inDuration >= 0 )
-	{
-		action.SetDuration(inDuration);
-	}
-
+	action.SetDuration(inDuration);
 	return action;
 }
 
@@ -206,4 +211,5 @@ DefaultProperties
 
 	MinDotToTarget=0.9
 	bFiringAtPlayer=false
+	WeaponFireMode=0
 }
