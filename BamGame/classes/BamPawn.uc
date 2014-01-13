@@ -17,6 +17,23 @@ struct BamMeleeAttackProperties
 	var bool bAllowFriendlyFire;
 };
 
+struct BamFootstepSoundsContainer
+{
+	/** Name of the physical material under the Pawn */
+	var() Name PhysicalMaterialName;
+	/** SoundCues that can be played on this material */
+	var() array<SoundCue> SoundCues;
+};
+
+/** Minimum time between two footsteps */
+var(Footsteps) float FoostepInterval;
+/** Time of the last footstep sound played */
+var float LastFootstepSoundPlayTime;
+/** If right physical material name is not found in FootstepSounds this sound will be played */
+var(Footsteps) SoundCue DefaultFootstepSound;
+/** List of the footstep sound and materials they should be played on */
+var(Footsteps) array<BamFootstepSoundsContainer> FootstepSounds;
+
 /** Reference to GameInfo object */
 var BamGameInfo Game;
 
@@ -51,7 +68,7 @@ var() float ArmsForwardOffset;
 
 
 /** Time this pawn was seen by the enemies is multiplied by this value which might lead to slower or faster detection */
-var float Detectability;
+var() float Detectability;
 
 
 /** Name of the socket on arms mesh where the weapon should be attached */
@@ -546,6 +563,51 @@ simulated function SetPawnRBChannels(SkeletalMeshComponent meshComp, bool bRagdo
 	meshComp.SetRBCollidesWithChannel(RBCC_BlockingVolume, bRagdollMode);
 }
 
+/** Plays footstep sound that depends on PhysicalMaterial Pawn is on */
+event PlayFootStepSound(int FootDown)
+{
+	local Vector sndLocation, HitLocation, HitNormal;
+	local SoundCue selectedSound;
+	local TraceHitInfo HitInfo;
+	local int q;
+
+	// make sure its not too soon
+	if( `TimeSince(LastFootstepSoundPlayTime) < FoostepInterval )
+	{
+		return;
+	}
+
+	LastFootstepSoundPlayTime = WorldInfo.TimeSeconds;
+
+	// set sound location at pawns feet
+	sndLocation = Location;
+	sndLocation.Z -= GetCollisionHeight() * 0.5;
+
+	// trace to get PhysicalMaterial from HitInfo
+	Trace(HitLocation, HitNormal, Location - vect(0, 0, 1) * GetCollisionHeight(), Location, , , HitInfo);
+
+	// look for right SoundCue
+	if( HitInfo.PhysMaterial != none && FootstepSounds.Length > 0 )
+	{
+		for(q = 0; q < FootstepSounds.Length; ++q)
+		{
+			if( FootstepSounds[q].PhysicalMaterialName == HitInfo.PhysMaterial.Name )
+			{
+				if( FootstepSounds[q].SoundCues.Length > 0 )
+				{
+					selectedSound = FootstepSounds[q].SoundCues[FootstepSounds[q].SoundCues.Length];
+				}
+				break;
+			}
+		}
+	}
+
+	// play found SoundCue or default one
+	if( selectedSound != none || DefaultFootstepSound != none )
+	{
+		PlaySound(selectedSound == none ? DefaultFootstepSound : selectedSound, , , , sndLocation);
+	}
+}
 
 State Dying
 {
@@ -684,4 +746,9 @@ defaultproperties
 	WeaponSpread=0.0
 	Awareness=1.0
 	DamageTakenMultiplier=1.0
+
+
+	FoostepInterval=0.2
+	LastFootstepSoundPlayTime=-9999
+	DefaultFootstepSound=SoundCue'bam_snd_footsteps_wood.footsteps_wood'
 }
