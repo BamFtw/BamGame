@@ -127,8 +127,10 @@ function DebugNextPawn()
 	// get all alive pawns into allPawn array
 	foreach WorldInfo.DynamicActors(class'BamAIPawn', pwn)
 	{
-		if( pwn != none && pwn.IsAliveAndWell() )
+		if( pwn != none && pwn.IsAliveAndWell() && GetALocalPlayerController().Pawn != pwn )
+		{
 			allPawns.AddItem(pwn);
+		}
 	}
 
 	if( allPawns.length == 0 )
