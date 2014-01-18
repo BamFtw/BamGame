@@ -9,6 +9,7 @@ DefaultProperties
 
 	Begin Object Name=TPMesh
 		SkeletalMesh=SkeletalMesh'bam_wp_rifle.SkeletalMeshes.rifle'
+		bOwnerNoSee=false
 	End Object
 
 	Begin Object name=FPMuzzleFlash

@@ -24,6 +24,7 @@ DefaultProperties
 		PhysicsAsset=PhysicsAsset'bam_ch_hats.Physics.tophat_Physics'
 		SkeletalMesh=none
 		bOwnerNoSee=true
+		bCastHiddenShadow=true
 		LightEnvironment=MyLightEnvironment
 		ShadowParent=CharMesh
 		RBChannel=RBCC_Untitled3

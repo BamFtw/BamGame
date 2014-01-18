@@ -35,7 +35,7 @@ event Tick(float DeltaTime)
 	super.Tick(DeltaTime);
 
 	// to prevent bouncing
-	Velocity.Z = 0;
+	// Velocity.Z = 0;
 
 	if( BController != none && BController.Team != none )
 	{
