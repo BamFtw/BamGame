@@ -1,4 +1,5 @@
-class BamAIAction_CoverInit extends BamAIAction_Cover;
+class BamAIAction_CoverInit extends BamAIAction_Cover
+	noteditinlinenew;
 
 
 function OnBegin()

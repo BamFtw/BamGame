@@ -1,6 +1,7 @@
 class BamAIAction_Cover extends BamAIAction
 	abstract
-	dependson(BamCoverActionData);
+	dependson(BamCoverActionData)
+	noteditinlinenew;
 
 /** Object storing preferences of the cover action */
 var() editinline BamCoverActionData CoverData;

@@ -1,4 +1,5 @@
-class BamAIAction_Strafe extends BamAIAction;
+class BamAIAction_Strafe extends BamAIAction
+	noteditinlinenew;
 
 enum BamStrafeDirection
 {

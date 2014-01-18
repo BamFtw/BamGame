@@ -1,6 +1,6 @@
 class BamAIAction_CombatBlocker extends BamAIAction
 	hidecategories(BamAIAction)
-	editinlinenew;
+	noteditinlinenew;
 
 static function BamAIAction_CombatBlocker Create_CombatBlocker()
 {

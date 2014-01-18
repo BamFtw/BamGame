@@ -1,4 +1,5 @@
-class BamAIAction_Investigate extends BamAIAction;
+class BamAIAction_Investigate extends BamAIAction
+	noteditinlinenew;
 
 /** Location to investigate */
 var() Vector SuspiciousLocation;

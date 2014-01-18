@@ -1,5 +1,5 @@
 class BamAIAction_AdvanceOnEnemies extends BamAIAction
-	editinlinenew;
+	noteditinlinenew;
 
 /** Action responsible for firing */
 var BamAIAction_FireAtTarget FiringAction;

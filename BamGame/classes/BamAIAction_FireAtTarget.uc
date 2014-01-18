@@ -1,5 +1,6 @@
 class BamAIAction_FireAtTarget extends BamAIAction_Fire
-	dependson(BamAIController);
+	dependson(BamAIController)
+	noteditinlinenew;
 
 /** Actor to shoot at */
 var(Firing) Actor Target;
@@ -184,7 +185,10 @@ function bool HasClearLOS(Vector enemyLoc, Pawn enemy)
 
 	a1 = Manager.Controller.Pawn.Trace(HitLocation, HitNormal, enemyLoc, eyeLoc, true, , , class'Actor'.const.TRACEFLAG_Bullet);
 
-	a2 = Manager.Controller.Pawn.Trace(HitLocation, HitNormal, enemyLoc + vect(0,0,1) * enemy.EyeHeight, enemyLoc, true, , , class'Actor'.const.TRACEFLAG_Bullet);
+	if( enemy != none )
+	{
+		a2 = Manager.Controller.Pawn.Trace(HitLocation, HitNormal, enemyLoc + vect(0,0,1) * enemy.EyeHeight, enemyLoc, true, , , class'Actor'.const.TRACEFLAG_Bullet);
+	}
 
 	return (a1 == none || a1 == enemy) && (a2 == none || a2 == enemy);
 }
