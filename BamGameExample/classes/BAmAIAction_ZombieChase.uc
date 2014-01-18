@@ -1,4 +1,5 @@
-class BAmAIAction_ZombieChase extends BamAIAction;
+class BAmAIAction_ZombieChase extends BamAIAction
+	noteditinlinenew;
 
 var() Pawn Target;
 
