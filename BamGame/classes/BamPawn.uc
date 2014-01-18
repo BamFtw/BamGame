@@ -22,7 +22,7 @@ struct BamFootstepSoundsContainer
 	/** Name of the physical material under the Pawn */
 	var() Name PhysicalMaterialName;
 	/** SoundCues that can be played on this material */
-	var() array<SoundCue> SoundCues;
+	var() SoundCue SoundCue;
 };
 
 /** Minimum time between two footsteps */
@@ -584,7 +584,7 @@ event PlayFootStepSound(int FootDown)
 	sndLocation.Z -= GetCollisionHeight() * 0.5;
 
 	// trace to get PhysicalMaterial from HitInfo
-	Trace(HitLocation, HitNormal, Location - vect(0, 0, 1) * GetCollisionHeight(), Location, , , HitInfo);
+	Trace(HitLocation, HitNormal, Location - vect(0, 0, 1.5) * GetCollisionHeight(), Location, , , HitInfo);
 
 	// look for right SoundCue
 	if( HitInfo.PhysMaterial != none && FootstepSounds.Length > 0 )
@@ -593,10 +593,7 @@ event PlayFootStepSound(int FootDown)
 		{
 			if( FootstepSounds[q].PhysicalMaterialName == HitInfo.PhysMaterial.Name )
 			{
-				if( FootstepSounds[q].SoundCues.Length > 0 )
-				{
-					selectedSound = FootstepSounds[q].SoundCues[FootstepSounds[q].SoundCues.Length];
-				}
+				selectedSound = FootstepSounds[q].SoundCue;
 				break;
 			}
 		}
