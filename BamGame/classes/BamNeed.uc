@@ -336,7 +336,7 @@ defaultproperties
 	Begin Object class=BamFuzzyMembershipFunction_Triangular name=MemFunc_Low
 		A=20
 		B=30
-		C=40
+		C=50
 	End Object
 
 	Begin Object class=BamFuzzyMembershipFunction_Triangular name=MemFunc_Medium
