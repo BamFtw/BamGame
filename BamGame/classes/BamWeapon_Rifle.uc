@@ -25,8 +25,8 @@ DefaultProperties
 	FiringStatesArray(0)=WeaponFiring
 	WeaponFireTypes(0)=EWFT_Projectile
 	WeaponProjectiles(0)=class'BamProjectile'
-	FireInterval(0)=0.13
-	Spread(0)=0.05
+	FireInterval(0)=0.2
+	Spread(0)=0.04
 	InstantHitDamage(0)=0
 	InstantHitMomentum(0)=0
 	InstantHitDamageTypes(0)=class'DamageType'

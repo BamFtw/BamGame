@@ -133,7 +133,6 @@ var bool bUseMoveFocusActor;
 
 
 
-
 /** 
  * Delegate used for subscribing to certain events specified in BamSubscribableEvents enum
  * @param params - event parameters

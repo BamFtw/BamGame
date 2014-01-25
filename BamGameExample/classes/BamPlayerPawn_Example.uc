@@ -11,14 +11,20 @@ simulated event GetActorEyesViewPoint(out vector out_Location, out Rotator out_R
 
 DefaultProperties
 {
+	Begin Object Name=CollisionCylinder
+		CollisionRadius=24.0
+		CollisionHeight=45.0
+	End Object
+
 	Begin Object name=CharMesh
 		Materials[0]=MaterialInstanceConstant'bam_ch_default.Materials.character_casual2_Mat_INST'
 		bOwnerNoSee=false
+		Translation=(X=-12)
 	End Object
 
-	Begin Object name=FirstPersonArms
+	/**Begin Object name=FirstPersonArms
 		bOwnerNoSee=true
-	End Object
+	End Object*/
 
 	begin object name=Hat
 		SkeletalMesh=SkeletalMesh'bam_ch_hats.SkeletalMeshes.Hat'
@@ -29,4 +35,6 @@ DefaultProperties
 	Health=10000
 	HealthMax=10000
 	Detectability=0.75
+
+	ControllerClass=none
 }

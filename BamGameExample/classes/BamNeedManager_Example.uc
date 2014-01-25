@@ -76,21 +76,24 @@ function SelectAction()
 	if( Tiredness <= BFL_Low )
 	{
 		PushAction(class'BamActor_Replenish_Bed');
-		`trace("go to bed", `green);
+		return;
+	}
+
+	if( Thirst <= BFL_Medium && Hunger <= BFL_Medium )
+	{
+		PushAction(class'BamActor_Replenish_Fridge');
 		return;
 	}
 
 	if( Thirst <= BFL_Low )
 	{
 		PushAction(class'BamActor_Replenish_Sink');
-		`trace("go to sink", `green);
 		return;
 	}
 
-	if( Hunger <= BFL_Medium )
+	if( Hunger <= BFL_Low )
 	{
 		PushAction(class'BamActor_Replenish_Fridge');
-		`trace("go to fridge", `green);
 		return;
 	}
 }

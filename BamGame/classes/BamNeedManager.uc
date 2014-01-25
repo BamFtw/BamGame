@@ -14,10 +14,10 @@ struct BamNeedContainer
 var BamAIController Controller;
 
 /** List of needs that should be spawned during initialization */
-var array<BamNeedContainer> DefaultNeeds;
+var() array<BamNeedContainer> DefaultNeeds;
 
 /** List of needs */
-var() array<BamNeed> Needs;
+var array<BamNeed> Needs;
 
 
 /** Spawns and initializes all of the needs from DefaultNeeds list */

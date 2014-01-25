@@ -31,14 +31,14 @@ simulated function ProcessTouch(Actor Other, Vector HitLocation, Vector HitNorma
 	local TraceHitInfo HitInfo;
 	local Vector traceHitLocation, traceHitNormal;
 
-	if( Pawn(Other) != none )
-	{
-		DrawDebugBox(HitLocation, vect(2,2,2), 255, 0, 0, true);
-	}
-	else
-	{
-		DrawDebugBox(HitLocation, vect(2,2,2), 0, 255, 0, true);
-	}
+	// if( Pawn(Other) != none )
+	// {
+	// 	DrawDebugBox(HitLocation, vect(2,2,2), 255, 0, 0, true);
+	// }
+	// else
+	// {
+	// 	DrawDebugBox(HitLocation, vect(2,2,2), 0, 255, 0, true);
+	// }
 	
 	if (Other != Instigator)
 	{
@@ -76,7 +76,7 @@ simulated event HitWall(vector HitNormal, actor Wall, PrimitiveComponent WallCom
 	super.HitWall(HitNormal, Wall, WallComp);
 	SpawnHitEffect(HitNormal);
 
-	DrawDebugBox(Location, vect(2,2,2), 0, 0, 255, true);
+	// DrawDebugBox(Location, vect(2,2,2), 0, 0, 255, true);
 
 	if( GroundImpactSound != none )
 	{
@@ -123,8 +123,8 @@ DefaultProperties
 
 	DamageRadius=0.0
 	Damage=10
-	Speed=3000.0
-	MaxSpeed=3000.0
+	Speed=6000.0
+	MaxSpeed=6000.0
 
 	BulletDropRate=24.0
 
