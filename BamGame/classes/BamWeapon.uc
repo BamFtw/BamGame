@@ -65,6 +65,7 @@ simulated event vector GetPhysicalFireStartLoc(optional vector AimDir)
 	local int q;
 	local Vector Loc, HitNormal, HitLocation, adjustedLoc;
 	local Rotator Rot;
+	local Actor HitActor;
 
 	if( BamAIPawn(Owner) != none )
 	{
@@ -74,14 +75,14 @@ simulated event vector GetPhysicalFireStartLoc(optional vector AimDir)
 		for(q = 0; q < 5; ++q)
 		{
 			adjustedLoc = Loc + vect(0, 0, 5.0) * q;
-
-			if( Trace(HitLocation, HitNormal, adjustedLoc + Vector(Rot) * 20.0, adjustedLoc, true, , , TRACEFLAG_Bullet) == none )
+			HitActor = Trace(HitLocation, HitNormal, adjustedLoc + Vector(Rot) * 20.0, adjustedLoc, true, , , TRACEFLAG_Bullet);
+			if( HitActor == none || Trigger(HitActor) != none )
 			{
 				return adjustedLoc;
 			}
 			else
 			{
-				DrawDebugLine(adjustedLoc, adjustedLoc + Vector(Rot) * 20.0,  0, 255, 255, true);
+				// DrawDebugLine(adjustedLoc, adjustedLoc + Vector(Rot) * 20.0,  0, 255, 255, true);
 			}
 		}
 
@@ -273,6 +274,7 @@ DefaultProperties
 		bIsActive=false
 		bOwnerNoSee=false
 		bOnlyOwnerSee=true
+		bCastDynamicShadow=true
 	End Object
 	Components.Add(FPMuzzleFlash)
 	FPMuzzleFlashPS=FPMuzzleFlash
@@ -281,7 +283,7 @@ DefaultProperties
 		Template=none
 		bAutoActivate=false
 		bIsActive=false
-		bOwnerNoSee=true
+		bOwnerNoSee=false
 		bOnlyOwnerSee=false
 	End Object
 	Components.Add(TPMuzzleFlash)
