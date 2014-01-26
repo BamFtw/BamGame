@@ -13,10 +13,23 @@ var() array<BamGIParamValue> Params;
  *	param value no more pawns should be able to fire at player */
 var array<Pawn> PawnsFiringAtPlayer;
 
+var int TempBlockedFiringSlots;
+
+var array<float> BlockedFiringSlots;
+
 function Tick(float DeltaTime)
 {
 	local int q;
 	
+	for(q = 0; q < BlockedFiringSlots.Length; ++q)
+	{
+		BlockedFiringSlots[q] -= DeltaTime;
+		if( BlockedFiringSlots[q] <= 0 )
+		{
+			BlockedFiringSlots.Remove(q, 1);
+		}
+	}
+
 	// remove invalid Pawns from PawnsFiringAtPlayer list
 	for(q = 0; q < PawnsFiringAtPlayer.Length; ++q)
 	{
@@ -27,10 +40,28 @@ function Tick(float DeltaTime)
 	}
 }
 
+function TempBlockFiringSlot()
+{
+	++TempBlockedFiringSlots;
+}
+
+function TempUnblockFiringSlot()
+{
+	--TempBlockedFiringSlots;
+}
+
+function BlockFiringSlot(float duration)
+{
+	if( duration > 0 )
+	{
+		BlockedFiringSlots.AddItem(duration);
+	}
+}
+
 /** Returns whether it is possible to shoot at player at this time */
 function bool CanFireAtPlayer()
 {
-	return (PawnsFiringAtPlayer.Length < GetParamValue(class'BamGIParam_MaxEnemiesFiringAtPlayer'));
+	return (PawnsFiringAtPlayer.Length + TempBlockedFiringSlots + BlockedFiringSlots.Length < GetParamValue(class'BamGIParam_MaxEnemiesFiringAtPlayer'));
 }
 
 /** Adds Pawn given as parameter to PawnsFiringAtPlayer list */

@@ -14,6 +14,8 @@ var bool bCanFire;
 /** Whether target is player pawn */
 var bool bFiringAtPlayer;
 
+var bool BlockedFiringSlot;
+
 function Tick(float DeltaTime)
 {
 	local BamHostilePawnData data;
@@ -39,6 +41,12 @@ function Tick(float DeltaTime)
 	{
 		if( !TargetPawn.IsAliveAndWell() && !FindGoodTarget() )
 		{
+			if( BlockedFiringSlot )
+			{
+				Manager.Game.GameIntensity.TempUnblockFiringSlot();
+				BlockedFiringSlot = false;
+			}
+		
 			StopFiring();
 			SetTickBreak(0.1);
 			return;
@@ -99,8 +107,15 @@ function bool StopFiring(optional bool bSetTimer = false)
 {
 	super.StopFiring(bSetTimer);
 
+	if( BlockedFiringSlot )
+	{
+		Manager.Game.GameIntensity.TempUnblockFiringSlot();
+		BlockedFiringSlot = false;
+	}
+
 	if( bFiringAtPlayer )
 	{
+		Manager.Game.GameIntensity.BlockFiringSlot(RandRange(0.3,0.9));
 		Manager.Game.GameIntensity.StoppedFiringAtPlayer(Manager.Controller.Pawn);
 		bFiringAtPlayer = false;
 	}
@@ -111,6 +126,14 @@ function bool StopFiring(optional bool bSetTimer = false)
 /** Stops firing and resets controllers view pitch */
 function OnEnd()
 {
+	if( BlockedFiringSlot )
+	{
+		Manager.Game.GameIntensity.TempUnblockFiringSlot();
+		BlockedFiringSlot = false;
+	}
+
+	Manager.Game.GameIntensity.BlockFiringSlot(RandRange(0.3,0.9));
+
 	StopFiring();
 	Manager.Controller.SetDesiredViewRotation(MakeRotator(0, 0, 0));
 }
@@ -163,7 +186,17 @@ function bool IsPawnViableTarget(Pawn pwn)
 	// check if pawn belongs to player and GI allows shooting at him
 	if( pwn == Manager.WorldInfo.GetALocalPlayerController().Pawn )
 	{
-		return Manager.Game.GameIntensity.CanFireAtPlayer();
+		if( Manager.Game.GameIntensity.CanFireAtPlayer() )
+		{
+			Manager.Game.GameIntensity.TempBlockFiringSlot();
+			BlockedFiringSlot = true;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+		
 	}
 
 	return pwn != none;
