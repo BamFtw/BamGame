@@ -21,9 +21,10 @@ event Activated()
 	local BamAIPawn spawnedPawn;
 	local BamAIAction aiAction;
 	local BamActor_TeamManager TeamManager;
+	local int q;
 
 	OutputPawn = none;
-
+	
 	// check if pawn archetype is set
 	if( PawnArchetype == none && PawnClass == none )
 	{
@@ -57,18 +58,24 @@ event Activated()
 		return;
 	}
 
-	// grab connected AIAction
-	if( VariableLinks.Length >= 4 && VariableLinks[3].LinkedVariables.Length > 0 && VariableLinks[3].LinkedVariables[0] != none )
+	for(q = 0; q < VariableLinks.Length; ++q)
 	{
-	 	aiAction = BamSeqVar_AIAction(VariableLinks[3].LinkedVariables[0]).GetAIAction();
+		if( VariableLinks[q].LinkedVariables.Length == 0 )
+		{
+			continue;
+		}
+
+		if( VariableLinks[q].LinkDesc == "Team" )
+		{
+			TeamManager = BamActor_TeamManager(SeqVar_Object(VariableLinks[q].LinkedVariables[0]).GetObjectValue());
+		}
+		else if( VariableLinks[q].LinkDesc == "Initial Action" )
+		{
+			aiAction = BamSeqVar_AIAction(VariableLinks[q].LinkedVariables[0]).GetAIAction();
+		}
 	}
 
-	// grab connected TeamManager
-	if( VariableLinks.Length >= 3 && VariableLinks[2].LinkedVariables.Length > 0 && VariableLinks[2].LinkedVariables[0] != none )
-	{
-	 	TeamManager = BamActor_TeamManager(SeqVar_Object(VariableLinks[2].LinkedVariables[0]).GetObjectValue());
-	}
-
+	
 	// spawn pawns controller
 	if( spawnedPawn.Controller == none )
 	{
