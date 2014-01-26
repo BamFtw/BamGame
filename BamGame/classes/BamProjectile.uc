@@ -50,7 +50,7 @@ simulated function ProcessTouch(Actor Other, Vector HitLocation, Vector HitNorma
 			{
 				// get hit info
 				Trace(traceHitLocation, traceHitNormal, Location + Vector(Rotation) * 20.0, Location - Vector(Rotation) * 20.0, true, , HitInfo, TRACEFLAG_Bullet);
-				DrawDebugLine(Location - Vector(Rotation) * 20.0,  Location + Vector(Rotation) * 20.0, 255, 255, 255, true);
+				// DrawDebugLine(Location - Vector(Rotation) * 20.0,  Location + Vector(Rotation) * 20.0, 255, 255, 255, true);
 
 				if( CharacterImpactSound != none )
 				{

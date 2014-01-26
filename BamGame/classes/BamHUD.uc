@@ -35,10 +35,17 @@ function DrawCrosshair()
 /** Draws information about PawnToDebug on the screen */
 function DrawPawnDebug()
 {
-	local int q, debugLine;
+	local int q, debugLine, height, width;
+	local string str;
+
 
 	if( PawnToDebug != none && PawnToDebug.IsAliveAndWell() )
 	{
+		str = "X";
+		Canvas.Font = Font'bam_hud_font_ubuntuMono.Fonts.ubuntu_mono_22';
+
+		Canvas.Font.GetStringHeightAndWidth(str, height, width);
+
 		debugLine = 10;
 
 		// draw rectangles at the pawns location and its final destination
@@ -48,38 +55,53 @@ function DrawPawnDebug()
 			DebugRect(Canvas.Project(PawnToDebug.BController.FinalDestination), 30, 0, 0, 255, 127);
 		}
 
-		DebugStr("Pawn:" @ PawnToDebug.Name, debugLine);
-		DebugStr("Health:" @ PawnToDebug.Health @ "/" @ PawnToDebug.HealthMax, debugLine);
-		DebugStr("State: pwn (" $ PawnToDebug.GetStateName() $ "), ctrl (" $ PawnToDebug.BController.GetStateName() $ ")", debugLine);
+		Canvas.SetDrawColor(255,255,255,255);
+		
+		DebugStr("Pawn:" @ PawnToDebug.Name, debugLine, , height);
+		DebugStr("Health:" @ PawnToDebug.Health @ "/" @ PawnToDebug.HealthMax, debugLine, , height);
+		// DebugStr("State: pwn (" $ PawnToDebug.GetStateName() $ "), ctrl (" $ PawnToDebug.BController.GetStateName() $ ")", debugLine);
+		// DebugStr("", debugLine);
+
+		DebugStr("Team:" @ PawnToDebug.BController.Team.TeamName, debugLine, , height);	
 		DebugStr("", debugLine);
 
-		DebugStr("Team:" @ PawnToDebug.BController.Team.TeamName, debugLine);	
-		DebugStr("", debugLine);
-
-		DebugStr("GroundSpeed:" @ PawnToDebug.GroundSpeed, debugLine);
-		DebugStr("Awareness:" @ PawnToDebug.Awareness, debugLine);
-		DebugStr("WeaponSpread:" @ PawnToDebug.WeaponSpread, debugLine);
-		DebugStr("DTM:" @ PawnToDebug.DamageTakenMultiplier, debugLine);
-		DebugStr("", debugLine);
+		DebugStr("Predkosc ruchu       :" @ PawnToDebug.GroundSpeed, debugLine, , height);
+		DebugStr("Czujosc              :" @ PawnToDebug.Awareness, debugLine, , height);
+		DebugStr("Rozrzut broni        :" @ PawnToDebug.WeaponSpread, debugLine, , height);
+		DebugStr("Modyfikator obrazen  :" @ PawnToDebug.DamageTakenMultiplier, debugLine, , height);
+		DebugStr("", debugLine, , height);
 
 
-		DebugStr("Location:" @ PawnToDebug.Location, debugLine);
-		DebugStr("Final destination:" @ PawnToDebug.BController.FinalDestination, debugLine);
-		DebugStr("Dist to final dest:" @ VSize2D(PawnToDebug.Location - PawnToDebug.BController.FinalDestination), debugLine);
-		DebugStr("", debugLine);
+		// DebugStr("Location:" @ PawnToDebug.Location, debugLine, , height);
+		// DebugStr("Final destination:" @ PawnToDebug.BController.FinalDestination, debugLine, , height);
+		// DebugStr("Dist to final dest:" @ VSize2D(PawnToDebug.Location - PawnToDebug.BController.FinalDestination), debugLine, , height);
+		// DebugStr("", debugLine, , height);
 
 
-		DebugStr("Needs:", debugLine);
+		DebugStr("Potrzeby:", debugLine, , height);
 		for(q = 0; q < PawnToDebug.BController.NeedManager.Needs.Length; ++q)
 		{
-			DebugStr((q + 1) $ "." @ PawnToDebug.BController.NeedManager.Needs[q] @ "=" @ PawnToDebug.BController.NeedManager.Needs[q].GetFuzzyLevel(), debugLine, 20);
+			DebugStr((q + 1) $ "." @ PawnToDebug.BController.NeedManager.Needs[q] @ "=", debugLine, , 0);
+
+			switch(PawnToDebug.BController.NeedManager.Needs[q].GetFuzzyLevel())
+			{
+				case 0: Canvas.SetDrawColor(255,0,0,255); break;
+				case 1: Canvas.SetDrawColor(255,128,0,255); break;
+				case 2: Canvas.SetDrawColor(255,255,0,255); break;
+				case 3: Canvas.SetDrawColor(120,204,184,255); break;
+				case 4: Canvas.SetDrawColor(0,255,0,255); break;
+				default: Canvas.SetDrawColor(255,255,255,255);
+			}
+
+			DebugStr("                       " @ PawnToDebug.BController.NeedManager.Needs[q].GetFuzzyLevel(), debugLine, , height);
+			Canvas.SetDrawColor(255,255,255,255);
 		}
 
-		DebugStr("Action stack:", debugLine);
-		for(q = 0; q < PawnToDebug.BController.ActionManager.Actions.Length; ++q)
-		{
-			DebugStr((q + 1) $ "." @ PawnToDebug.BController.ActionManager.Actions[q] @ PawnToDebug.BController.ActionManager.Actions[q].IsBlocked() ? "  [blocked]" : "", debugLine, 20);
-		}
+		// DebugStr("Action stack:", debugLine, , height);
+		// for(q = 0; q < PawnToDebug.BController.ActionManager.Actions.Length; ++q)
+		// {
+		// 	DebugStr((q + 1) $ "." @ PawnToDebug.BController.ActionManager.Actions[q] @ PawnToDebug.BController.ActionManager.Actions[q].IsBlocked() ? "  [blocked]" : "", debugLine, , height);
+		// }
 	}
 }
 
@@ -104,13 +126,15 @@ function DebugRect(Vector pos, int size, byte R, byte G, byte B, byte A)
  */
 function DebugStr(string str, out int lineY, optional int lineXOffset, optional int lineIncrementationValue = 15)
 {
-	Canvas.Font = class'Engine'.static.GetSmallFont();
+	local Color c;
+	c = Canvas.DrawColor;
 
 	Canvas.SetDrawColor(0, 0, 0, 255);
 	Canvas.SetPos(10 + lineXOffset + 1, lineY + 1, 0);
 	Canvas.DrawText(str);
 
-	Canvas.SetDrawColor(255, 255, 255, 255);
+	//Canvas.SetDrawColor(255, 255, 255, 255);
+	Canvas.SetDrawColorStruct(c);
 	Canvas.SetPos(10 + lineXOffset, lineY, 0);
 	Canvas.DrawText(str);
 
