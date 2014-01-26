@@ -95,7 +95,7 @@ function GetDefaultTeams()
 		{
 			`trace("Found neutral team" @ tm @ tm.TeamName, `green);
 			NeutralTeam = tm;
-			bPlayerTeamFound = true;
+			bNeutralTeamFound = true;
 		}
 	}
 
@@ -104,6 +104,8 @@ function GetDefaultTeams()
 	{
 		`trace("Player team not found. Creating it.", `yellow);
 		PlayerTeam = CreateTeam("PlayerTeam");
+		PlayerTeam.bIsPlayerTeam = true;
+		PlayerTeam.bIsNeutralTeam = false;
 	}
 
 	// if neutral team was not found create it
@@ -111,6 +113,8 @@ function GetDefaultTeams()
 	{
 		`trace("Neutral team not found. Creating it.", `yellow);
 		NeutralTeam = CreateTeam("NeutralTeam");
+		NeutralTeam.bIsPlayerTeam = false;
+		NeutralTeam.bIsNeutralTeam = true;
 	}
 }
 
@@ -156,6 +160,65 @@ exec function BamKillPawns()
 	}
 }
 
+function Logout( Controller Exiting )
+{
+	local PlayerController PC;
+	local int PCIndex;
+
+	PC = PlayerController(Exiting);
+	if ( PC != None )
+	{
+		if (AccessControl != None &&
+			AccessControl.AdminLogout( PlayerController(Exiting) ))
+		{
+			AccessControl.AdminExited( PlayerController(Exiting) );
+		}
+
+		if ( PC.PlayerReplicationInfo != none && PC.PlayerReplicationInfo.bOnlySpectator )
+		{
+			NumSpectators--;
+		}
+		else
+		{
+			if (WorldInfo.IsInSeamlessTravel() || PC.HasClientLoadedCurrentWorld())
+			{
+				NumPlayers--;
+			}
+			else
+			{
+				NumTravellingPlayers--;
+			}
+			// Tell the online subsystem the number of players in the game
+			UpdateGameSettingsCounts();
+		}
+		// This person has left during an arbitration period
+		if (bUsingArbitration && bHasArbitratedHandshakeBegun && !bHasEndGameHandshakeBegun && PC.PlayerReplicationInfo != none)
+		{
+			`Log("Player "$PC.PlayerReplicationInfo.PlayerName$" has dropped");
+		}
+		// Unregister the player from the online layer
+		UnregisterPlayer(PC);
+		// Remove from the arbitrated PC list if in an arbitrated match
+		if (bUsingArbitration)
+		{
+			// Find the PC in the list and remove it if found
+			PCIndex = ArbitrationPCs.Find(PC);
+			if (PCIndex != INDEX_NONE)
+			{
+				ArbitrationPCs.Remove(PCIndex,1);
+			}
+		}
+	}
+	//notify mutators that a player exited
+	if (BaseMutator != None)
+	{
+		BaseMutator.NotifyLogout(Exiting);
+	}
+	if ( PC != None )
+	{
+		UpdateNetSpeeds();
+	}
+}
 
 defaultproperties
 {
