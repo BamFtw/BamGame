@@ -18,6 +18,21 @@ simulated function Rotator GetAdjustedAimFor(Weapon W, vector StartFireLoc)
 	return rot;
 }
 
+simulated function StartFire(byte FireModeNum)
+{
+	if( bIsWalking && VSizeSq(Velocity) != 0 )
+	{
+		return;
+	}
+
+	if( CharacterCoverState.CurrentState != CoverState_OutOfCover )
+	{
+		return;
+	}
+
+	super.StartFire(FireModeNum);
+}
+
 /** Returns controllers ViewPitch */
 function float GetViewPitch()
 {
@@ -41,7 +56,7 @@ event Tick(float DeltaTime)
 	{
 		FilterEditorOnly
 		{
-			DrawDebugCylinder(Location + vect(0, 0, 1) * GetCollisionHeight(), Location + vect(0, 0, 6) * GetCollisionHeight(), 4, 12, BController.Team.EditorIconColor.R, BController.Team.EditorIconColor.G, BController.Team.EditorIconColor.B, false);
+			// DrawDebugCylinder(Location + vect(0, 0, 1) * GetCollisionHeight(), Location + vect(0, 0, 6) * GetCollisionHeight(), 4, 12, BController.Team.EditorIconColor.R, BController.Team.EditorIconColor.G, BController.Team.EditorIconColor.B, false);
 		}
 	}
 }
@@ -107,9 +122,47 @@ event TakeDamage(int Damage, Controller InstigatedBy, vector HitLocation, vector
 /** Returns whether pawn given as parameter is hostile */
 function bool IsPawnHostile(Pawn pwn)
 {
-	return BController.IsPawnHostile(pwn);
+	if( BController != none )
+	{
+		return BController.IsPawnHostile(pwn);
+	}
+	else if( GetALocalPlayerController().Pawn == self )
+	{
+		return Game.PlayerTeam.IsPawnHostile(pwn);
+	}
+
+	return false;
 }
 
+function bool IsPawnFriendly(Pawn pwn)
+{
+	local BamActor_TeamManager teamMgr;
+
+	if( pwn == none )
+	{
+		return false;
+	}
+
+	if( pwn == self )
+	{
+		return true;
+	}
+
+	if( Game.PlayerTeam.Members.Find(Controller) != INDEX_NONE || GetALocalPlayerController().Pawn == self )
+	{
+		teamMgr = Game.PlayerTeam;
+	}
+	else if( Game.NeutralTeam.Members.Find(Controller) != INDEX_NONE )
+	{
+		teamMgr = Game.NeutralTeam;
+	}
+	else if( BController != none )
+	{
+		teamMgr = BController.Team;
+	}
+
+	return teamMgr != none && (teamMgr.Members.Find(pwn.Controller) != INDEX_NONE || (Game.PlayerTeam == teamMgr && pwn == GetALocalPlayerController().Pawn));
+}
 
 State Dying
 {
