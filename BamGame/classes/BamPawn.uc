@@ -577,6 +577,11 @@ event PlayFootStepSound(int FootDown)
 		return;
 	}
 
+	if( Physics == PHYS_Falling )
+	{
+		return;
+	}
+
 	LastFootstepSoundPlayTime = WorldInfo.TimeSeconds;
 
 	// set sound location at pawns feet

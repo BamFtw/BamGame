@@ -20,6 +20,11 @@ simulated function Rotator GetAdjustedAimFor(Weapon W, vector StartFireLoc)
 
 simulated function StartFire(byte FireModeNum)
 {
+	if( Physics == PHYS_Falling )
+	{
+		return;
+	}
+
 	if( bIsWalking && VSizeSq(Velocity) != 0 )
 	{
 		return;
