@@ -6,15 +6,15 @@ class BamPawn extends GamePawn
 struct BamMeleeAttackProperties
 {
 	/** Damage dealt by this attack */
-	var int Damage;
+	var() int Damage;
 	/** Range of the attack */
-	var float Range;
+	var() float Range;
 	/** Minimum dot product between Pawns direction and Vector between Pawn and target for target to be valid */
-	var float MinDot;
+	var() float MinDot;
 	/** How many enemies can be hit with this attack */
-	var int MaxNumOfHits;
+	var() int MaxNumOfHits;
 	/** Whether damage can be dealt to friendly pawns */
-	var bool bAllowFriendlyFire;
+	var() bool bAllowFriendlyFire;
 };
 
 struct BamFootstepSoundsContainer
@@ -675,9 +675,9 @@ defaultproperties
 
 	begin object class=UDKSkeletalMeshComponent name=FirstPersonArms
 		FOV=68.0
-		SkeletalMesh=SkeletalMesh'bam_ch_player.Meshes.arms_base'
-		AnimTreeTemplate=AnimTree'bam_ch_player.AnimTrees.arms_AnimTree'
-		AnimSets[0]=AnimSet'bam_ch_player.AnimSets.arms_animSet'
+		// SkeletalMesh=SkeletalMesh'bam_ch_player.Meshes.arms_base'
+		// AnimTreeTemplate=AnimTree'bam_ch_player.AnimTrees.arms_AnimTree'
+		// AnimSets[0]=AnimSet'bam_ch_player.AnimSets.arms_animSet'
 		PhysicsAsset=None
 		DepthPriorityGroup=SDPG_Foreground
 		bUpdateSkelWhenNotRendered=true
