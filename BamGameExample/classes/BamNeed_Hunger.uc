@@ -18,7 +18,7 @@ DefaultProperties
 		C=40
 	End Object
 
-	Begin Object class=BamFuzzyMembershipFunction_Trapezoidal name=MemFunc_Medium
+	Begin Object class=BamFuzzyMembershipFunction_Trapezoidal name=MyMemFunc_Medium
 		A=30
 		B=50
 		C=60
@@ -37,4 +37,10 @@ DefaultProperties
 		C=1000
 		D=1000
 	End Object
+
+	MembershipFunctions[BFL_VeryLow]=(Level=BFL_VeryLow,Function=MemFunc_VeryLow)
+	MembershipFunctions[BFL_Low]=(Level=BFL_Low,Function=MemFunc_Low)
+	MembershipFunctions[BFL_Medium]=(Level=BFL_Medium,Function=MyMemFunc_Medium)
+	MembershipFunctions[BFL_High]=(Level=BFL_High,Function=MemFunc_High)
+	MembershipFunctions[BFL_VeryHigh]=(Level=BFL_VeryHigh,Function=MemFunc_VeryHigh)
 }
