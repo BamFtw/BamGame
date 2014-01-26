@@ -4,6 +4,11 @@ class BamSeqVar_AIAction extends SeqVar_Object
 /** Archetype of the action thath will be given to Pawns ActionManager */
 var() editinline BamAIAction Action;
 
+function Object GetObjectValue()
+{
+	return Action;
+}
+
 /** Creates action based on given archetype */
 function BamAIAction GetAIAction()
 {
