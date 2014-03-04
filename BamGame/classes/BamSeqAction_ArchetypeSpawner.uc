@@ -100,6 +100,8 @@ event Activated()
 
 	// activate succeeded output link
 	OutputLinks[1].bHasImpulse = false;
+	OutputLinks[1].bDisabled = true;
+	OutputLinks[0].bDisabled = false;
 	ActivateOutputLink(0);
 }
 
@@ -108,6 +110,8 @@ function FailWithWarning(string warningText)
 {
 	`trace(warningText, `red);
 	OutputLinks[0].bHasImpulse = false;
+	OutputLinks[0].bDisabled = true;
+	OutputLinks[1].bDisabled = false;
 	ForceActivateOutput(1);
 }
 

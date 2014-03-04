@@ -123,10 +123,10 @@ DefaultProperties
 
 	DamageRadius=0.0
 	Damage=10
-	Speed=6000.0
-	MaxSpeed=6000.0
+	Speed=12000.0
+	MaxSpeed=12000.0
 
-	BulletDropRate=24.0
+	BulletDropRate=0.0
 
 	GroundImpactSound=SoundCue'bam_snd_HitImpacts.Cue.HitImpact_Ground'
 	CharacterImpactSound=SoundCue'bam_snd_HitImpacts.Cue.HitImpact_Character'
